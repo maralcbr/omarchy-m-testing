@@ -68,7 +68,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Any, Callable, Sequence
 
-from .host import CommandResult, Host, HttpResponse, MachineSignature, NetworkError, SigningError, Terminal, bundled_argv
+from .host import TOUCHID_SNAPSHOT, CommandResult, Host, HttpResponse, MachineSignature, NetworkError, SigningError, Terminal, bundled_argv
 from .privacy import HOME_DIR, HOSTNAME_PATH, SERIAL_FILES, Scrubber
 
 RECORDING_VERSION = 1
@@ -180,6 +180,9 @@ class RecordedHost:
 
     def run_bundled(self, name: str, args: Sequence[str] = ()) -> CommandResult:
         return self.run(bundled_argv(name, args))
+
+    def touchid_snapshot(self) -> dict:
+        return json.loads(self.run(TOUCHID_SNAPSHOT).stdout)
 
     def read_file(self, path: str) -> bytes:
         if path in self.written:
@@ -331,6 +334,12 @@ class RecordingHost:
         self._keep(argv, result)
         return result
 
+    def touchid_snapshot(self) -> dict:
+        found = self.inner.touchid_snapshot()
+        self.commands = [entry for entry in self.commands if entry["argv"] != TOUCHID_SNAPSHOT]
+        self._keep(TOUCHID_SNAPSHOT, CommandResult(0, json.dumps(found, sort_keys=True), ""))
+        return found
+
     def run_bundled(self, name: str, args: Sequence[str] = ()) -> CommandResult:
         argv = bundled_argv(name, args)
         result = self.inner.run_bundled(name, args)
@@ -338,6 +347,11 @@ class RecordingHost:
         return result
 
     def _keep(self, argv: list[str], result: CommandResult) -> None:
+        command = argv[2:] if argv[:1] == ["timeout"] else argv
+        if command and command[0] in ("journalctl", "dmesg"):
+            from .touchid import log_event, redact_log
+            if any(log_event(line) for line in (result.stdout + result.stderr).splitlines()):
+                result = CommandResult(result.returncode, redact_log(result.stdout), redact_log(result.stderr), result.timed_out)
         if not any(entry["argv"] == argv for entry in self.commands):
             entry = {"argv": argv, "returncode": result.returncode, "stdout": result.stdout, "stderr": result.stderr}
             if result.timed_out:

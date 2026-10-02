@@ -662,6 +662,15 @@
       "stdout": "2026-09-27T00:24:52+10:00 omarchy systemd[1]: Starting Omarchy first boot: finish this Mac's image, then owner setup...\n2026-09-27T00:24:52+10:00 omarchy omarchy-mac-first-boot[5969]: Creating this Mac's package keyring...\n2026-09-27T00:25:06+10:00 omarchy omarchy-mac-first-boot[5969]: Ready for account setup.\n2026-09-27T00:25:06+10:00 omarchy systemd[1]: omarchy-mac-first-boot.service: Deactivated successfully.\n2026-09-27T00:25:06+10:00 omarchy systemd[1]: Finished Omarchy first boot: finish this Mac's image, then owner setup.\n2026-09-27T00:25:06+10:00 omarchy systemd[1]: omarchy-mac-first-boot.service: Consumed 12.000s CPU time over 14.380s wall clock time, 365.4M memory peak.\n-- Boot ed684b424f994567b99f2636756a876f --\n2026-09-27T00:33:28+10:00 omarchy-m2-max systemd[1]: Omarchy first boot: finish this Mac's image, then owner setup skipped, unmet condition check ConditionPathExists=/var/lib/omarchy/mac-first-boot/pending\n-- Boot 0d302c25b7fe4d7f9cf41d00638d1a89 --\n2026-09-27T10:40:12+10:00 omarchy-m2-max systemd[1]: Omarchy first boot: finish this Mac's image, then owner setup skipped, unmet condition check ConditionPathExists=/var/lib/omarchy/mac-first-boot/pending\n",
       "stderr": "",
       "note": "M2 Max at its desk, 2026-09-27 (read-only, after the owner's 0.1.4 run); the journal without its sudo lines and with two of its five boots"
+    },
+    {
+      "argv": [
+        "read:touch-id"
+      ],
+      "returncode": 0,
+      "stdout": "{\"apple\": true, \"diag\": {}, \"firmware\": {}, \"sep\": null}",
+      "stderr": "",
+      "note": "SEP diagnostics were not captured in this historical run; explicitly unavailable, never a reconstructed readiness pass."
     }
   ],
   "files": {

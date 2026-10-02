@@ -969,6 +969,15 @@
       "returncode": 0,
       "stdout": "lo               UNKNOWN        10.200.4.9/8 10.88.0.12/128 \nwlan0            UP             10.61.23.147/24 10.61.23.1/64 \ntailscale0       UNKNOWN        10.200.4.9/32 10.88.0.12/128 10.61.23.147/64 \ndocker0          DOWN           10.61.23.1/16 \n",
       "stderr": ""
+    },
+    {
+      "argv": [
+        "read:touch-id"
+      ],
+      "returncode": 0,
+      "stdout": "{\"apple\": true, \"diag\": {}, \"firmware\": {}, \"sep\": null}",
+      "stderr": "",
+      "note": "SEP diagnostics were not captured in this historical run; explicitly unavailable, never a reconstructed readiness pass."
     }
   ],
   "files": {

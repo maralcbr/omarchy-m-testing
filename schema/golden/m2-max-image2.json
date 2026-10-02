@@ -5,7 +5,7 @@
     "version": "0.1.10"
   },
   "consent_version": 6,
-  "catalogue_version": 11,
+  "catalogue_version": 12,
   "machine": {
     "model": "Apple MacBook Pro (16-inch, M2 Max, 2023)",
     "board": "j416c",
@@ -1618,6 +1618,103 @@
         "layer": "asahi",
         "expected": {
           "asahi": "linux-asahi",
+          "aurora": "asahi"
+        }
+      }
+    },
+    {
+      "id": "sep.attach",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "passive SEP attachment state unavailable or unsupported",
+        "system firmware (sepOS proxy): unavailable",
+        "system iBoot build: unavailable",
+        "stub firmware (not running sepOS): unavailable",
+        "stub iBoot build: unavailable",
+        "m1n1 stage 2: unavailable",
+        "actual sepOS version/build: unavailable (not exposed by the kernel)",
+        "SEP diagnostics ABI: unavailable",
+        "SEP profile: unknown",
+        "SEP boot: unknown",
+        "SEP protocol: unknown",
+        "SEP attach: unknown",
+        "SEP endpoints: unknown",
+        "SEP keystore: unknown",
+        "SEP keybag: unknown",
+        "SEP sensor: unknown",
+        "SEP touchid: unknown",
+        "SEP xart: unknown",
+        "profile and protocol describe the driver, not the running sepOS version",
+        "SEP driver bound: unavailable",
+        "/dev/sep-bio present: unavailable",
+        "xART writes parameter: unavailable",
+        "keybag provisioning parameter: unavailable",
+        "default sensor calibration file: unavailable",
+        "sensor device-tree node: unavailable",
+        "sensor node enabled: unavailable",
+        "SEP kernel events: unavailable"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "sep",
+        "layer": "asahi",
+        "expected": {
+          "asahi": "wip",
+          "aurora": "asahi"
+        }
+      }
+    },
+    {
+      "id": "touch-id.ready",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "SEP platform device unavailable",
+        "SEP diagnostics ABI: unavailable",
+        "SEP profile: unknown",
+        "SEP boot: unknown",
+        "SEP protocol: unknown",
+        "SEP attach: unknown",
+        "SEP endpoints: unknown",
+        "SEP keystore: unknown",
+        "SEP keybag: unknown",
+        "SEP sensor: unknown",
+        "SEP touchid: unknown",
+        "SEP xart: unknown",
+        "profile and protocol describe the driver, not the running sepOS version",
+        "SEP driver bound: unavailable",
+        "/dev/sep-bio present: unavailable",
+        "xART writes parameter: unavailable",
+        "keybag provisioning parameter: unavailable",
+        "default sensor calibration file: unavailable",
+        "sensor device-tree node: unavailable",
+        "sensor node enabled: unavailable",
+        "SEP kernel events: unavailable"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "touch-id",
+        "layer": "asahi",
+        "expected": {
+          "asahi": "tba",
+          "aurora": "asahi"
+        }
+      }
+    },
+    {
+      "id": "touch-id.unlock",
+      "kind": "human",
+      "status": "skip",
+      "evidence": [
+        "skipped: SEP biometric device unavailable"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "touch-id",
+        "layer": "asahi",
+        "expected": {
+          "asahi": "tba",
           "aurora": "asahi"
         }
       }

@@ -100,7 +100,7 @@ class OmarchyLookTest(unittest.TestCase):
         self.assertEqual(status, 0)
         plain = [re.sub(r"\033\[[0-9;?]*[A-Za-z]", "", e[1]) for e in mac.transcript if e[0] == "show"]
         starts = [text.strip() for text in plain if "\r" not in text and re.match(r"^\n *[━─]+  Section \d+/", text)]
-        found = [re.search(r"Section (\d+)/(\d+) · (\w+)", text).groups() for text in starts]
+        found = [re.search(r"Section (\d+)/(\d+) · ([A-Za-z ]+?)  \d+%", text).groups() for text in starts]
         count = len(found)  # the sections this run runs (Sleep isn't, without a seat): numbered 1 to count, in order
         self.assertGreater(count, 10)
         titles = [title for _, _, title in found]
@@ -232,7 +232,7 @@ class FallbackLookTest(unittest.TestCase):
         self.assertEqual(mac.written, {REPORT_FILE: GOLDEN})
         # Where the run is, as plain ASCII at each section's start.
         starts = [e[1] for e in mac.transcript if e[0] == "show" and e[1].startswith("Section ")]
-        self.assertEqual(starts[0], f"Section 1/{len(starts)} - Boot [{'=' * 6}{'-' * 24}] 0%")
+        self.assertEqual(starts[0], f"Section 1/{len(starts)} - Boot [{'=' * 5}{'-' * 25}] 0%")
         self.assertTrue(all(re.fullmatch(r"Section \d+/\d+ - [A-Za-z ]+ \[[#=-]{30}\] \d+%", text) for text in starts), starts)
         self.assertTrue(all(text.isascii() for text in starts))
 
@@ -318,7 +318,7 @@ class SectionsTest(unittest.TestCase):
         status = main(["--skip", "teleport"], mac)
 
         self.assertEqual(status, 4)
-        self.assertIn("--skip takes section names: boot, hardware, graphics, video, display, audio, network, sleep, input, camera, ports, power, cpu", mac.output)
+        self.assertIn("--skip takes section names: boot, hardware, graphics, video, display, audio, network, sleep, input, touch-id, camera, ports, power, cpu", mac.output)
         self.assertEqual(mac.written, {})
 
     def test_ctrl_c_at_the_disclaimer_leaves_nothing_behind(self):

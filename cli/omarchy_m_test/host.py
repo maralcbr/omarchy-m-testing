@@ -12,6 +12,8 @@ Operations:
                              e.g. omarchy-mac's mac-check; recorded as bundled_argv()
   read_file(path)            read a file's bytes; FileNotFoundError if absent
   list_dir(path)             list a directory's entry names, sorted
+  touchid_snapshot()         passive SEP state and firmware provenance, with only
+                             allowlisted facts and kernel event categories retained
   prompt(message)            ask the human; returns the typed line; EOFError on end of input
   show(text)                 show text to the human
   write_file(path, text, private=False)
@@ -111,6 +113,7 @@ HTTP_TIMEOUT_SECONDS = 30
 # GETs only look up the latest release; a slow or absent network must not hold up a run.
 GET_TIMEOUT_SECONDS = 5
 BUNDLED_PREFIX = "bundled:"
+TOUCHID_SNAPSHOT = ["read:touch-id"]
 
 
 def bundled_argv(name: str, args: Sequence[str] = ()) -> list[str]:
@@ -189,6 +192,8 @@ class Host(Protocol):
     def read_file(self, path: str) -> bytes: ...
 
     def list_dir(self, path: str) -> list[str]: ...
+
+    def touchid_snapshot(self) -> dict: ...
 
     def prompt(self, message: str) -> str: ...
 
@@ -288,6 +293,10 @@ if [ -z "$limit" ]; then PATH=$OMARCHY_M_TEST_PATH exec sudo -n "$@"; fi
 
 class RealHost:
     """The host backed by this machine, its terminal and the network."""
+
+    def touchid_snapshot(self) -> dict:
+        from . import touchid
+        return touchid.collect(self)
 
     def __init__(self) -> None:
         self._shims: str | None = None
