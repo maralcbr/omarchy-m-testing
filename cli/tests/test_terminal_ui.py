@@ -100,7 +100,7 @@ class OmarchyLookTest(unittest.TestCase):
         self.assertEqual(status, 0)
         plain = [re.sub(r"\033\[[0-9;?]*[A-Za-z]", "", e[1]) for e in mac.transcript if e[0] == "show"]
         starts = [text.strip() for text in plain if "\r" not in text and re.match(r"^\n *[━─]+  Section \d+/", text)]
-        found = [re.search(r"Section (\d+)/(\d+) · (\w+)", text).groups() for text in starts]
+        found = [re.search(r"Section (\d+)/(\d+) · ([A-Za-z ]+?)  \d+%", text).groups() for text in starts]
         count = len(found)  # the sections this run runs (Sleep isn't, without a seat): numbered 1 to count, in order
         self.assertGreater(count, 10)
         titles = [title for _, _, title in found]
@@ -318,7 +318,7 @@ class SectionsTest(unittest.TestCase):
         status = main(["--skip", "teleport"], mac)
 
         self.assertEqual(status, 4)
-        self.assertIn("--skip takes section names: boot, hardware, graphics, video, display, audio, network, sleep, input, camera, ports, power, cpu", mac.output)
+        self.assertIn("--skip takes section names: boot, hardware, graphics, video, display, audio, network, sleep, input, touch-id, camera, ports, power, cpu", mac.output)
         self.assertEqual(mac.written, {})
 
     def test_ctrl_c_at_the_disclaimer_leaves_nothing_behind(self):

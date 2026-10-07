@@ -5,7 +5,7 @@
     "version": "0.1.12"
   },
   "consent_version": 6,
-  "catalogue_version": 13,
+  "catalogue_version": 14,
   "machine": {
     "model": "Apple MacBook Pro (16-inch, M2 Max, 2023)",
     "board": "j416c",
@@ -1640,6 +1640,103 @@
       }
     },
     {
+      "id": "sep.attach",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "passive SEP attachment state unavailable or unsupported",
+        "system firmware (sepOS proxy): unavailable",
+        "system iBoot build: unavailable",
+        "stub firmware (not running sepOS): unavailable",
+        "stub iBoot build: unavailable",
+        "m1n1 stage 2: unavailable",
+        "actual sepOS version/build: unavailable (not exposed by the kernel)",
+        "SEP diagnostics ABI: unavailable",
+        "SEP profile: unknown",
+        "SEP boot: unknown",
+        "SEP protocol: unknown",
+        "SEP attach: unknown",
+        "SEP endpoints: unknown",
+        "SEP keystore: unknown",
+        "SEP keybag: unknown",
+        "SEP sensor: unknown",
+        "SEP touchid: unknown",
+        "SEP xart: unknown",
+        "profile and protocol describe the driver, not the running sepOS version",
+        "SEP driver bound: unavailable",
+        "/dev/sep-bio present: unavailable",
+        "xART writes parameter: unavailable",
+        "keybag provisioning parameter: unavailable",
+        "default sensor calibration file: unavailable",
+        "sensor device-tree node: unavailable",
+        "sensor node enabled: unavailable",
+        "SEP kernel events: unavailable"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "sep",
+        "layer": "asahi",
+        "expected": {
+          "asahi": "wip",
+          "aurora": "asahi"
+        }
+      }
+    },
+    {
+      "id": "touch-id.ready",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "SEP platform device unavailable",
+        "SEP diagnostics ABI: unavailable",
+        "SEP profile: unknown",
+        "SEP boot: unknown",
+        "SEP protocol: unknown",
+        "SEP attach: unknown",
+        "SEP endpoints: unknown",
+        "SEP keystore: unknown",
+        "SEP keybag: unknown",
+        "SEP sensor: unknown",
+        "SEP touchid: unknown",
+        "SEP xart: unknown",
+        "profile and protocol describe the driver, not the running sepOS version",
+        "SEP driver bound: unavailable",
+        "/dev/sep-bio present: unavailable",
+        "xART writes parameter: unavailable",
+        "keybag provisioning parameter: unavailable",
+        "default sensor calibration file: unavailable",
+        "sensor device-tree node: unavailable",
+        "sensor node enabled: unavailable",
+        "SEP kernel events: unavailable"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "touch-id",
+        "layer": "asahi",
+        "expected": {
+          "asahi": "tba",
+          "aurora": "asahi"
+        }
+      }
+    },
+    {
+      "id": "touch-id.unlock",
+      "kind": "human",
+      "status": "skip",
+      "evidence": [
+        "skipped: SEP biometric device unavailable"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "touch-id",
+        "layer": "asahi",
+        "expected": {
+          "asahi": "tba",
+          "aurora": "asahi"
+        }
+      }
+    },
+    {
       "id": "camera.isp",
       "kind": "automatic",
       "status": "pass",
@@ -1972,6 +2069,6 @@
   ],
   "signature": {
     "public_key": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHWZLEbyxAyRBj1yRyeHbRhQvVhcrUqpMaNH7ivMU1DW",
-    "signature": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgdZksRvLEDJEGPXJHJ4dtGFC9WF\nytSqkxo0fuK8xTUNYAAAAVb21hcmNoeS1tLXRlc3QtcmVwb3J0AAAAAAAAAAZzaGE1MTIA\nAABTAAAAC3NzaC1lZDI1NTE5AAAAQGOyxtqtOfxf90KQLbjqqOh1zxW0lfCJXp9bSDbJ2X\nuAui6q0u+brdwkdvzQY1Pess3npXZvUXilv4Qb+zgHiQ4=\n-----END SSH SIGNATURE-----"
+    "signature": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgdZksRvLEDJEGPXJHJ4dtGFC9WF\nytSqkxo0fuK8xTUNYAAAAVb21hcmNoeS1tLXRlc3QtcmVwb3J0AAAAAAAAAAZzaGE1MTIA\nAABTAAAAC3NzaC1lZDI1NTE5AAAAQBDMJIUJggddcV5I2GQv0A4pmc9oh0cnUwfFAM1xys\ng+1CywJxLYLu4n5qc6boSoOgHRshOUwm0VmcLvLtSt2Ak=\n-----END SSH SIGNATURE-----"
   }
 }

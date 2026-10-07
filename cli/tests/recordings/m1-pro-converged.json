@@ -374,6 +374,14 @@
     },
     {
       "argv": [
+        "read:touch-id"
+      ],
+      "returncode": 0,
+      "stdout": "{\"apple\": true, \"diag\": {}, \"firmware\": {}, \"sep\": null}",
+      "stderr": ""
+    },
+    {
+      "argv": [
         "sh",
         "-c",
         "for d in /sys/class/video4linux/video*; do [ -e \"$d\" ] || continue; drv=$(readlink \"$d/device/driver\"); echo \"${d##*/} ${drv##*/}\"; done"

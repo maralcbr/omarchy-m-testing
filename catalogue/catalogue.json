@@ -1,5 +1,5 @@
 {
-  "catalogue_version": 13,
+  "catalogue_version": 14,
   "description": "What omarchy-m-test expects of each feature, per chip generation, in three layers: Asahi hardware features, Aurora additions and Omarchy integration. Results are classified against Aurora's expected state first, then Asahi's. Edited by pull request; bump catalogue_version on every change.",
   "sources": {
     "asahi": {
@@ -88,6 +88,9 @@
     "input.keyboard-light-follows-room": "auto-keyboard-light",
     "input.function-keys": "keyboard",
     "input.trackpad-gestures": "touchpad",
+    "sep.attach": "sep",
+    "touch-id.ready": "touch-id",
+    "touch-id.unlock": "touch-id",
     "camera.isp": "isp-camera",
     "camera.frames": "isp-camera",
     "camera.image": "isp-camera",

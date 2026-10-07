@@ -92,7 +92,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Any, Callable, Sequence
 
-from .host import MONITOR_INTENT, CommandResult, Host, HttpResponse, MachineSignature, NetworkError, SigningError, Terminal, bundled_argv
+from .host import MONITOR_INTENT, TOUCHID_SNAPSHOT, CommandResult, Host, HttpResponse, MachineSignature, NetworkError, SigningError, Terminal, bundled_argv
 from .privacy import HOME_DIR, HOSTNAME_PATH, SERIAL_FILES, Scrubber
 
 RECORDING_VERSION = 1
@@ -219,6 +219,9 @@ class RecordedHost:
 
     def monitor_intent(self, outputs: list[dict]) -> dict[str, dict]:
         return json.loads(self.run(MONITOR_INTENT).stdout)
+
+    def touchid_snapshot(self) -> dict:
+        return json.loads(self.run(TOUCHID_SNAPSHOT).stdout)
 
     def read_file(self, path: str) -> bytes:
         if path in self.written:
@@ -392,6 +395,11 @@ class RecordingHost:
         result = self.inner.run(argv)
         self._keep(argv, result)
         return result
+
+    def touchid_snapshot(self) -> dict:
+        found = self.inner.touchid_snapshot()
+        self._keep(TOUCHID_SNAPSHOT, CommandResult(0, json.dumps(found, sort_keys=True), ""))
+        return found
 
     def run_bundled(self, name: str, args: Sequence[str] = ()) -> CommandResult:
         argv = bundled_argv(name, args)
@@ -601,9 +609,13 @@ def _is_sequence(names: Any) -> bool:
 
 def _projected(entry: dict[str, Any]) -> dict[str, Any]:
     from .external_display import recorded_output, recorded_text
+    from .safety import _unwrap
+    from .touchid import redact_log
 
     kept = recorded_output(entry["argv"], entry["stdout"], entry["stderr"])
     stdout, stderr = kept if kept is not None else (recorded_text(entry["stdout"]), recorded_text(entry["stderr"]))
+    if _unwrap(entry["argv"])[:1] in (["journalctl"], ["dmesg"]):
+        stdout, stderr = redact_log(stdout), redact_log(stderr)
     return {**entry, "stdout": stdout, "stderr": stderr}
 
 

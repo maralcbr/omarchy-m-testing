@@ -614,6 +614,15 @@
       "stdout": "",
       "stderr": "sudo: a password is required\n",
       "note": "stand-in: the corpus run is over SSH, where sudo has no cached credentials, so the charge limit isn't changed"
+    },
+    {
+      "argv": [
+        "read:touch-id"
+      ],
+      "returncode": 0,
+      "stdout": "{\"apple\": true, \"diag\": {}, \"firmware\": {}, \"sep\": null}",
+      "stderr": "",
+      "note": "SEP diagnostics were not captured in this historical run; explicitly unavailable, never a reconstructed readiness pass."
     }
   ],
   "files": {

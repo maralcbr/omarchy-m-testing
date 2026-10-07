@@ -20,6 +20,8 @@ Operations:
                              symlink); FileNotFoundError if absent
   monitor_intent(outputs)   read monitor rules locally; only policy flags leave the host,
                              never user configuration text or monitor description selectors
+  touchid_snapshot()         passive SEP state and firmware provenance, with only
+                             allowlisted facts and kernel event categories retained
   prompt(message)            ask the human; returns the typed line; EOFError on end of input
   show(text)                 show text to the human
   write_file(path, text, private=False)
@@ -128,6 +130,7 @@ READ_LIMIT_BYTES = 16 * 1024 * 1024
 READ_STUCK_LIMIT = 8
 BUNDLED_PREFIX = "bundled:"
 MONITOR_INTENT = ["read:monitor-intent"]  # the derived policy flags in a recording
+TOUCHID_SNAPSHOT = ["read:touch-id"]
 
 
 def bundled_argv(name: str, args: Sequence[str] = ()) -> list[str]:
@@ -210,6 +213,8 @@ class Host(Protocol):
     def regular_files(self, path: str) -> list[str]: ...
 
     def monitor_intent(self, outputs: list[dict]) -> dict[str, dict]: ...
+
+    def touchid_snapshot(self) -> dict: ...
 
     def prompt(self, message: str) -> str: ...
 
@@ -309,6 +314,10 @@ if [ -z "$limit" ]; then PATH=$OMARCHY_M_TEST_PATH exec sudo -n "$@"; fi
 
 class RealHost:
     """The host backed by this machine, its terminal and the network."""
+
+    def touchid_snapshot(self) -> dict:
+        from . import touchid
+        return touchid.collect(self)
 
     def __init__(self) -> None:
         self._shims: str | None = None

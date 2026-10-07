@@ -63,10 +63,17 @@ class PagesTest < ActionDispatch::IntegrationTest
   end
 
   test "a feature no check covers says so" do
-    get "/features/touch-id"
+    get "/features/neural-engine"
     assert_response :success
     assert_select ".card", /no check covers it/
     assert_select "tr#chip-m1 td.expected-none"
+  end
+
+  test "Touch ID lists its readiness and human unlock checks" do
+    get "/features/touch-id"
+    assert_response :success
+    assert_select ".card", /touch-id.ready, touch-id.unlock/
+    assert_select ".card", /No report has tested this yet/
   end
 
   test "an unknown feature is not found" do
@@ -101,7 +108,7 @@ class PagesTest < ActionDispatch::IntegrationTest
     assert_equal [ second["id"], first["id"] ].map { |id| "report-#{id}" }, css_select("tr.report-row").map { |row| row["id"] }
     assert_select "tr#report-#{second["id"]} td", "converged 4.0.0"
     # hardware.drivers and hardware.probe-errors fail where the catalogue expects it: not yet supported, not failures
-    assert_select "tr#report-#{second["id"]} td", /37 pass 2 fail 2 gap 29 skip/
+    assert_select "tr#report-#{second["id"]} td", /37 pass 2 fail 2 gap 32 skip/
     assert_select "tr#report-#{second["id"]} td.build-cell[data-build=?]", "99ace40.361571887310001"
     assert_select "tr#report-#{first["id"]} td.build-cell a[href=?]", "/reports?build=aae2586"
   end
@@ -113,7 +120,10 @@ class PagesTest < ActionDispatch::IntegrationTest
     assert_select ".terminal .terminal-bar", /omarchy-m-test/
     assert_select ".terminal .badge-community", "community report"
     # One title per check-id prefix, plus the hardware inventory.
-    assert_select "h2.section-title", %w[system boot packages setup hardware gpu video display audio network sleep input camera ports power cpu benchmark].size + 1
+    assert_select "h2.section-title", %w[system boot packages setup hardware gpu video display audio network sleep input sep touch-id camera ports power cpu benchmark].size + 1
+    assert_select "li#check-sep\\.attach .status.status-skip", "SKIP"
+    assert_select "li#check-touch-id\\.ready .status.status-skip", "SKIP"
+    assert_select "li#check-touch-id\\.unlock .status.status-skip", "SKIP"
     assert_select "dd", "converged 4.0.0"
     assert_select "dd", "omarchy, limine, encryption on"
     assert_select "li#check-setup\\.first-boot-hardware .status.status-fail", "FAIL"

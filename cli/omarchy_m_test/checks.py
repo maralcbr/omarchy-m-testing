@@ -40,6 +40,7 @@ ORDER = (
     "sleep.lid-suspend", "sleep.clamshell", "sleep.wifi-after-resume", "sleep.thunderbolt-after-resume",
     "input.ambient-light", "input.auto-keyboard-light", "input.keyboard-light-follows-room",
     "input.function-keys", "input.trackpad-gestures",
+    "sep.attach", "touch-id.ready", "touch-id.unlock",
     "camera.isp", "camera.frames", "camera.image",
     "ports.usb-c", "ports.thunderbolt", "ports.external-displays", "ports.devices-work", "ports.external-display-picture",
     "power.battery", "power.charge-limit", "power.charge-limit-kept", "power.idle-draw", "power.sleep-drain",

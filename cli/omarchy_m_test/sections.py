@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from typing import Callable
 
-from . import benchmarks, camera, checks, ports, power, sleep, video
+from . import benchmarks, camera, checks, ports, power, sleep, touchid, video
 from .host import TimedOut
 from .session import Context, Section
 
@@ -73,6 +73,8 @@ APPLE: tuple[Section, ...] = (
         "input.ambient-light", "input.auto-keyboard-light", "input.keyboard-light-follows-room",
         "input.function-keys", "input.trackpad-gestures",
     ), checks.input_devices, ("input.keyboard-light-follows-room", "input.function-keys", "input.trackpad-gestures")),
+    _section("touch-id", "Touch ID", "Passive SEP firmware provenance and sensor readiness; at this Mac, whether an existing fingerprint unlock worked this boot.",
+             touchid.CHECK_IDS, touchid.run, (touchid.UNLOCK,)),
     _section("camera", "Camera", "The camera's image processor and a few frames from it; then (at the Mac) you look at its picture.",
              camera.CHECK_IDS, camera.run, (camera.IMAGE,)),
     _section("ports", "Ports", "USB-C ports, Thunderbolt and USB4 links and displays on USB-C: plug in what you have; then you say whether they work.",
