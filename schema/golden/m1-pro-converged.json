@@ -5,7 +5,7 @@
     "version": "0.1.13"
   },
   "consent_version": 6,
-  "catalogue_version": 14,
+  "catalogue_version": 15,
   "machine": {
     "model": "Apple MacBook Pro (14-inch, M1 Pro, 2021)",
     "board": "j314s",

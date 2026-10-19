@@ -17,6 +17,7 @@ import unittest
 
 from omarchy_m_test import inventory
 from omarchy_m_test.app import main
+from omarchy_m_test.catalogue import parse
 from omarchy_m_test.inventory import DEVICES, KERNEL_CONFIG, KERNEL_LOG, NODE_PROPERTIES
 from omarchy_m_test.recording import ENDED, INTERRUPT, RecordedHost
 from tests.desktop import CHECKPOINT, SECTIONS, UNANSWERED, host as desktop_host, with_home, with_section_commands
@@ -237,6 +238,21 @@ class GapMapTest(unittest.TestCase):
 
         report = json.loads(mac.written[REPORT_FILE])
         self.assertEqual(unknown_hardware(report), [("apple,t6020-avd", 1)])
+
+    def test_the_macbook_neos_own_hardware_is_known(self):
+        # Compatibles a MacBook Neo's device tree carries that no other Mac's does.
+        with open(CATALOGUE, encoding="utf-8") as f:
+            catalogue = parse(f.read())
+        neo = {
+            "apple,j700-pmu-rtc": "rtc",
+            "apple,mesa-fingerprint": "touch-id",
+            "apple,sn201202x": "usb-pd",
+            "apple,t8140-ave": "video-encoder",
+            "maxim,max98360a": "speakers",
+        }
+        for compatible, feature in neo.items():
+            self.assertEqual(catalogue.feature_for_hardware([compatible])["id"], feature, compatible)
+        self.assertEqual(catalogue.feature_for_hardware(["apple,t8103-pmu"])["id"], "pmu")  # the RTC pattern leaves the PMU alone
 
     def test_a_driver_bound_everywhere_leaves_nothing_unclaimed(self):
         def bind_all(stdout: str) -> str:

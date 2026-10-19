@@ -1,5 +1,5 @@
 {
-  "catalogue_version": 14,
+  "catalogue_version": 15,
   "description": "What omarchy-m-test expects of each feature, per chip generation, in three layers: Asahi hardware features, Aurora additions and Omarchy integration. Results are classified against Aurora's expected state first, then Asahi's. Edited by pull request; bump catalogue_version on every change.",
   "sources": {
     "asahi": {
@@ -117,6 +117,7 @@
   "hardware": {
     "apple,agx-*": "gpu",
     "apple,t*-avd": "video-decoder",
+    "apple,t*-ave": "video-encoder",
     "apple,t*-prores": "prores-codec",
     "apple,t*-ane": "neural-engine",
     "apple,isp": "isp-camera",
@@ -125,6 +126,7 @@
     "apple,aop-las": "aop",
     "apple,aop-audio": "microphones",
     "apple,sep": "sep",
+    "apple,mesa-fingerprint": "touch-id",
     "apple,dcp": "dcp",
     "apple,dcpext": "dcp",
     "apple,display-subsystem": "dcp",
@@ -140,10 +142,12 @@
     "apple,t8103-atcphy": "usb3-tb-ports",
     "apple,t8103-dwc3": "usb3-tb-ports",
     "apple,cd321x": "usb-pd",
+    "apple,sn201202x": "usb-pd",
     "apple,mca": "mca",
     "apple,admac": "mca",
     "apple,macaudio": "speakers",
     "ti,tas2764": "speakers",
+    "maxim,max98360a": "speakers",
     "cirrus,cs42l84": "headphone-jack",
     "apple,smc": "smc",
     "apple,smc-*": "smc",
@@ -162,6 +166,7 @@
     "apple,cluster-cpufreq": "cpufreq",
     "apple,t*-cluster-cpufreq": "cpufreq",
     "apple,*-pmu": "pmu",
+    "apple,*-pmu-rtc": "rtc",
     "apple,dockchannel-hid": "keyboard",
     "apple,spi-hid-transport": "keyboard",
     "apple,s5l-fpwm": "kb-backlight",

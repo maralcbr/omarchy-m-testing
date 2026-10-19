@@ -42,7 +42,20 @@ STACK_PACKAGES = (
 BOOT_PACKAGES = ("linux-aurora", "linux-asahi", "m1n1", "m1n1-aurora", "uboot-asahi", "limine")
 # What Omarchy's hardware setup installs for the GPU and the speakers.
 HARDWARE_PACKAGES = ("mesa", "vulkan-asahi", "asahi-audio", "speakersafetyd", "alsa-ucm-conf-asahi")
+# Aurora's builds that stand in for a hardware package, as a MacBook Neo image
+# installs them (omacom/omarchy-mac-installer's build-mac-image, qualified()).
+AURORA_REPLACEMENTS = {
+    "mesa": "mesa-aurora",
+    "vulkan-asahi": "vulkan-aurora",
+    "asahi-audio": "aurora-audio",
+    "alsa-ucm-conf-asahi": "alsa-ucm-conf-aurora",
+}
 PACKAGES = STACK_PACKAGES + BOOT_PACKAGES + HARDWARE_PACKAGES
+# pacman -Q answers a stock name with the Aurora build that provides it (aura
+# for m1n1-aurora, uboot-aurora for uboot-asahi, mesa-aurora for mesa), so the
+# query below stays as it is and those names are kept too.
+PROVIDERS = ("aura", "uboot-aurora", *AURORA_REPLACEMENTS.values())
+REPORTED = PACKAGES + PROVIDERS
 PACKAGE_QUERY = ["pacman", "-Q", *PACKAGES]
 OMARCHY_VERSION = ["omarchy-version"]
 ROOT_SOURCE = ["findmnt", "--noheadings", "--output", "SOURCE", "/"]
@@ -85,7 +98,7 @@ _DISTRO = re.compile(r"[a-z0-9][a-z0-9._-]{0,39}")
 class System:
     stack: str
     distro: str
-    packages: dict[str, str]  # installed package -> version, in PACKAGES order
+    packages: dict[str, str]  # installed package -> version, in REPORTED order
     has_pacman: bool
     candidate_set: str | None
     image: dict[str, str]  # allowlisted keys of the image's target record; empty without one
@@ -170,9 +183,9 @@ def detect(host: Host) -> System:
     installed = {}
     for line in query.stdout.splitlines() if has_pacman else []:
         parts = line.split()
-        if len(parts) == 2 and parts[0] in PACKAGES:
+        if len(parts) == 2 and parts[0] in REPORTED:
             installed[parts[0]] = parts[1]
-    packages = {name: installed[name] for name in PACKAGES if name in installed}
+    packages = {name: installed[name] for name in REPORTED if name in installed}
 
     if "omarchy-mac" in packages or "omarchy" in packages:
         stack = "converged"

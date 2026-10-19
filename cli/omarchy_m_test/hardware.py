@@ -8,7 +8,7 @@ from __future__ import annotations
 import re
 
 from .host import Host
-from .system import HARDWARE_PACKAGES, System
+from .system import AURORA_REPLACEMENTS, HARDWARE_PACKAGES, System
 
 FIRST_BOOT_JOURNAL = ["journalctl", "--unit=omarchy-provision-hardware.service", "--output=short-iso", "--no-pager"]
 # Converged images: omarchy-provision-hardware.service is disabled by design and omarchy-mac-first-boot runs
@@ -126,11 +126,25 @@ def _mac_first_boot(host: Host) -> dict | None:
     return _result(check, "pass", [*evidence, *said, done[-1], f"nothing left queued ({IMAGE_QUEUE} is gone)"])
 
 
+def _installed_as(system: System, name: str) -> str | None:
+    """The installed package standing for name: itself, or the Aurora build that replaces it."""
+    for candidate in (name, AURORA_REPLACEMENTS.get(name)):
+        if candidate in system.packages:
+            return candidate
+    return None
+
+
 def hardware_packages(system: System) -> dict:
     if not system.has_pacman:
         return _result("packages.hardware", "skip", ["pacman isn't available"])
-    missing = [name for name in HARDWARE_PACKAGES if name not in system.packages]
-    installed = ", ".join(f"{name} {system.packages[name]}" for name in HARDWARE_PACKAGES if name in system.packages)
+    missing, present = [], []
+    for name in HARDWARE_PACKAGES:
+        found = _installed_as(system, name)
+        if found:
+            present.append(found)
+        else:
+            missing.append(name)
+    installed = ", ".join(f"{name} {system.packages[name]}" for name in present)
     if missing:
         return _result("packages.hardware", "fail", [f"not installed: {', '.join(missing)}"] + ([f"installed: {installed}"] if installed else []))
     return _result("packages.hardware", "pass", [f"installed: {installed}"])
@@ -173,7 +187,7 @@ def gpu_vulkan(host: Host, system: System) -> dict:
     asahi = [name for name in icds if name.startswith("asahi_icd")]
     if not asahi:
         evidence = ["no Asahi Vulkan driver in /usr/share/vulkan/icd.d" + (f" (only {', '.join(icds)})" if icds else "")]
-        if system.has_pacman and "vulkan-asahi" not in system.packages:
+        if system.has_pacman and not _installed_as(system, "vulkan-asahi"):
             evidence.append("vulkan-asahi is not installed")
         return _result("gpu.vulkan", "fail", evidence)
     info = host.run(VULKANINFO)

@@ -173,6 +173,42 @@ class MissingPackagesTest(unittest.TestCase):
         self.assertNotIn({"name": "vulkan-asahi", "version": "1:26.2.3-1"}, report["system"]["packages"])
         self.assertEqual(found["gpu.driver"]["status"], "pass")  # the kernel driver is there regardless
 
+    def test_aurora_builds_stand_in_for_the_hardware_and_boot_packages(self):
+        # A MacBook Neo image installs Aurora's builds in place of the stock ones.
+        aurora = {"mesa": "mesa-aurora", "vulkan-asahi": "vulkan-aurora", "asahi-audio": "aurora-audio",
+                  "alsa-ucm-conf-asahi": "alsa-ucm-conf-aurora", "m1n1-aurora": "aura", "uboot-asahi": "uboot-aurora"}
+        rec = copy.deepcopy(M2_MAX)
+        edit_lines(rec, PACKAGES, lambda lines: [
+            f"{aurora.get(name, name)} {version}" for name, version in (line.split() for line in lines)])
+
+        _, _, report = run(rec)
+
+        found = results(report)
+        self.assertEqual(errors(SCHEMA, report), [])
+        self.assertEqual(found["packages.hardware"]["status"], "pass")
+        self.assertEqual(found["packages.hardware"]["evidence"][0], "installed: mesa-aurora 1:26.2.3-1, vulkan-aurora 1:26.2.3-1, "
+                         "aurora-audio 4.1-1, speakersafetyd 2.0.1-1, alsa-ucm-conf-aurora 10-1")
+        names = {package["name"] for package in report["system"]["packages"]}
+        self.assertLessEqual({"aura", "uboot-aurora", "mesa-aurora", "vulkan-aurora"}, names)
+
+    def test_without_its_driver_file_vulkan_aurora_is_not_called_missing(self):
+        rec = m2_before_the_rerun()
+        edit_lines(rec, PACKAGES, lambda lines: [*lines, "vulkan-aurora 1:26.3.0-1"])
+
+        _, _, report = run(rec)
+
+        found = results(report)
+        self.assertEqual(found["gpu.vulkan"]["status"], "fail")
+        self.assertNotIn("vulkan-asahi is not installed", found["gpu.vulkan"]["evidence"])
+
+    def test_a_package_missing_in_both_builds_names_the_stock_one(self):
+        rec = copy.deepcopy(M2_MAX)
+        edit_lines(rec, PACKAGES, lambda lines: [line for line in lines if not line.startswith("mesa ")])
+
+        _, _, report = run(rec)
+
+        self.assertEqual(results(report)["packages.hardware"]["evidence"][0], "not installed: mesa")
+
 
 class RootChecksTest(unittest.TestCase):
     def test_without_passwordless_sudo_root_checks_are_skipped_not_failed(self):
