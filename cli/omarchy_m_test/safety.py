@@ -26,7 +26,7 @@ Refused, after unwrapping sudo, env, timeout and similar launchers (and in
     a path under PROTECTED_PATHS;
   - package changes that would rewrite the kernel or boot files: pacman
     -U, system upgrades (-Sy, -Su), and installing or removing a package
-    that is_boot_package() names (a kernel, firmware, m1n1, boot loaders,
+    that is_boot_package() names (a kernel, firmware, m1n1 or aura, boot loaders,
     initramfs tools: their hooks rewrite /boot).
 
 Writes are refused under PROTECTED_PATHS, to /proc/sysrq-trigger, /sys/power's sleep files and to
@@ -57,7 +57,7 @@ WRITABLE_DEVICES = ("/dev/stdout", "/dev/stderr", "/dev/null", "/dev/tty")
 # Package names whose install or removal rewrites the kernel, initramfs or boot loader.
 BOOT_PACKAGE_PATTERNS = (
     "linux", "linux-*", "*-dkms", "*firmware*", "mkinitcpio*", "dracut*", "booster", "systemd-ukify",
-    "m1n1*", "uboot*", "u-boot*", "limine*", "grub*", "efibootmgr", "asahi-*boot*", "omarchy-mac-boot",
+    "m1n1*", "aura", "uboot*", "u-boot*", "limine*", "grub*", "efibootmgr", "asahi-*boot*", "omarchy-mac-boot",
     "cryptsetup", "systemd", "systemd-libs", "lvm2", "btrfs-progs", "snapper", "snap-pac",
 )
 

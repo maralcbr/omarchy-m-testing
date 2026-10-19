@@ -445,7 +445,7 @@ class TemporaryPackagesTest(unittest.TestCase):
         self.assertIn("would upgrade installed packages (mesa)", check(host, "test.benchmark")["evidence"][-1])
 
     def test_kernel_firmware_and_boot_packages_are_never_installed(self):
-        for names in (("linux-aurora",), ("bootpull",)):  # bootpull brings in linux-firmware
+        for names in (("linux-aurora",), ("aura",), ("bootpull",)):  # aura is the MacBook Neo's m1n1; bootpull brings in linux-firmware
             with self.subTest(names=names):
                 section = Section("bench", "Bench", "A GPU benchmark.", ("test.benchmark",), lambda ctx: _bench(ctx, names))
                 host = self.run_bench([], sections=(section,))
@@ -594,7 +594,7 @@ FORBIDDEN_SECTION = Section("forbidden", "Forbidden", "Tries what the tool must 
 
 _POWER = {"reboot", "poweroff", "shutdown", "halt", "kexec", "hibernate", "isolate"}
 _ENCRYPTION_OR_BOOT = ("cryptsetup", "cryptenroll", "mkinitcpio", "dracut", "limine", "grub", "efibootmgr", "bootctl", "kernel-install", "mkfs")
-_BOOT_PACKAGES = ("linux", "m1n1", "limine", "uboot", "mkinitcpio")
+_BOOT_PACKAGES = ("linux", "m1n1", "aura", "limine", "uboot", "mkinitcpio")
 
 
 def touches_what_it_never_may(argv: list[str]) -> bool:
