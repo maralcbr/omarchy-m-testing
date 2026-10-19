@@ -57,7 +57,7 @@ WRITABLE_DEVICES = ("/dev/stdout", "/dev/stderr", "/dev/null", "/dev/tty")
 # Package names whose install or removal rewrites the kernel, initramfs or boot loader.
 BOOT_PACKAGE_PATTERNS = (
     "linux", "linux-*", "*-dkms", "*firmware*", "mkinitcpio*", "dracut*", "booster", "systemd-ukify",
-    "m1n1*", "aura", "uboot*", "u-boot*", "limine*", "grub*", "efibootmgr", "asahi-*boot*", "omarchy-mac-boot",
+    "m1n1*", "aura*", "uboot*", "u-boot*", "limine*", "grub*", "efibootmgr", "asahi-*boot*", "omarchy-mac-boot",
     "cryptsetup", "systemd", "systemd-libs", "lvm2", "btrfs-progs", "snapper", "snap-pac",
 )
 

@@ -445,7 +445,7 @@ class TemporaryPackagesTest(unittest.TestCase):
         self.assertIn("would upgrade installed packages (mesa)", check(host, "test.benchmark")["evidence"][-1])
 
     def test_kernel_firmware_and_boot_packages_are_never_installed(self):
-        for names in (("linux-aurora",), ("aura",), ("bootpull",)):  # aura is the MacBook Neo's m1n1; bootpull brings in linux-firmware
+        for names in (("linux-aurora",), ("aura",), ("aura-git",), ("bootpull",)):  # aura is the MacBook Neo's m1n1; bootpull brings in linux-firmware
             with self.subTest(names=names):
                 section = Section("bench", "Bench", "A GPU benchmark.", ("test.benchmark",), lambda ctx: _bench(ctx, names))
                 host = self.run_bench([], sections=(section,))
