@@ -45,6 +45,7 @@ ORDER = (
     "ports.usb-c", "ports.thunderbolt", "ports.external-displays", "ports.devices-work", "ports.external-display-picture",
     "power.battery", "power.charge-limit", "power.charge-limit-kept", "power.idle-draw", "power.sleep-drain",
     "cpu.frequency-scaling",
+    "gpu.mlx", "ane.enabled",
 )
 
 

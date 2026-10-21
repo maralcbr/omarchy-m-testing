@@ -20,6 +20,8 @@ Operations:
                              symlink); FileNotFoundError if absent
   monitor_intent(outputs)   read monitor rules locally; only policy flags leave the host,
                              never user configuration text or monitor description selectors
+  compute_snapshot()         GPU/MLX and Neural Engine state (sysfs, device-tree names, module
+                             parameters, a tiny MLX op), with only allowlisted facts retained
   touchid_snapshot()         passive SEP state and firmware provenance, with only
                              allowlisted facts and kernel event categories retained
   prompt(message)            ask the human; returns the typed line; EOFError on end of input
@@ -131,6 +133,7 @@ READ_STUCK_LIMIT = 8
 BUNDLED_PREFIX = "bundled:"
 MONITOR_INTENT = ["read:monitor-intent"]  # the derived policy flags in a recording
 TOUCHID_SNAPSHOT = ["read:touch-id"]
+COMPUTE_SNAPSHOT = ["read:compute"]
 
 
 def bundled_argv(name: str, args: Sequence[str] = ()) -> list[str]:
@@ -215,6 +218,8 @@ class Host(Protocol):
     def monitor_intent(self, outputs: list[dict]) -> dict[str, dict]: ...
 
     def touchid_snapshot(self) -> dict: ...
+
+    def compute_snapshot(self) -> dict: ...
 
     def prompt(self, message: str) -> str: ...
 
@@ -318,6 +323,10 @@ class RealHost:
     def touchid_snapshot(self) -> dict:
         from . import touchid
         return touchid.collect(self)
+
+    def compute_snapshot(self) -> dict:
+        from . import compute
+        return compute.collect(self)
 
     def __init__(self) -> None:
         self._shims: str | None = None

@@ -5,7 +5,7 @@
     "version": "0.1.13"
   },
   "consent_version": 6,
-  "catalogue_version": 14,
+  "catalogue_version": 15,
   "machine": {
     "model": "Apple MacBook Pro (16-inch, M2 Max, 2023)",
     "board": "j416c",
@@ -1990,6 +1990,40 @@
         "layer": "asahi",
         "expected": {
           "asahi": "upstream",
+          "aurora": "asahi"
+        }
+      }
+    },
+    {
+      "id": "gpu.mlx",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "the Apple device tree couldn't be read, so nothing was collected"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "gpu",
+        "layer": "asahi",
+        "expected": {
+          "asahi": "linux-asahi",
+          "aurora": "asahi"
+        }
+      }
+    },
+    {
+      "id": "ane.enabled",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "the Apple device tree couldn't be read, so nothing was collected"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "neural-engine",
+        "layer": "asahi",
+        "expected": {
+          "asahi": "out-of-tree",
           "aurora": "asahi"
         }
       }

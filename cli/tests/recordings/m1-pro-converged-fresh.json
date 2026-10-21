@@ -555,6 +555,14 @@
     },
     {
       "argv": [
+        "read:compute"
+      ],
+      "returncode": 0,
+      "stdout": "{\"apple\": null}",
+      "stderr": ""
+    },
+    {
+      "argv": [
         "pacman",
         "-Q",
         "glmark2",
