@@ -5,7 +5,7 @@
     "version": "0.1.13"
   },
   "consent_version": 6,
-  "catalogue_version": 14,
+  "catalogue_version": 15,
   "machine": {
     "model": "Apple MacBook Pro (16-inch, M2 Max, 2023)",
     "board": "j416c",
@@ -1995,6 +1995,57 @@
       }
     },
     {
+      "id": "gpu.mlx",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "the Apple device tree couldn't be read, so nothing was collected"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "gpu",
+        "layer": "asahi",
+        "expected": {
+          "asahi": "linux-asahi",
+          "aurora": "asahi"
+        }
+      }
+    },
+    {
+      "id": "ane.enabled",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "the Apple device tree couldn't be read, so nothing was collected"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "neural-engine",
+        "layer": "asahi",
+        "expected": {
+          "asahi": "out-of-tree",
+          "aurora": "asahi"
+        }
+      }
+    },
+    {
+      "id": "ane.works",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "the Apple device tree couldn't be read, so nothing was collected"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "neural-engine",
+        "layer": "asahi",
+        "expected": {
+          "asahi": "out-of-tree",
+          "aurora": "asahi"
+        }
+      }
+    },
+    {
       "id": "benchmark.opengl",
       "kind": "automatic",
       "status": "skip",
@@ -2069,6 +2120,6 @@
   ],
   "signature": {
     "public_key": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHWZLEbyxAyRBj1yRyeHbRhQvVhcrUqpMaNH7ivMU1DW",
-    "signature": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgdZksRvLEDJEGPXJHJ4dtGFC9WF\nytSqkxo0fuK8xTUNYAAAAVb21hcmNoeS1tLXRlc3QtcmVwb3J0AAAAAAAAAAZzaGE1MTIA\nAABTAAAAC3NzaC1lZDI1NTE5AAAAQPerLjtBS7aNSFMCHsR89VxQnMd6ctEvknMJCzna/1\n+G1uTpC5IqYh4LJVjbzFoUvlqYXlYmm1HztwHJjCvjQwI=\n-----END SSH SIGNATURE-----"
+    "signature": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgdZksRvLEDJEGPXJHJ4dtGFC9WF\nytSqkxo0fuK8xTUNYAAAAVb21hcmNoeS1tLXRlc3QtcmVwb3J0AAAAAAAAAAZzaGE1MTIA\nAABTAAAAC3NzaC1lZDI1NTE5AAAAQKusM9+UabBoyoKzo0EkDBirJk/USA1k3AgnH+wRC7\nF3Ku9TittS4X/voQ7URbPKQDhc/8bjq4YPK4fIlMYaVAQ=\n-----END SSH SIGNATURE-----"
   }
 }

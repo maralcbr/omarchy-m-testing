@@ -1,0 +1,172 @@
+{
+  "ane": {
+    "class_accel": [
+      "accel0"
+    ],
+    "config": [
+      "# CONFIG_DRM_ACCEL_ARM_ETHOSU is not set",
+      "CONFIG_APPLE_DART=y",
+      "CONFIG_APPLE_RTKIT=y",
+      "CONFIG_APPLE_RTKIT_HELPER=y",
+      "CONFIG_APPLE_SART=y",
+      "CONFIG_DRM_ACCEL=y",
+      "CONFIG_DRM_ACCEL_ANE=m",
+      "CONFIG_RUST_APPLE_RTKIT=y"
+    ],
+    "dev_accel": [
+      "accel0"
+    ],
+    "devices": [
+      {
+        "bound": true,
+        "driver": "ane_t6021",
+        "iommu_group": "0",
+        "name": "ane"
+      }
+    ],
+    "firmware": [
+      "apple/ane",
+      "apple/ane/t602x_ane0_fw_selene_rc4x.macho"
+    ],
+    "iommu": {
+      "apple_dart": 32,
+      "devices": 32
+    },
+    "log": [
+      "platform 284000000.ane: Adding to iommu group 0",
+      "ane_t6021 284000000.ane: LAB init resource[0x84] bit0=1: prevent nap",
+      "ane_t6021 284000000.ane: boot: module PINNED until reboot (started CPU; wedged-pin)",
+      "ane_t6021 284000000.ane: boot: run returned 0 (booted=1 fw_alive=1) \u2014 DONE observed \u2014 handshake complete; scratch_result=00000000ff7a0000 (raw device address; transport stays fenced until response val",
+      "ane_t6021 284000000.ane: BOOT-PHASE sequence returned 0000000000000000 (cpu_started=1 fw_alive=1 booted=1) CPU_STATUS=0x2c",
+      "ane_t6021 284000000.ane: channel table: VALIDATED (mismatch mask 0x0)",
+      "[drm] Initialized ane 2.0.0 for 284000000.ane on minor 0",
+      "ane_t6021 284000000.ane: loaded ane_t6021 (DRM major 2 minor 0; ABI 2; legacy_only=1 channel_table_valid=1 booted=1; state HELD; BO cap 12288 MiB)"
+    ],
+    "modules": [
+      {
+        "name": "ane_t6021",
+        "parameters": {
+          "bo_total_bytes": "2808348672",
+          "bo_total_max_mb": "12288",
+          "boot_prevent_nap": "Y",
+          "call_settle_us": "100",
+          "fw_alias_reserved": "N",
+          "fw_extra_ram": "2097152",
+          "fw_load": "Y",
+          "fw_perf_mode": "N",
+          "fw_start": "Y",
+          "fw_start_rtb_mode": "N",
+          "fw_start_table_mode": "2",
+          "hello_wait_ms": "0",
+          "legacy_only": "Y",
+          "legacy_query": "Y",
+          "poll_rx": "Y",
+          "scratch3_ack": "Y",
+          "start_app_eps": "Y",
+          "stats": "Y",
+          "trace_td": "N"
+        },
+        "state": "live"
+      }
+    ],
+    "modules_on_disk": [
+      "ane.ko",
+      "ane_t6021.ko"
+    ],
+    "nodes": [
+      {
+        "compatible": [],
+        "path": "/reserved-memory/ane-alias-iova",
+        "properties": [],
+        "status": null
+      },
+      {
+        "compatible": [
+          "apple,t6021-ane"
+        ],
+        "path": "/soc/ane",
+        "properties": [
+          "iommus",
+          "power-domains",
+          "mboxes",
+          "memory-region",
+          "resets",
+          "interrupts"
+        ],
+        "status": "okay"
+      }
+    ]
+  },
+  "apple": true,
+  "board": [
+    "apple,j414c",
+    "apple,t6021",
+    "apple,arm-platform"
+  ],
+  "gpu": {
+    "cards": 2,
+    "drivers": [
+      {
+        "compatible": [
+          "apple,agx-t6021",
+          "apple,agx-g14x",
+          "apple,agx-g14c",
+          "apple,agx-g14s"
+        ],
+        "driver": "asahi"
+      }
+    ],
+    "log": [
+      "asahi 406400000.gpu: Probing...",
+      "asahi 406400000.gpu: GPU ID registers: 0x6041100 0x60602 0x21040a 0x40404 0x1320311 0x400c1802",
+      "asahi 406400000.gpu: Core masks: [",
+      "asahi 406400000.gpu: GPU Information:",
+      "asahi 406400000.gpu:   Type: G14C",
+      "asahi 406400000.gpu: !!! Hwdata A match",
+      "asahi 406400000.gpu: !!! Hwdata B match",
+      "asahi 406400000.gpu: !!! Globals match",
+      "asahi 406400000.gpu: RTKit: Initializing (protocol version 12)",
+      "[drm] Initialized asahi 0.2.0 for 406400000.gpu on minor 1"
+    ],
+    "render_nodes": [
+      "renderD128"
+    ],
+    "vulkan": {
+      "devices": [
+        {
+          "apiVersion": "1.4.362",
+          "conformanceVersion": "1.4.0.0",
+          "deviceName": "Apple M2 Max (G14C B1)",
+          "deviceType": "PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU",
+          "driverID": "DRIVER_ID_MESA_HONEYKRISP",
+          "driverInfo": "Mesa 26.3.0-devel (git-a5b1797446)",
+          "driverName": "Honeykrisp"
+        }
+      ],
+      "instance": "1.4.363",
+      "state": "ok"
+    }
+  },
+  "kernel": "7.1.12-2-20261013.18-sep-ARCH",
+  "log_available": true,
+  "mlx": {
+    "device": "Device(gpu, 0)",
+    "info": {
+      "device_name": "Apple M2 Max (G14C B1)",
+      "driver": "Honeykrisp",
+      "driver_info": "Mesa 26.3.0-devel (git-a5b1797446)",
+      "gpu_cores": "38",
+      "marketing_name": "Apple M2 Max"
+    },
+    "result": 2097152.0,
+    "state": "ran",
+    "version": "0.32.4.dev202610181348+49e6b3c1"
+  },
+  "packages": {
+    "linux-aurora": "7.1.12.aurora2-20261013.18",
+    "m1n1-aurora": "1.6.1.aurora14-1",
+    "mesa": "1:26.2.4-1",
+    "uboot-asahi": "2026.07.asahi2-4",
+    "vulkan-tools": "1.4.363.0-1"
+  }
+}

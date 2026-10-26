@@ -1,5 +1,5 @@
 {
-  "catalogue_version": 14,
+  "catalogue_version": 15,
   "description": "What omarchy-m-test expects of each feature, per chip generation, in three layers: Asahi hardware features, Aurora additions and Omarchy integration. Results are classified against Aurora's expected state first, then Asahi's. Edited by pull request; bump catalogue_version on every change.",
   "sources": {
     "asahi": {
@@ -55,6 +55,9 @@
     "gpu.driver": "gpu",
     "gpu.vulkan": "gpu",
     "gpu.opengl": "gpu",
+    "gpu.mlx": "gpu",
+    "ane.enabled": "neural-engine",
+    "ane.works": "neural-engine",
     "video.h264-on-screen": "video-decoder",
     "video.hevc-on-screen": "video-decoder",
     "display.outputs": "main-display",
