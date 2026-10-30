@@ -42,7 +42,16 @@ STACK_PACKAGES = (
 BOOT_PACKAGES = ("linux-aurora", "linux-asahi", "m1n1", "m1n1-aurora", "uboot-asahi", "limine")
 # What Omarchy's hardware setup installs for the GPU and the speakers.
 HARDWARE_PACKAGES = ("mesa", "vulkan-asahi", "asahi-audio", "speakersafetyd", "alsa-ucm-conf-asahi")
+# Aurora images ship their own builds of four of them (mesa-aurora, vulkan-aurora, aurora-audio,
+# alsa-ucm-conf-aurora). Each provides the Asahi name, so pacman -Q answers that name with the Aurora package:
+# either name of an entry counts.
+HARDWARE_REQUIREMENTS = (
+    ("mesa", "mesa-aurora"), ("vulkan-asahi", "vulkan-aurora"), ("asahi-audio", "aurora-audio"), ("speakersafetyd",),
+    ("alsa-ucm-conf-asahi", "alsa-ucm-conf-aurora"),
+)
 PACKAGES = STACK_PACKAGES + BOOT_PACKAGES + HARDWARE_PACKAGES
+# The names pacman -Q can answer the query with.
+ANSWERED = PACKAGES + tuple(name for names in HARDWARE_REQUIREMENTS for name in names[1:])
 PACKAGE_QUERY = ["pacman", "-Q", *PACKAGES]
 OMARCHY_VERSION = ["omarchy-version"]
 ROOT_SOURCE = ["findmnt", "--noheadings", "--output", "SOURCE", "/"]
@@ -170,9 +179,9 @@ def detect(host: Host) -> System:
     installed = {}
     for line in query.stdout.splitlines() if has_pacman else []:
         parts = line.split()
-        if len(parts) == 2 and parts[0] in PACKAGES:
+        if len(parts) == 2 and parts[0] in ANSWERED:
             installed[parts[0]] = parts[1]
-    packages = {name: installed[name] for name in PACKAGES if name in installed}
+    packages = {name: installed[name] for name in ANSWERED if name in installed}
 
     if "omarchy-mac" in packages or "omarchy" in packages:
         stack = "converged"

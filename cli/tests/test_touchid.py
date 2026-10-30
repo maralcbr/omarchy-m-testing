@@ -189,11 +189,20 @@ class PassiveDiagnosticsTest(unittest.TestCase):
                 self.assertIsNone(found["diag"]["touchid"])
                 self.assertEqual(touchid.ready(found)["status"], "skip")
 
-    def test_future_abi_is_not_interpreted_as_readiness(self):
+    def test_abi_2_keeps_the_version_1_attributes(self):
+        # Version 2 only added sensor_attach and restore (sysfs-driver-apple-sep).
         mac = PassiveHost()
         mac.files[NODE + "/diag/abi"] = b"2\n"
         found = mac.touchid_snapshot()
-        self.assertEqual(found["diag"], {"abi": "2"})
+        self.assertEqual(found["diag"]["abi"], "2")
+        self.assertEqual(found["diag"]["attach"], "attached")
+        self.assertEqual(touchid.attachment(found)["status"], "pass")
+
+    def test_unversioned_abi_is_not_interpreted_as_readiness(self):
+        mac = PassiveHost()
+        mac.files[NODE + "/diag/abi"] = b"0\n"
+        found = mac.touchid_snapshot()
+        self.assertEqual(found["diag"], {"abi": "0"})
         self.assertEqual(touchid.ready(found)["status"], "skip")
 
     def test_old_kernel_keeps_passive_evidence_without_inventing_pass(self):

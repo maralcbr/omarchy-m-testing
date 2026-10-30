@@ -31,7 +31,10 @@ of their own and are never unclaimed. Nor are the nodes no driver ever binds
 by design: the CPU frequency clusters (apple-soc-cpufreq drives them through
 the CPUs' performance domains; the CPU section checks it works), the
 architected timer (the kernel core sets it up) and U-Boot's SMBIOS node
-(the boot loader's, nothing for Linux).
+(the boot loader's, nothing for Linux). Nor is a node whose driver the
+running kernel builds as a module that loads only on request: the SEP
+(apple-sep has no module alias; Omarchy loads it when Touch ID is turned on,
+and the Touch ID section checks it then).
 
 The report's inventory block carries only node types, statuses, driver-bound
 states and counts, never a property value or a node's path; kernel-log lines
@@ -43,7 +46,7 @@ from __future__ import annotations
 import json
 import re
 from collections import Counter
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from . import bundled
 from .catalogue import Catalogue
@@ -64,6 +67,11 @@ SKIPPED_SUBTREES = ("/cpus", "/chosen", "/reserved-memory")
 CONTAINERS = frozenset({"simple-bus", "simple-mfd", "simple-pm-bus", "syscon"})
 # Nodes whose device no driver binds by design (seen unbound on the M1 Pro, 2026-09-27).
 UNBOUND_BY_DESIGN = frozenset({"apple,cluster-cpufreq", "arm,armv8-timer", "u-boot,sysinfo-smbios"})
+# Apple's CPU frequency clusters by SoC: newer device trees name only the SoC's own cluster compatible (the
+# MacBook Neo's t8140) or an older SoC's, without apple,cluster-cpufreq.
+UNBOUND_BY_DESIGN_PATTERN = re.compile(r"apple,t[0-9]{4}-cluster-cpufreq")
+# Compatible -> the kernel option whose module drives it but loads only on request (no module alias).
+OPT_IN_DRIVERS = {"apple,sep": "CONFIG_APPLE_SEP"}
 
 LOG_LINES_PER_CHECK = 20
 EVIDENCE_DIFFERENCES = 40
@@ -93,6 +101,7 @@ class Node:
     compatibles: tuple[str, ...]
     status: str  # okay, disabled, reserved, fail or other
     driver: str  # bound, unbound or none
+    opt_in: bool = False  # its driver is a module the running kernel loads only on request (OPT_IN_DRIVERS)
 
     @property
     def type(self) -> str:
@@ -104,11 +113,13 @@ class Node:
 
     @property
     def unclaimed(self) -> bool:
-        return self.status == "okay" and self.driver == "unbound" and not self.container and not self.unbound_by_design
+        return (self.status == "okay" and self.driver == "unbound" and not self.container and not self.unbound_by_design
+                and not self.opt_in)
 
     @property
     def unbound_by_design(self) -> bool:
-        return bool(UNBOUND_BY_DESIGN.intersection(self.compatibles))
+        return bool(UNBOUND_BY_DESIGN.intersection(self.compatibles)) or any(
+            UNBOUND_BY_DESIGN_PATTERN.fullmatch(compatible) for compatible in self.compatibles)
 
 
 @dataclass
@@ -181,6 +192,8 @@ class Inventory:
         containers = f"{states['container']} bus or register containers with no driver of their own, " if states["container"] else ""
         if states["by-design"]:
             containers += f"{states['by-design']} that no driver binds by design (CPU frequency clusters, timer, SMBIOS), "
+        if states["opt-in"]:
+            containers += f"{states['opt-in']} whose driver loads only on request (the SEP, when Touch ID is turned on), "
         evidence = [
             f"{len(self.nodes)} hardware nodes: {states['bound']} claimed by a driver, "
             f"{states['none']} with no device of their own, {containers}{states['disabled']} disabled, {unclaimed} unclaimed"
@@ -255,9 +268,10 @@ def take(host: Host, catalogue: Catalogue, machine: Machine) -> Inventory:
     """Map this Mac's hardware."""
     found = Inventory()
     found.nodes, found.missing, found.bound_devices = _nodes(host)
-    found.classify(catalogue, machine)
     found.log = _kernel_log(host)
     found.config, found.config_missing = _kernel_config(host)
+    found.nodes = _mark_opt_in(found.nodes, found.config)
+    found.classify(catalogue, machine)
     if found.config is not None:
         found.reference, problem = _reference()
         if found.reference is None:
@@ -360,4 +374,15 @@ def _state(node: Node) -> str:
         return "container"
     if node.driver == "unbound" and node.unbound_by_design:
         return "by-design"
+    if node.driver == "unbound" and node.opt_in:
+        return "opt-in"
     return node.driver
+
+
+def _mark_opt_in(nodes: list[Node] | None, config: dict[str, str] | None) -> list[Node] | None:
+    """Mark the nodes whose driver the running kernel builds as a module that loads only on request."""
+    if nodes is None or config is None:
+        return nodes
+    return [replace(node, opt_in=True)
+            if any(config.get(OPT_IN_DRIVERS[c]) == "m" for c in node.compatibles if c in OPT_IN_DRIVERS) else node
+            for node in nodes]

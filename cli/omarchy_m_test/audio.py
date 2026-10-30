@@ -9,9 +9,11 @@ input (a USB or Bluetooth headset) skips it.
 Speaker tone (human): nothing plays until speaker protection is confirmed
 active, all three of:
 
-  - speakersafetyd is active (systemctl is-active speakersafetyd);
+  - speakersafetyd is active (systemctl is-active speakersafetyd), or on
+    the MacBook Neo speakerguardd, whose feed-forward model replaces it
+    there (speakersafetyd's J700 drop-in skips it);
   - this boot's kernel log says "Speaker volumes unlocked", which
-    snd-soc-macaudio logs once speakersafetyd has lifted the amps' -100 dB
+    snd-soc-macaudio logs once the daemon has lifted the amps' -100 dB
     lock (read as the user, else through sudo -n);
   - the default output is asahi-audio's DSP filter sink for the speakers
     (audio_effect.<board>-convolver), so the tone goes through the speaker
@@ -39,6 +41,7 @@ from .inventory import KERNEL_LOG
 from .session import Context
 
 SAFETY_UNIT = ["systemctl", "is-active", "speakersafetyd"]
+GUARD_UNIT = ["systemctl", "is-active", "speakerguardd"]
 AMPS_UNLOCKED = "Speaker volumes unlocked"
 DEFAULT_SINK = ["pactl", "get-default-sink"]
 DEFAULT_SOURCE = ["pactl", "get-default-source"]
@@ -145,7 +148,11 @@ def protection(ctx: Context) -> tuple[str | None, list[str], str | None]:
     active = unit.returncode == 0 and unit.stdout.strip() == "active"
     evidence.append(f"speakersafetyd: {unit.stdout.strip() or _why(unit)}")
     if not active:
-        return "speaker protection isn't active: speakersafetyd isn't running", evidence, None
+        guard = ctx.host.run(GUARD_UNIT)
+        active = guard.returncode == 0 and guard.stdout.strip() == "active"
+        evidence.append(f"speakerguardd: {guard.stdout.strip() or _why(guard)}")
+    if not active:
+        return "speaker protection isn't active: neither speakersafetyd nor speakerguardd is running", evidence, None
 
     unlocked = AMPS_UNLOCKED in ctx.host.run(KERNEL_LOG).stdout or AMPS_UNLOCKED in ctx.host.run(["sudo", "-n", *KERNEL_LOG]).stdout
     if not unlocked:

@@ -159,15 +159,26 @@ class GoldenRunsTest(unittest.TestCase):
 
 
 class MissingPackagesTest(unittest.TestCase):
+    def test_aurora_mesa_and_vulkan_builds_count(self):
+        """Aurora images ship mesa-aurora, vulkan-aurora, aurora-audio and alsa-ucm-conf-aurora in place of the Asahi builds."""
+        from types import SimpleNamespace
+        from omarchy_m_test import hardware
+        system = SimpleNamespace(has_pacman=True, packages={
+            "mesa-aurora": "1:26.3.0", "vulkan-aurora": "1:26.3.0", "aurora-audio": "4.1.aurora3-2",
+            "speakersafetyd": "2.0.1-1", "alsa-ucm-conf-aurora": "10.aurora2-1"})
+        result = hardware.hardware_packages(system)
+        self.assertEqual(result["status"], "pass")
+        self.assertIn("mesa-aurora 1:26.3.0", result["evidence"][0])
+
     def test_before_the_rerun_the_missing_vulkan_driver_fails_three_checks(self):
         _, mac, report = run(m2_before_the_rerun())
 
         found = results(report)
         self.assertEqual(errors(SCHEMA, report), [])
         self.assertEqual(found["packages.hardware"]["status"], "fail")
-        self.assertEqual(found["packages.hardware"]["evidence"][0], "not installed: vulkan-asahi")
+        self.assertEqual(found["packages.hardware"]["evidence"][0], "not installed: vulkan-asahi or vulkan-aurora")
         self.assertEqual(found["gpu.vulkan"]["status"], "fail")
-        self.assertIn("vulkan-asahi is not installed", found["gpu.vulkan"]["evidence"])
+        self.assertIn("neither vulkan-asahi nor vulkan-aurora is installed", found["gpu.vulkan"]["evidence"])
         self.assertEqual(found["gpu.vulkan"]["classification"]["outcome"], "fails")
         self.assertEqual(found["setup.first-boot-hardware"]["evidence"][-1], "no later run completed")
         self.assertNotIn({"name": "vulkan-asahi", "version": "1:26.2.3-1"}, report["system"]["packages"])

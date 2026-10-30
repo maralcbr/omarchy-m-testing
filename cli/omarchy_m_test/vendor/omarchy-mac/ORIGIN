@@ -1,11 +1,13 @@
 Vendored from omacom/omarchy-mac (https://github.com/omacom/omarchy-mac), MIT licence (LICENSE beside this file).
 
 commit: 1937418f520b82f94e95650e9cb86d7cb972c439 (branch quattro-upstream)
+apple-display-check.sh: b79bb9ae46d00ac5d287c7af62437d3cfd03ac86 (omacom/omarchy-mac fix/neo-display-subsystem-path, on quattro-upstream)
+mac-check: de53fe1e6184fb32605e813a5f7f816635e5b477 (omacom/omarchy-mac fix/neo-display-subsystem-path, on quattro-upstream)
 
 Files, unmodified, with their upstream paths and SHA-256:
-  d8f93e68a1d402823160a3c1daf270754335d6ff049e18e7e6ac5500920d0c1d  mac-check  (tools/hardware/mac-check)
+  7aff3da6503e2d6ba1bc398012484071a8032a84cf576767094901e96af5fd5b  mac-check  (tools/hardware/mac-check)
   4989b6f31fea00226eb748b3b809f4cdb49ccd0f8836b4a8e3a523d359eb0db8  apple-audio-check.sh  (test/manual/apple-audio-check.sh)
-  52306cf04030e5b0354d035658e4fdef86d99b4243296efab5493f490bebce87  apple-display-check.sh  (test/manual/apple-display-check.sh)
+  5d76f34eddd0b09e0cbcb734eb0cf59113f1f1d999f63eb1a191d9fca2eb8549  apple-display-check.sh  (test/manual/apple-display-check.sh)
 
 omarchy-m-test runs mac-check as is, apple-audio-check.sh with --no-sound and
 apple-display-check.sh with --read-only, and turns their PASS/FAIL/SKIP lines

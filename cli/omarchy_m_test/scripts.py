@@ -59,6 +59,8 @@ DISPLAY_CHECK = {
     "appledrm is showing the notch strip": "display.notch-strip",
     "the panel backlight is apple-panel-bl": "display.backlight",
     "ALS and keyboard LED are available": "input.ambient-light",
+    # Macs without a keyboard backlight (the MacBook Neo) report the sensor alone.
+    "the ambient light sensor reads lux": "input.ambient-light",
     "the ALS keyboard loop runs": "input.auto-keyboard-light",
 }
 
@@ -159,10 +161,14 @@ def _manual_check(host: Host, system: System, name: str, args: list[str], patter
             status = "PASS" if match.group(1) == "ok" else match.group(1)
             found.setdefault(match.group(2), []).append(_timed_out(status, raw, timeout))
     ran = (bool(found) or run.returncode in (0, 1)) and not run.timed_out
-    return [
-        _from_lines(check_id, found.get(description, []), f"{name} reported nothing for {description!r}" if ran else _why_not(name, run))
-        for description, check_id in mapping.items()
-    ]
+    # A check several descriptions map to gets one result from all their lines.
+    results = []
+    for check_id in dict.fromkeys(mapping.values()):
+        described = [description for description, mapped in mapping.items() if mapped == check_id]
+        lines = [line for description in described for line in found.get(description, [])]
+        nothing = f"{name} reported nothing for {described[0]!r}" if ran else _why_not(name, run)
+        results.append(_from_lines(check_id, lines, nothing))
+    return results
 
 
 def audio_check(host: Host, system: System) -> list[dict]:

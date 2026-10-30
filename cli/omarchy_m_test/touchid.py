@@ -42,6 +42,13 @@ UNLOCK_QUESTION = (
 )
 _VERSION = re.compile(r"(?:v?[0-9]|(?:mBoot|iBoot|m1n1)[- v])[A-Za-z0-9._+:/() -]{0,127}")
 _PROFILE = re.compile(r"T[0-9]{4}/J[0-9]{3}[A-Za-z]{0,2}")
+
+
+def _diag_supported(abi: str | None) -> bool:
+    """diag ABI 1 or later: each version only adds attributes and keeps the meaning of the
+    existing ones (omacom/linux-aurora Documentation/ABI/testing/sysfs-driver-apple-sep;
+    version 2 added sensor_attach and restore), so the attributes read here hold for all."""
+    return abi is not None and abi.isdigit() and int(abi) >= 1
 _SEP_LINE = re.compile(r"(?i)\b(?:apple[-_]sep|apple[-_]mesa)\b|\b[0-9a-f]+\.sep:|\bSEP platform profile:|\bTouch ID:")
 _ERROR = re.compile(r"\b(?:error|status|errno)[ :=]+(-?[0-9]{1,4})\b", re.I)
 LOG_EVENTS = (
@@ -133,7 +140,7 @@ def collect(host: Host) -> dict:
         diag = found["diag"]
         abi = _read(host, node + "/diag/abi")
         diag["abi"] = abi if abi and re.fullmatch(r"[0-9]{1,3}", abi) else None
-        if abi == "1":
+        if _diag_supported(abi):
             for attr, values in ENUMS.items():
                 value = _read(host, f"{node}/diag/{attr}")
                 diag[attr] = value if value in values else None
@@ -201,7 +208,7 @@ def attachment(found: dict) -> dict:
         reason = "no SEP platform device"
     elif found.get("node_status"):
         reason = "SEP node is disabled"
-    elif found.get("sep") is True and diag.get("abi") == "1":
+    elif found.get("sep") is True and _diag_supported(diag.get("abi")):
         if diag.get("attach") == "failed":
             status, reason = "fail", "SEP advertised no endpoints: attachment failed"
         elif diag.get("attach") == "pending":
@@ -244,7 +251,7 @@ def ready(found: dict) -> dict:
         reason = "no SEP platform device" if found.get("sep") is False else "SEP platform device unavailable"
     elif found.get("node_status"):
         reason = "SEP node is disabled"
-    elif diag.get("abi") != "1":
+    elif not _diag_supported(diag.get("abi")):
         reason = "passive SEP diagnostics unavailable or unsupported; legacy evidence does not prove readiness"
     elif diag.get("xart") == "disabled":
         reason = "read-only SEP installation: fingerprint operations are disabled"

@@ -109,10 +109,24 @@ class SpeakerToneTest(unittest.TestCase):
         for unit in (CommandResult(3, "inactive\n", ""), CommandResult(3, "failed\n", ""), CommandResult(4, "", "Unit speakersafetyd.service could not be found.\n")):
             with self.subTest(unit=unit):
                 rec = answer(live_recording(), ["systemctl", "is-active", "speakersafetyd"], unit.returncode, unit.stdout, unit.stderr)
+                rec = answer(rec, ["systemctl", "is-active", "speakerguardd"], 4, "", "Unit speakerguardd.service could not be found.\n")
                 host = run("audio", ["s"], rec=rec)
 
                 result = self.assert_not_played(host, "speaker protection isn't active")
                 self.assertEqual(result["evidence"][0], f"speakersafetyd: {unit.stdout.strip() or unit.stderr.strip()}")
+                self.assertEqual(result["evidence"][1], "speakerguardd: Unit speakerguardd.service could not be found.")
+
+    def test_on_the_macbook_neo_speakerguardd_protects_the_speakers(self):
+        # J700: speakersafetyd's drop-in skips it and speakerguardd's feed-forward model protects the speakers.
+        rec = answer(live_recording(), ["systemctl", "is-active", "speakersafetyd"], 3, "inactive\n", "")
+        rec = answer(rec, ["systemctl", "is-active", "speakerguardd"], 0, "active\n", "")
+        host = run("audio", ["y", "s"], rec=rec)
+
+        self.assertIn(TONE, host.commands_run)
+        result = check(host, "audio.speaker-tone")
+        self.assertEqual((result["kind"], result["status"]), ("human", "pass"))
+        self.assertEqual(result["evidence"][:3], [
+            "speakersafetyd: inactive", "speakerguardd: active", "kernel log: Speaker volumes unlocked"])
 
     def test_when_the_kernel_log_doesnt_say_the_amps_are_unlocked_no_tone_is_played(self):
         rec = answer(live_recording(), KERNEL_LOG, stdout="-- No entries --\n")
