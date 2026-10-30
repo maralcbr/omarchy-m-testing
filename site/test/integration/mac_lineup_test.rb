@@ -1,9 +1,10 @@
 require "test_helper"
 
-# The bring-up table on /models: every Mac, tested or not, with its GPU and display bring-up state.
+# The bring-up table on /models: every Mac, tested or not, with its GPU and display state from the runs.
 class MacLineupTest < ActionDispatch::IntegrationTest
   def lineup_row(board) = css_select(%(tr.lineup-row[data-boards~="#{board}"])).sole
   def status(board, area) = lineup_row(board).css(%(td.lineup-status[data-area="#{area}"])).sole
+  def state_and_source(board, area) = status(board, area).then { |td| [ td["data-state"], td["data-source"] ] }
 
   test "untested Macs show and ask for testing" do
     get "/models"
@@ -13,21 +14,35 @@ class MacLineupTest < ActionDispatch::IntegrationTest
     assert_match "needs testing", lineup_row("j504").css(%(td.lineup-testing div[data-board="j504"])).text
   end
 
-  test "a hand-kept bring-up note wins over the catalogue" do
+  test "an untested Mac shows what the catalogue expects" do
     get "/models"
-    gpu = status("j514c", "gpu")
-    assert_equal [ "missing", "curated" ], [ gpu["data-status"], gpu["data-source"] ]
-    assert_match "the kernel GPU only matches the J516C", gpu.text
-    assert_equal "pending", status("j516c", "gpu")["data-status"]
+    assert_equal [ "works", "catalogue" ], state_and_source("j416c", "gpu")
+    assert_equal [ "works", "catalogue" ], state_and_source("j413", "display")
+    assert_equal [ "missing", "catalogue" ], state_and_source("j700", "gpu")
+    assert_equal [ "missing", "catalogue" ], state_and_source("j514c", "gpu")
+    assert_match "catalogue: not supported yet", status("j514c", "gpu").text
   end
 
-  test "without a note the catalogue's expected Asahi and Aurora states decide" do
+  test "the runs decide once a Mac is tested, over the catalogue" do
+    upload_report golden_with("m2-max-image2", "gpu.vulkan" => "fails"), machine: "a"
+    Report.update_all(tester_login: "tester-one")
+    Tester.create!(login: "tester-one")
+
     get "/models"
-    gpu = status("j416c", "gpu")
-    assert_equal [ "works", "catalogue" ], [ gpu["data-status"], gpu["data-source"] ]
-    assert_equal "missing", status("j700", "gpu")["data-status"]
-    assert_equal "works", status("j413", "display")["data-status"]
-    assert_equal "missing", status("j700", "display")["data-status"]
+    assert_equal [ "partial", "runs" ], state_and_source("j416c", "gpu")
+    assert_equal [ "works", "runs" ], state_and_source("j416c", "display")
+    assert_no_match "unconfirmed", status("j416c", "gpu").text
+  end
+
+  test "one community machine is unconfirmed; two that agree confirm it" do
+    upload_report golden("m2-max-image2"), machine: "a"
+    get "/models"
+    assert_equal [ "works", "runs" ], state_and_source("j416c", "gpu")
+    assert_match "unconfirmed", status("j416c", "gpu").text
+
+    upload_report golden("m2-max-image2"), machine: "b", ip: "10.0.0.2"
+    get "/models"
+    assert_no_match "unconfirmed", status("j416c", "gpu").text
   end
 
   test "a tested board shows its runs and what they found" do
