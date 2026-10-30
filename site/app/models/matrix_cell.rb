@@ -16,6 +16,7 @@ class MatrixCell
 
     latest = {} # machine => [state, tester run?], from its latest report that tested the feature
     tested = []
+    keys = Report.machine_keys(reports)
     reports.each do |report|
       tester = report.tester?
       next if only_testers && !tester
@@ -24,7 +25,7 @@ class MatrixCell
       next if state.nil? || state == "not-tested"
 
       tested << report
-      latest[report.machine_key] = [ state, tester ]
+      latest[keys.fetch(report)] = [ state, tester ]
     end
     new(latest.values.map(&:first).tally, tested.reverse, latest.values.select(&:last).map(&:first).tally)
   end
@@ -34,6 +35,7 @@ class MatrixCell
   def self.from_checks(reports, feature_id, only_testers:)
     latest = Hash.new { |hash, machine| hash[machine] = {} }
     tested = []
+    keys = Report.machine_keys(reports)
     reports.each do |report|
       next if only_testers && !report.tester?
 
@@ -45,7 +47,7 @@ class MatrixCell
       next if checks.empty?
 
       tested << report
-      checks.each { |check| latest[report.machine_key][check["id"]] = [ check.dig("classification", "outcome"), report ] }
+      checks.each { |check| latest[keys.fetch(report)][check["id"]] = [ check.dig("classification", "outcome"), report ] }
     end
     votes = latest.values.map do |checks|
       sources = checks.values.map(&:last).uniq.sort_by(&:upload_order).reverse
@@ -83,7 +85,8 @@ class MatrixCell
   def sources
     return @sources if @sources
 
-    latest = reports.uniq(&:machine_key)
+    keys = Report.machine_keys(reports)
+    latest = reports.uniq { |report| keys.fetch(report) }
     tester? ? latest.select(&:tester?) : latest
   end
 

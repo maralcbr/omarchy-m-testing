@@ -5,6 +5,7 @@ class MatrixCellTest < ActiveSupport::TestCase
   FakeReport = Struct.new(:machine_key, :upload_order, :counted_checks, keyword_init: true) do
     def tester? = true
     def regressed_from(_feature) = nil
+    def tester_login = nil
   end
 
   def check(id, status, outcome) = { "id" => id, "status" => status, "classification" => { "feature" => "thunderbolt", "outcome" => outcome } }

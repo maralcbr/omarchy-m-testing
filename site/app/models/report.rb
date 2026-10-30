@@ -99,8 +99,21 @@ class Report < ApplicationRecord
     Configuration.new(board:, stack:, version: (omarchy_version unless by_model), build: (build&.words if by_build), build_id: (build&.id if by_build))
   end
 
-  # The machine this report counts as for agreement between machines.
+  # The machine key this report was signed with.
   def machine_key = machine_id || "unknown"
+
+  # The machine each report counts as, for agreement between machines: reports
+  # signed with one machine key, or uploaded by one signed-in handle on one board,
+  # are one machine. Reinstalling a Mac gives it a new key, and its runs from
+  # before mustn't outvote the ones after as a second Mac.
+  def self.machine_keys(reports)
+    parent = Hash.new { |hash, key| hash[key] = key }
+    root = ->(key) { parent[key] == key ? key : parent[key] = root.(parent[key]) }
+    reports.each { |report| parent[root.(report.machine_key)] = root.("#{report.tester_login}@#{report.board}") if report.tester_login }
+    reports.to_h { |report| [ report, root.(report.machine_key) ] }
+  end
+
+  def self.machine_count(reports) = machine_keys(reports).values.uniq.size
 
   def hidden? = hidden_at.present?
 
