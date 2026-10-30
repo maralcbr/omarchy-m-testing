@@ -10,11 +10,13 @@ from .consent import CONSENT_VERSION
 from .machine import Machine
 
 
-def build(machine: Machine, system: dict, checks: list[dict], catalogue: Catalogue, inventory: dict | None = None) -> dict:
+def build(machine: Machine, system: dict, checks: list[dict], catalogue: Catalogue, inventory: dict | None = None,
+          unattended: bool = False) -> dict:
     """The report, with every check result explained against the catalogue.
 
     `inventory` is the hardware inventory's block (inventory.py); a run that
-    skipped the Hardware section has none.
+    skipped the Hardware section has none. An unattended run (nobody at the
+    Mac, so no human checks) says so with "unattended": true.
     """
     classified = [{**check, "classification": catalogue.classify(check, machine.soc, machine.board)} for check in checks]
     built = {
@@ -31,6 +33,7 @@ def build(machine: Machine, system: dict, checks: list[dict], catalogue: Catalog
             "kernel": machine.kernel,
         },
         "system": system,
+        **({"unattended": True} if unattended else {}),
         "checks": classified,
     }
     if inventory:

@@ -37,7 +37,7 @@ from __future__ import annotations
 
 import re
 
-from . import changes, human
+from . import changes, human, presence
 from .inventory import KERNEL_LOG
 from .session import Context
 
@@ -173,6 +173,8 @@ def protection(ctx: Context) -> tuple[str | None, list[str], str | None]:
 
 def speaker_tone(ctx: Context) -> dict:
     check_id = "audio.speaker-tone"
+    if human.unattended(ctx):
+        return human.skip(check_id, f"{presence.UNATTENDED}, so nothing was played")
     why, evidence, sink = protection(ctx)
     if why:
         return human.skip(check_id, f"{why}, so nothing was played", evidence)

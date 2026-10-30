@@ -31,7 +31,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from . import human
+from . import human, presence
 from .session import Context
 
 LIST_LIGHTS = ["brightnessctl", "--list", "--machine-readable"]
@@ -127,6 +127,8 @@ def set_argv(name: str, level: int) -> list[str]:
 
 def brightness_steps(ctx: Context) -> dict:
     check_id = "display.brightness-steps"
+    if human.unattended(ctx):
+        return human.skip(check_id, f"{presence.UNATTENDED}, so the brightness wasn't changed")
     known = lights(ctx)
     if isinstance(known, str):
         return human.skip(check_id, known)
@@ -220,6 +222,8 @@ def keyboard_light(ctx: Context) -> dict:
         return human.skip(check_id, known)
     if KEYBOARD not in known:
         return human.skip(check_id, "no keyboard light (brightnessctl lists no kbd_backlight)")
+    if human.unattended(ctx):
+        return human.skip(check_id, presence.UNATTENDED)
     lux_before, light_before = read_lux(ctx, sensor), keyboard_light_now(ctx)
     before = f"before: ambient light {lux_before} lux, keyboard light {light_before.describe() if light_before else 'unreadable'}"
     _say(ctx, "Cover the camera and notch at the top of the screen with your hand, where the light sensor is, and keep it covered.")

@@ -67,6 +67,7 @@ def _parse(argv: Sequence[str], host: Host) -> argparse.Namespace:
     parser.add_argument("--catalogue", metavar="FILE", help="use this feature catalogue instead of the bundled one (for trying a catalogue change)")
     parser.add_argument("--explain", metavar="REPORT", help="explain a saved report's results against the catalogue; runs no checks")
     parser.add_argument("--record", metavar="FILE", help="also save what this Mac answered, scrubbed, as a test recording")
+    parser.add_argument("--unattended", action="store_true", help="nobody is at the Mac: run the automatic checks only, ask nothing about the hardware and skip anything disruptive; the report says so")
     parser.add_argument("--skip", metavar="SECTION", action="append", default=[], help="skip a section (repeat, or separate with commas); the run lists them")
     parser.add_argument("--sign-in", action="store_true", help="testers: sign this Mac in with GitHub, once; its runs then count as tester runs. Runs no checks")
     parser.add_argument("--sign-out", action="store_true", help="testers: unlink this Mac from its GitHub handle; its later runs are community runs. Runs no checks")
@@ -192,14 +193,14 @@ def _run(args: argparse.Namespace, host: Host, sections: Sequence[Section]) -> i
         host.show("Cancelled. Nothing was run.")
         return EXIT_CANCELLED
 
-    if not (args.dry_run or args.record):
+    if not (args.dry_run or args.record or args.unattended):
         tester.offer(host, ui.text, ui.confirm, args.site.rstrip("/"))
 
     # The Scrubber learns this Mac's hostname, accounts and networks: nothing
     # a check found reaches the checkpoint or the report unscrubbed.
     scrubber = privacy.Scrubber.for_host(host)
     key = run_key(machine, catalogue, TOOL_VERSION)
-    cache: dict = {}
+    cache: dict = {presence.UNATTENDED_KEY: True} if args.unattended else {}
     blocked = _blocked(host, sections, cache)
     state = _resume(ui, saved, key, sections, skip | set(blocked))
     if state is None:
@@ -210,6 +211,9 @@ def _run(args: argparse.Namespace, host: Host, sections: Sequence[Section]) -> i
     state.restorers[:0] = changes.pending
     changes.pending = state.restorers
     changes.persist = lambda: checkpoint.save(state)
+    if args.unattended:
+        # Kept with the run, so a report any part of which ran unattended says so.
+        state.shared[presence.UNATTENDED_KEY] = True
     checkpoint.save(state)
     args.resumable = checkpoint.path is not None
 
@@ -218,6 +222,8 @@ def _run(args: argparse.Namespace, host: Host, sections: Sequence[Section]) -> i
     if found.build():
         ui.text(f"Build: {found.build()}.")
     ui.text("Checks that need root use passwordless sudo when it's set up, and are skipped otherwise.")
+    if args.unattended:
+        ui.text("Unattended: only the automatic checks run; nothing asks you to look, listen or plug anything in.")
     shared = state.shared
     running = [section for section in sections if section.id in state.selected and section.id not in blocked]
     try:
@@ -248,7 +254,8 @@ def _run(args: argparse.Namespace, host: Host, sections: Sequence[Section]) -> i
             results += state.done[section.id]
         else:
             results += skipped(section, blocked.get(section.id))
-    built = report.build(machine, found.report(shared.get("boot_loader", "unknown")), results, catalogue, shared.get("inventory"))
+    built = report.build(machine, found.report(shared.get("boot_loader", "unknown")), results, catalogue, shared.get("inventory"),
+                         unattended=bool(shared.get(presence.UNATTENDED_KEY)))
 
     signed, unsigned_because = signing.sign(host, privacy.enforce(built, scrubber))
     text = report.to_text(signed)
