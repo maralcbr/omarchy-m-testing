@@ -229,6 +229,18 @@ class RootChecksTest(unittest.TestCase):
 
 
 class ScriptFailureTest(unittest.TestCase):
+    def test_mac_checks_speakerguardd_pass_fails_speaker_protection_off_the_macbook_neo(self):
+        rec = copy.deepcopy(M2_MAX)
+        edit_lines(rec, MAC_CHECK, lambda lines: [
+            "PASS  speakersafetyd   speakerguardd is active (feed-forward speaker protection)" if "speakersafetyd is active" in line else line
+            for line in lines])
+
+        _, _, report = run(rec)
+
+        found = results(report)["audio.speaker-protection"]
+        self.assertEqual(found["status"], "fail")
+        self.assertIn("only on the MacBook Neo (J700)", found["evidence"][-1])
+
     def test_a_failed_boot_file_fails_the_boot_files_check(self):
         rec = copy.deepcopy(M2_MAX)
         edit_lines(rec, MAC_CHECK, lambda lines: [
