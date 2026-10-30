@@ -50,8 +50,10 @@ HARDWARE_REQUIREMENTS = (
     ("alsa-ucm-conf-asahi", "alsa-ucm-conf-aurora"),
 )
 PACKAGES = STACK_PACKAGES + BOOT_PACKAGES + HARDWARE_PACKAGES
+# A Neo image's boot builds, which pacman -Q answers m1n1-aurora and uboot-asahi with.
+BOOT_PROVIDERS = ("aura", "uboot-aurora")
 # The names pacman -Q can answer the query with.
-ANSWERED = PACKAGES + tuple(name for names in HARDWARE_REQUIREMENTS for name in names[1:])
+ANSWERED = PACKAGES + tuple(name for names in HARDWARE_REQUIREMENTS for name in names[1:]) + BOOT_PROVIDERS
 PACKAGE_QUERY = ["pacman", "-Q", *PACKAGES]
 OMARCHY_VERSION = ["omarchy-version"]
 ROOT_SOURCE = ["findmnt", "--noheadings", "--output", "SOURCE", "/"]
