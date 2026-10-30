@@ -174,8 +174,9 @@ def gpu_vulkan(host: Host, system: System) -> dict:
     asahi = [name for name in icds if name.startswith("asahi_icd")]
     if not asahi:
         evidence = ["no Asahi Vulkan driver in /usr/share/vulkan/icd.d" + (f" (only {', '.join(icds)})" if icds else "")]
-        if system.has_pacman and not any(name in system.packages for name in ("vulkan-asahi", "vulkan-aurora")):
-            evidence.append("neither vulkan-asahi nor vulkan-aurora is installed")
+        vulkan = next(names for names in HARDWARE_REQUIREMENTS if names[0] == "vulkan-asahi")
+        if system.has_pacman and not any(name in system.packages for name in vulkan):
+            evidence.append(f"neither {' nor '.join(vulkan)} is installed")
         return _result("gpu.vulkan", "fail", evidence)
     info = host.run(VULKANINFO)
     if info.returncode == 127:
