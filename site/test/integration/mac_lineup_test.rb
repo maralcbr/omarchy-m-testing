@@ -34,6 +34,17 @@ class MacLineupTest < ActionDispatch::IntegrationTest
     assert_no_match "unconfirmed", status("j416c", "gpu").text
   end
 
+  test "a reinstalled tester Mac's newer run replaces its older one" do
+    Tester.create!(login: "tester-one")
+    upload_report golden_with("m2-max-image2", "gpu.driver" => "not-in-asahi", "gpu.vulkan" => "not-in-asahi"), machine: "a"
+    upload_report golden("m2-max-image2"), machine: "b", ip: "10.0.0.2"
+    Report.update_all(tester_login: "tester-one")
+
+    get "/models"
+    assert_equal [ "works", "runs" ], state_and_source("j416c", "gpu")
+    assert_match "1 tester machine works", status("j416c", "gpu")["title"]
+  end
+
   test "one community machine is unconfirmed; two that agree confirm it" do
     upload_report golden("m2-max-image2"), machine: "a"
     get "/models"

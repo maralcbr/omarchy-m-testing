@@ -25,7 +25,7 @@ class AuroraSupport
   Chip = Data.define(:key, :reports, :cells) do
     def name = Catalogue.chip_name(key)
     def cell(feature_id) = cells.fetch(feature_id)
-    def machines = reports.map(&:machine_key).uniq.size
+    def machines = Report.machine_count(reports)
     def models = reports.map(&:short_model_name).uniq
     def aurora_versions = reports.map(&:aurora_version).uniq
     def socs = reports.map(&:soc).uniq

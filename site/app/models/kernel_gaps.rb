@@ -6,7 +6,7 @@ class KernelGaps
   CatalogueGap = Data.define(:feature, :chips)
   # A reported gap: one outcome of one feature on one chip, with the reports that found it.
   ReportedGap = Data.define(:outcome, :feature_id, :soc, :chip, :reports) do
-    def machines = reports.map(&:machine_key).uniq.size
+    def machines = Report.machine_count(reports)
     def models = reports.map(&:short_model_name).uniq
   end
 
@@ -15,7 +15,7 @@ class KernelGaps
   # outcome is unknown-hardware when the catalogue doesn't know it.
   UnclaimedHardware = Data.define(:compatible, :outcome, :feature_id, :reports) do
     def unknown? = outcome == "unknown-hardware"
-    def machines = reports.map(&:machine_key).uniq.size
+    def machines = Report.machine_count(reports)
     def models = reports.map(&:short_model_name).uniq
     def chips = reports.map { |report| [ report.chip, report.soc ] }.uniq
   end
