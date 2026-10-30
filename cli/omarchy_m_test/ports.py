@@ -23,7 +23,8 @@ script).
     whether the device is authorized). It passes with at least one domain.
     Like the USB controllers, the domains only exist while a USB4 or
     Thunderbolt partner is attached (the driver brings the block up once the
-    Type-C PHY is in USB4/Thunderbolt mode), so with the bus there and no
+    Type-C PHY is in USB4/Thunderbolt mode). A Mac the catalogue says has no
+    Thunderbolt (the MacBook Neo) is skipped without asking. With the bus there and no
     domain it's skipped over SSH or with nobody at the Mac, and at the Mac
     the human is asked to plug a Thunderbolt/USB4 device in first. If no
     domain comes up, the USB-C partners say why: a partner in Thunderbolt
@@ -140,6 +141,11 @@ PLUG_IN = (
     "Plug in what you'd like checked on the USB-C ports: a USB stick or hub, a Thunderbolt or USB4 dock or device, "
     "a display over USB-C (or a USB-C to DisplayPort or HDMI adapter)."
 )
+PLUG_IN_NO_THUNDERBOLT = (
+    "Plug in what you'd like checked on the USB-C ports: a USB stick or hub, "
+    "a display over USB-C (or a USB-C to DisplayPort or HDMI adapter)."
+)
+NO_THUNDERBOLT_PORT = "this Mac has no Thunderbolt/USB4 port"
 READY = "Ready: they're in, or there's nothing to plug in? [Y/n] "
 PLUG_USB = (
     "No USB device is attached, and on Apple Silicon the USB controller only comes up while one is. "
@@ -289,6 +295,8 @@ def _link(fields: dict[str, str]) -> str:
 
 
 def thunderbolt(ctx: Context) -> tuple[dict, Thunderbolt]:
+    if human.absent(ctx, THUNDERBOLT):
+        return _automatic(THUNDERBOLT, "skip", [f"skipped: {NO_THUNDERBOLT_PORT}"]), Thunderbolt()
     found = parse_thunderbolt(ctx.host.run(THUNDERBOLT_LIST).stdout)
     if not found.bus:
         return _automatic(THUNDERBOLT, "fail", [
@@ -413,7 +421,7 @@ def picture(ctx: Context, lit: list[Connector]) -> dict:
 def run(ctx: Context) -> list[dict]:
     if presence.of(ctx.host, ctx.cache).blocks() is None:
         ui = ctx.ui or Ui(ctx.host)
-        ui.text(PLUG_IN)
+        ui.text(PLUG_IN_NO_THUNDERBOLT if human.absent(ctx, THUNDERBOLT) else PLUG_IN)
         try:
             ui.ask(READY)
         except EOFError:

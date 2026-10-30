@@ -15,6 +15,7 @@ import os
 import unittest
 
 from omarchy_m_test.app import main
+from omarchy_m_test.catalogue import Catalogue, status_label
 from omarchy_m_test.recording import ENDED, RecordedHost
 from tests.schema_validator import errors
 from tests.test_seam_a import ENTER, REPO, REPORT_FILE, RECORDINGS, SCHEMA, golden, read
@@ -180,6 +181,28 @@ def saved_report(checks: list[dict], catalogue_version=1) -> dict:
 
 def with_human_checks(catalogue):
     catalogue["checks"].update({"display.notch-bar": "notch-bar", "audio.speakers-heard": "speaker-protection"})
+
+
+class MacWithoutTheHardwareTest(unittest.TestCase):
+    catalogue = Catalogue(CATALOGUE)
+
+    def outcome(self, check_id: str, status: str, soc: str, board: str) -> str:
+        return self.catalogue.classify({"id": check_id, "status": status}, soc, board)["outcome"]
+
+    def test_on_the_macbook_neo_thunderbolt_and_the_notch_are_not_applicable_whether_failed_or_skipped(self):
+        for check_id in ("ports.thunderbolt", "sleep.thunderbolt-after-resume", "display.notch-strip", "display.notch-bar"):
+            for status in ("fail", "skip"):
+                with self.subTest(check=check_id, status=status):
+                    self.assertEqual(self.outcome(check_id, status, "t8140", "j700"), "not-applicable")
+
+    def test_a_skip_where_the_mac_has_the_hardware_is_not_tested(self):
+        self.assertEqual(self.outcome("ports.thunderbolt", "skip", "t6021", "j416c"), "not-tested")
+        self.assertEqual(self.outcome("ports.usb-c", "skip", "t8140", "j700"), "not-tested")
+
+    def test_a_skip_on_hardware_the_mac_lacks_reads_n_a(self):
+        self.assertEqual(status_label("skip", "not-applicable"), "N/A")
+        self.assertEqual(status_label("fail", "not-applicable"), "N/A")
+        self.assertEqual(status_label("skip", "not-tested"), "SKIP")
 
 
 class ExplainTest(unittest.TestCase):

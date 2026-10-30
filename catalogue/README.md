@@ -22,7 +22,7 @@ Aurora states: `supported` (with the Aurora kernel version), `asahi` (expected t
 
 ## Classification
 
-A passed check `works`; a skipped one is `not-tested` (a missing human answer is never a failure). A failed check is matched against Aurora's expected state first, then Asahi's:
+A passed check `works`; a skipped one is `not-tested` (a missing human answer is never a failure), or `not-applicable` where the board lacks the hardware. A failed check is matched against Aurora's expected state first, then Asahi's:
 
 - Aurora expects it to work: `fails` (or `not-in-omarchy` when Omarchy's integration isn't there yet). The site turns `fails` into a regression only against a verified earlier pass.
 - Asahi has it but Aurora doesn't: `not-in-aurora`. Asahi doesn't have it either: `not-in-asahi`.

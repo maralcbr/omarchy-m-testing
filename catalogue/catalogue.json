@@ -1,5 +1,5 @@
 {
-  "catalogue_version": 14,
+  "catalogue_version": 15,
   "description": "What omarchy-m-test expects of each feature, per chip generation, in three layers: Asahi hardware features, Aurora additions and Omarchy integration. Results are classified against Aurora's expected state first, then Asahi's. Edited by pull request; bump catalogue_version on every change.",
   "sources": {
     "asahi": {
@@ -254,7 +254,8 @@
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
       },
-      "note": "Partial in Aurora. thunderbolt-apple-acio and thunderbolt-apple-nhi bring the USB4/Thunderbolt host up once the Type-C PHY is in USB4/Thunderbolt mode, so a domain only exists while a USB4 or Thunderbolt partner is attached (ports.thunderbolt skips an idle Mac). On M2 that host works: domains, links to devices and to other computers over thunderbolt-net, which is what ports.thunderbolt checks. PCIe tunnels (docks' PCIe devices, eGPUs) aren't there on M1 or M2: every cold boot logs 'thunderbolt-apple-acio 701ac0000.cio: PCIe-C tunnel disabled: m1n1 handoff is not initialized' (drivers/thunderbolt/apple.c in omacom/linux), a known limit until m1n1 hands the tunnels over. On M1 the host hasn't been seen working yet (see the aurora evidence), so a failure there is an expected gap."
+      "note": "Partial in Aurora. thunderbolt-apple-acio and thunderbolt-apple-nhi bring the USB4/Thunderbolt host up once the Type-C PHY is in USB4/Thunderbolt mode, so a domain only exists while a USB4 or Thunderbolt partner is attached (ports.thunderbolt skips an idle Mac). On M2 that host works: domains, links to devices and to other computers over thunderbolt-net, which is what ports.thunderbolt checks. PCIe tunnels (docks' PCIe devices, eGPUs) aren't there on M1 or M2: every cold boot logs 'thunderbolt-apple-acio 701ac0000.cio: PCIe-C tunnel disabled: m1n1 handoff is not initialized' (drivers/thunderbolt/apple.c in omacom/linux), a known limit until m1n1 hands the tunnels over. On M1 the host hasn't been seen working yet (see the aurora evidence), so a failure there is an expected gap. The MacBook Neo (J700) has no Thunderbolt: one USB 3 (10 Gb/s) and one USB 2 USB-C port.",
+      "models": {"j700": {"aurora": {"status": "absent"}}}
     },
     {
       "id": "dp-alt-mode",
@@ -1572,7 +1573,8 @@
         "j474s": {"aurora": {"status": "absent"}},
         "j475c": {"aurora": {"status": "absent"}},
         "j475d": {"aurora": {"status": "absent"}},
-        "j180d": {"aurora": {"status": "absent"}}
+        "j180d": {"aurora": {"status": "absent"}},
+        "j700": {"aurora": {"status": "absent"}}
       }
     },
     {
@@ -1680,7 +1682,8 @@
         "j474s": {"omarchy": {"status": "absent"}},
         "j475c": {"omarchy": {"status": "absent"}},
         "j475d": {"omarchy": {"status": "absent"}},
-        "j180d": {"omarchy": {"status": "absent"}}
+        "j180d": {"omarchy": {"status": "absent"}},
+        "j700": {"omarchy": {"status": "absent"}}
       }
     },
     {
