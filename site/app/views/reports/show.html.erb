@@ -24,6 +24,9 @@
       <dt>catalogue</dt><dd>feature catalogue v<%= @report.body["catalogue_version"] %></dd>
       <dt>uploaded</dt><dd><%= uploaded_at(@report) %></dd>
       <dt>results</dt><dd><%= result_counts(@report, separator: " · ") %></dd>
+      <% if @report.unattended? %>
+        <dt>run</dt><dd id="unattended">unattended: nobody was at the Mac, so only the automatic checks ran</dd>
+      <% end %>
     </dl>
     <details class="packages" id="packages" open>
       <summary>packages (<%= @report.system["packages"].size %>)</summary>

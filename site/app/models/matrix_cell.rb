@@ -29,7 +29,8 @@ class MatrixCell
     new(latest.values.map(&:first).tally, tested.reverse, latest.values.select(&:last).map(&:first).tally)
   end
 
-  # Across builds, a partial retest must retain the outcomes of individual skipped checks.
+  # Across builds, a partial retest must retain the outcomes of individual skipped checks; a skip on hardware the
+  # Mac doesn't have counts, as not-applicable.
   def self.from_checks(reports, feature_id, only_testers:)
     latest = Hash.new { |hash, machine| hash[machine] = {} }
     tested = []
@@ -37,8 +38,9 @@ class MatrixCell
       next if only_testers && !report.tester?
 
       checks = report.counted_checks.select do |check|
-        check.dig("classification", "feature") == feature_id && check["status"] != "skip" &&
-          check.dig("classification", "outcome") != "not-tested"
+        outcome = check.dig("classification", "outcome")
+        check.dig("classification", "feature") == feature_id && outcome != "not-tested" &&
+          (check["status"] != "skip" || outcome == "not-applicable")
       end
       next if checks.empty?
 

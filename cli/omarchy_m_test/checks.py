@@ -65,6 +65,18 @@ def system_identity(machine: Machine) -> dict:
     }
 
 
+GUARD_PASS = "speakerguardd is active"
+
+
+def _speaker_guard(ctx: Context, result: dict) -> dict:
+    """mac-check passes speaker protection on speakerguardd on any Mac; it counts only on the boards it's built for."""
+    if (result["id"] != "audio.speaker-protection" or result["status"] != "pass" or ctx.machine.board in live_audio.SPEAKERGUARD_BOARDS
+            or not any(GUARD_PASS in line for line in result["evidence"])):
+        return result
+    return {**result, "status": "fail",
+            "evidence": [*result["evidence"], "speakerguardd protects the speakers only on the MacBook Neo (J700); this Mac needs speakersafetyd"]}
+
+
 def mac_check(ctx: Context) -> list[dict]:
     """mac-check's results, run once per run whichever section needs them first.
 
@@ -73,7 +85,7 @@ def mac_check(ctx: Context) -> list[dict]:
     """
     if MAC_CHECK_RESULTS not in ctx.cache:
         found = scripts.mac_check(ctx.host)
-        ctx.cache[MAC_CHECK_RESULTS] = found.results
+        ctx.cache[MAC_CHECK_RESULTS] = [_speaker_guard(ctx, result) for result in found.results]
         ctx.shared[BOOT_LOADER] = found.boot_loader
     return ctx.cache[MAC_CHECK_RESULTS]
 

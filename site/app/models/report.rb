@@ -45,6 +45,8 @@ class Report < ApplicationRecord
   def machine = body.fetch("machine")
   def system = body.fetch("system")
   def checks = body.fetch("checks")
+  # Nobody was at the Mac (omarchy-m-test --unattended): only the automatic checks ran.
+  def unattended? = body["unattended"] == true
 
   def model_name = machine.fetch("model")
   def short_model_name = model_name.delete_prefix("Apple ")

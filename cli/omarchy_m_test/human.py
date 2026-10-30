@@ -13,6 +13,10 @@ before it reaches the checkpoint or the report. The check id must be in the
 catalogue's checks, and in its section's human_checks so a skipped section
 reports it as human too.
 
+An unattended run (--unattended) asks nothing: every human check is skipped,
+with that reason, and the checks that act before they ask (a tone, brightness
+steps, the camera window) don't act.
+
 Ctrl-C at the question interrupts the run like anywhere else: the section's
 restorers run and the run can resume.
 """
@@ -21,6 +25,7 @@ from __future__ import annotations
 
 from typing import Sequence
 
+from . import presence
 from .session import Context
 from .ui import Ui
 
@@ -34,6 +39,8 @@ NOT_BACKED = "note: answer not backed by readings"
 
 def check(ctx: Context, check_id: str, question: str, evidence: Sequence[str] = ()) -> dict:
     """Ask the human `question` and return their answer as a human check result."""
+    if unattended(ctx):
+        return skip(check_id, presence.UNATTENDED, evidence)
     ui = ctx.ui or Ui(ctx.host)
     answer, note, defaulted = ui.human(question)
     lines = [*evidence, f"asked: {question}"]
@@ -44,6 +51,11 @@ def check(ctx: Context, check_id: str, question: str, evidence: Sequence[str] = 
     if defaulted:
         result[DEFAULTED] = True
     return result
+
+
+def unattended(ctx: Context) -> bool:
+    """Nobody is at the Mac (--unattended): ask nothing, and do nothing only a person would see or hear."""
+    return bool(ctx.cache.get(presence.UNATTENDED_KEY))
 
 
 def absent(ctx: Context, check_id: str) -> bool:
@@ -67,6 +79,8 @@ def check_each(ctx: Context, check_id: str, parts: Sequence[tuple[str, str | Non
     failure). Any no fails the check; otherwise any yes passes it; otherwise
     it's skipped. A pass with any yes from a bare Enter is answered_by_default.
     """
+    if unattended(ctx):
+        return skip(check_id, presence.UNATTENDED, evidence)
     ui = ctx.ui or Ui(ctx.host)
     lines, answers, defaulted = list(evidence), [], False
     for label, question, why in parts:

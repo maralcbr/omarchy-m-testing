@@ -55,6 +55,14 @@ def answer(rec: dict, argv: list[str], returncode: int = 0, stdout: str = "", st
     return rec
 
 
+def neo(rec: dict) -> dict:
+    """The recording as a MacBook Neo (J700, A18 Pro)."""
+    rec = copy.deepcopy(rec)
+    rec["files"]["/proc/device-tree/compatible"] = {"text": "apple,j700\x00apple,t8140\x00apple,arm-platform\x00"}
+    rec["files"]["/proc/device-tree/model"] = {"text": "Apple MacBook Neo (13-inch, A18 Pro, 2026)\x00"}
+    return rec
+
+
 def run(section: str, answers=(), rec: dict | None = None, state: MacState | None = None, cls=LiveMac, status: int = 0) -> LiveMac:
     host = cls(rec or live_recording(), state=state, answers=[ENTER, *answers])
     self_status = main(ARGS, host, sections=(SECTIONS[section],))
@@ -109,16 +117,31 @@ class SpeakerToneTest(unittest.TestCase):
         for unit in (CommandResult(3, "inactive\n", ""), CommandResult(3, "failed\n", ""), CommandResult(4, "", "Unit speakersafetyd.service could not be found.\n")):
             with self.subTest(unit=unit):
                 rec = answer(live_recording(), ["systemctl", "is-active", "speakersafetyd"], unit.returncode, unit.stdout, unit.stderr)
-                rec = answer(rec, ["systemctl", "is-active", "speakerguardd"], 4, "", "Unit speakerguardd.service could not be found.\n")
                 host = run("audio", ["s"], rec=rec)
 
-                result = self.assert_not_played(host, "speaker protection isn't active")
+                result = self.assert_not_played(host, "speaker protection isn't active: speakersafetyd isn't running")
                 self.assertEqual(result["evidence"][0], f"speakersafetyd: {unit.stdout.strip() or unit.stderr.strip()}")
-                self.assertEqual(result["evidence"][1], "speakerguardd: Unit speakerguardd.service could not be found.")
+                self.assertNotIn(audio.GUARD_UNIT, host.commands_run)
+
+    def test_speakerguardd_doesnt_protect_the_speakers_off_the_macbook_neo(self):
+        rec = answer(live_recording(), ["systemctl", "is-active", "speakersafetyd"], 3, "inactive\n", "")
+        rec = answer(rec, ["systemctl", "is-active", "speakerguardd"], 0, "active\n", "")
+        host = run("audio", ["s"], rec=rec)
+
+        self.assert_not_played(host, "speakersafetyd isn't running")
+        self.assertNotIn(audio.GUARD_UNIT, host.commands_run)
+
+    def test_on_the_macbook_neo_without_speakerguardd_no_tone_is_played(self):
+        rec = answer(neo(live_recording()), ["systemctl", "is-active", "speakersafetyd"], 3, "inactive\n", "")
+        rec = answer(rec, ["systemctl", "is-active", "speakerguardd"], 4, "", "Unit speakerguardd.service could not be found.\n")
+        host = run("audio", ["s"], rec=rec)
+
+        result = self.assert_not_played(host, "neither speakersafetyd nor speakerguardd is running")
+        self.assertEqual(result["evidence"][1], "speakerguardd: Unit speakerguardd.service could not be found.")
 
     def test_on_the_macbook_neo_speakerguardd_protects_the_speakers(self):
         # J700: speakersafetyd's drop-in skips it and speakerguardd's feed-forward model protects the speakers.
-        rec = answer(live_recording(), ["systemctl", "is-active", "speakersafetyd"], 3, "inactive\n", "")
+        rec = answer(neo(live_recording()), ["systemctl", "is-active", "speakersafetyd"], 3, "inactive\n", "")
         rec = answer(rec, ["systemctl", "is-active", "speakerguardd"], 0, "active\n", "")
         host = run("audio", ["y", "s"], rec=rec)
 

@@ -18,6 +18,10 @@ The helpers that make disruptive changes (changes.py) check this again
 themselves, so a section that forgot to say it's disruptive still can't cut
 an SSH connection.
 
+An unattended run (--unattended) is nobody at the Mac: nothing is detected,
+and every disruptive section, plug-in prompt and human question is skipped
+with that reason.
+
 Detection happens once per run, only when something needs it, and is kept in
 the run's cache.
 """
@@ -30,6 +34,9 @@ from .host import Host
 
 SSH_VARIABLES = ("SSH_CONNECTION", "SSH_CLIENT", "SSH_TTY")
 CACHE_KEY = "presence"
+# Set in the run's cache by --unattended.
+UNATTENDED_KEY = "unattended"
+UNATTENDED = "an unattended run (--unattended): nobody is at the Mac"
 
 
 def session_query(session: str) -> list[str]:
@@ -41,9 +48,12 @@ class Presence:
     ssh: bool
     seat: bool
     why_no_seat: str = ""
+    unattended: bool = False
 
     def blocks(self) -> str | None:
         """Why a disruptive change mustn't happen now; None when it may."""
+        if self.unattended:
+            return UNATTENDED
         if self.ssh:
             return "running over SSH, where it could cut the connection"
         if not self.seat:
@@ -74,5 +84,5 @@ def detect(host: Host) -> Presence:
 def of(host: Host, cache: dict) -> Presence:
     """This run's presence, detected on first use."""
     if CACHE_KEY not in cache:
-        cache[CACHE_KEY] = detect(host)
+        cache[CACHE_KEY] = Presence(False, False, UNATTENDED, unattended=True) if cache.get(UNATTENDED_KEY) else detect(host)
     return cache[CACHE_KEY]

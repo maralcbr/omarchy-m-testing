@@ -15,6 +15,7 @@ Outcomes:
   not-applicable    this Mac doesn't have the hardware
   unknown-hardware  the chip, or this feature on it, isn't in the catalogue
   not-tested        skipped; a missing human answer is never a failure
+                    (a skip where the Mac lacks the hardware is not-applicable)
 
 Unclaimed hardware (an enabled device-tree node no driver claimed, from the
 inventory) is explained the same way: the catalogue's "hardware" map says
@@ -46,10 +47,10 @@ EXPECTED_GAPS = ("not-in-aurora", "not-in-asahi", "not-in-omarchy")
 
 
 def status_label(status: str, outcome: str) -> str:
-    """PASS, FAIL or SKIP, or for an expected failure GAP (not yet supported) or N/A (no such hardware)."""
+    """PASS, FAIL or SKIP, or for an expected failure GAP (not yet supported), or N/A (no such hardware)."""
     if status == "fail" and outcome in EXPECTED_GAPS:
         return "GAP"
-    if status == "fail" and outcome == "not-applicable":
+    if status in ("fail", "skip") and outcome == "not-applicable":
         return "N/A"
     return status.upper()
 
@@ -126,17 +127,18 @@ class Catalogue:
 
 
 def _outcome(status: str, layer: str, states: dict | None) -> str:
-    if status == "skip":
-        return "not-tested"
     if status == "pass":
         return "works"
+    absent = any(state.get("status") == "absent" for state in (states or {}).values())
+    if status == "skip":
+        return "not-applicable" if absent else "not-tested"
     if states is None:
         return "unknown-hardware"
 
     asahi = states.get("asahi", {}).get("status", "unlisted")
     aurora = states.get("aurora", {}).get("status", "unknown")
     omarchy = states.get("omarchy", {}).get("status")
-    if "absent" in (asahi, aurora, omarchy):
+    if absent:
         return "not-applicable"
     omarchy_missing = layer == "omarchy" and omarchy != "supported"
 

@@ -87,6 +87,10 @@
         }
       }
     },
+    "unattended": {
+      "description": "Present (true) when nobody was at the Mac for the run (omarchy-m-test --unattended): only the automatic checks ran, every human check is skipped with that reason, and nothing disruptive was done. Absent when someone was there to be asked.",
+      "const": true
+    },
     "inventory": {
       "description": "The hardware inventory: for each kind of device-tree node the Mac has, its status and whether a driver claimed it; the enabled nodes no driver claimed, explained against the catalogue; and the running kernel's build options compared with Asahi's. Only node types (the first compatible string), statuses, driver-bound states, counts and build-option names and values: never a property value or a node's path. Absent when the Hardware section wasn't run.",
       "type": "object",

@@ -21,7 +21,7 @@ from omarchy_m_test.host import LONG_RUNNING, WATCH_TIMEOUT_SECONDS, timeout_for
 from omarchy_m_test.recording import EOF, RECORDED_SOURCES, RecordedHost
 from tests.desktop import command, recording
 from tests.live_mac import LiveMac, live_recording
-from tests.test_audio_display import SECTIONS, answer, run
+from tests.test_audio_display import SECTIONS, answer, neo, run
 from tests.test_interactive import ARGS, ENTER, check, prompts, report
 
 M1 = "m1-pro-mx-mac"
@@ -432,6 +432,16 @@ class PortsTest(unittest.TestCase):
         links = results(host)["ports.thunderbolt"]
         self.assertEqual((links["status"], links["classification"]["outcome"]), ("fail", "not-in-asahi"))
         self.assertEqual(links["classification"]["expected"], {"asahi": "wip", "aurora": "unknown"})
+
+    def test_on_the_macbook_neo_thunderbolt_is_not_applicable_and_nothing_asks_for_a_thunderbolt_device(self):
+        host = run("ports", [ENTER, "s", "s"], rec=neo(live_recording()))
+
+        self.assertNotIn(ports.THUNDERBOLT_LIST, host.commands_run)
+        self.assertIn(ports.PLUG_IN_NO_THUNDERBOLT, host.output)
+        self.assertNotIn(ports.PLUG_THUNDERBOLT, host.output)
+        links = results(host)["ports.thunderbolt"]
+        self.assertEqual((links["status"], links["classification"]["outcome"]), ("skip", "not-applicable"))
+        self.assertEqual(links["evidence"], [f"skipped: {ports.NO_THUNDERBOLT_PORT}"])
 
     def test_at_the_mac_with_no_thunderbolt_domain_the_human_plugs_a_device_in_and_the_host_comes_up(self):
         linked = "thunderbolt 0-0 thunderbolt_device generation=4 rx_speed=20.0Gb/s rx_lanes=2 authorized=1\nthunderbolt domain0 thunderbolt_domain\n"

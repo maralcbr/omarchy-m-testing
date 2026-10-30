@@ -99,6 +99,7 @@ REPORT_ALLOWLIST: dict[str, Any] = {
     "catalogue_version": True,
     "machine": {"model": True, "board": True, "soc": True, "chip": True, "arch": True, "kernel": True},
     "system": _SYSTEM,
+    "unattended": True,
     "inventory": _INVENTORY,
     "checks": [_CHECK],
     # Added by signing.py after the allowlist is applied; listed so the allowlist stays the schema.
