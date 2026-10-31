@@ -131,7 +131,8 @@ class ModelResultsTest < ActionDispatch::IntegrationTest
   end
 
   test "different machines still disagree and different stacks have separate summaries" do
-    bind_machine("b", "tester")
+    Tester.create!(login: "tester-two")
+    bind_machine("b", "tester-two")
     upload "works"
     upload "fails", kernel: NEW, machine: "b"
     upload "works", kernel: NEW, stack: "mx-mac"

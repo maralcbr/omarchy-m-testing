@@ -19,7 +19,10 @@ class BenchmarkScores
 
   Row = Data.define(:configuration, :model_name, :chip, :soc, :scores) do
     # Each machine's latest score, newest first.
-    def latest_per_machine = scores.sort_by { |score| [ score.report.created_at, score.report.id ] }.reverse.uniq { |score| score.report.machine_key }
+    def latest_per_machine
+      keys = Report.machine_keys(scores.map(&:report).uniq)
+      scores.sort_by { |score| [ score.report.created_at, score.report.id ] }.reverse.uniq { |score| keys.fetch(score.report) }
+    end
     def machines = latest_per_machine.size
     def runs = scores.size
     def values = latest_per_machine.map(&:value).sort

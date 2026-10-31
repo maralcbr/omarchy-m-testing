@@ -3,11 +3,8 @@
 # tables' columns (catalogue/asahi_tables.py MODEL_COLUMNS); chip is the
 # catalogue's chip generation key.
 #
-# gpu and display are the bring-up state of the Omarchy default image on that
-# Mac: status works, pending or missing, with a short note (and optionally a
-# url, e.g. the pull request it waits on). Leave one out and the catalogue's
-# expected Asahi and Aurora states decide it. Test results on /models come
-# from the reports, never from here.
+# Only which Macs exist goes here. Their GPU and display state comes from the
+# uploaded reports, or the catalogue while a Mac is untested.
 - name: Mac mini (2020)
   chip: m1
   boards: [j274]
@@ -59,38 +56,24 @@
 - name: MacBook Air 13"/15" M3
   chip: m3
   boards: [j613, j615]
-  gpu: { status: works }
-  display: { status: works }
 - name: MacBook Pro 14"/16" M3 Pro
   chip: m3-pro
   boards: [j514s, j516s]
-  gpu: { status: works, note: "in code; one tester's softpipe fallback is unexplained" }
-  display: { status: works }
 - name: MacBook Pro 16" M3 Max
   chip: m3-max
   boards: [j516c]
-  gpu: { status: pending, note: "yes, once the pending pull requests merge, but never yet run as a default" }
-  display: { status: pending }
 - name: MacBook Pro 14" M3 Max
   chip: m3-max
   boards: [j514c]
-  gpu: { status: missing, note: "no: the kernel GPU only matches the J516C" }
-  display: { status: missing, note: "opt-in only" }
 - name: MacBook Pro 14"/16" 30-core M3 Max (T6034)
   chip: m3-max
   boards: [j514m, j516m]
-  gpu: { status: missing, note: "no driver at all" }
-  display: { status: missing }
 - name: MacBook Pro 14" M3
   chip: m3
   boards: [j504]
-  gpu: { status: missing, note: "not in any default table" }
-  display: { status: missing }
 - name: iMac (2023)
   chip: m3
   boards: [j433, j434]
-  gpu: { status: missing, note: "not in any default table" }
-  display: { status: missing }
 - name: MacBook Neo (2026)
   chip: a18-pro
   boards: [j700]
