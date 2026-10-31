@@ -5,7 +5,7 @@ attended run asks its human checks, plays a tone, steps the brightness and
 offers the disruptive sections. Unattended, it asks only for the disclaimer,
 does none of that, and the report says it was unattended. The on-screen video
 check needs no person, only a screen: it still runs where logind finds an
-active local seat and the screen isn't locked, and asks nobody for anything.
+active local seat and the screen isn't locked or covered, and asks nobody for anything.
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ from tests.live_mac import LiveMac, MacState, live_recording
 from tests.schema_validator import errors
 from tests.test_audio_display import SINK
 from tests.test_interactive import ARGS, ENTER, SCHEMA, prompts, report
-from tests.test_video import CHECKS, GREEN, LOCKED, MAKE_TEMP, REMOVE_TEMP, UNLOCKED, at_desktop, desktop, monitors, mpv_log, played
+from tests.test_video import CHECKS, GREEN, LOCKED, MAKE_TEMP, NO_OVERLAY, REMOVE_TEMP, SCREENSAVER, UNLOCKED, at_desktop, desktop, monitors, mpv_log, played
 from tests.test_video import run as run_video
 
 
@@ -148,10 +148,20 @@ class UnattendedVideoTest(unittest.TestCase):
             self.assertEqual(checks[check_id]["status"], "skip")
             self.assertIn("the screen is locked", checks[check_id]["evidence"][-1])
 
-    def test_where_hyprland_cant_say_whether_its_locked_nothing_is_played(self):
-        for screen in (monitors(["WORKSPACE"]), '[{"name": "eDP-1"}]', "not json"):
-            with self.subTest(screen):
-                self.assert_skipped_without_playing(at_desktop(desktop(screen=(screen,))), "doesn't say whether the screen is locked")
+    def test_under_a_full_screen_overlay_nothing_is_played(self):
+        self.assert_skipped_without_playing(at_desktop(desktop(screen=(UNLOCKED,), overlays=(SCREENSAVER,))), "a full-screen overlay")
+
+    def test_a_screensaver_that_starts_during_the_check_is_skipped_not_failed(self):
+        checks = self.run_it(at_desktop(desktop(GREEN, mpv_log("vaapi", "gpu-next", "waylandvk"), screen=(UNLOCKED,), overlays=(NO_OVERLAY, SCREENSAVER))))
+
+        for check_id in CHECKS:
+            self.assertEqual(checks[check_id]["status"], "skip")
+            self.assertIn("a full-screen overlay", checks[check_id]["evidence"][-1])
+
+    def test_where_hyprland_cant_say_whats_on_screen_nothing_is_played(self):
+        for screen, overlays in ((monitors(["WORKSPACE"]), NO_OVERLAY), ('[{"name": "eDP-1"}]', NO_OVERLAY), ("not json", NO_OVERLAY), (UNLOCKED, "not json")):
+            with self.subTest(screen=screen, overlays=overlays):
+                self.assert_skipped_without_playing(at_desktop(desktop(screen=(screen,), overlays=(overlays,))), "doesn't say whether the screen is locked or covered")
 
     def test_missing_players_without_cached_sudo_skip_at_a_terminal_without_asking(self):
         state = MacState(installed={"mesa", "pipewire", "ffmpeg"}, sudo_cached=False)

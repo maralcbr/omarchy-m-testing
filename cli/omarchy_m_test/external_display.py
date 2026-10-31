@@ -18,6 +18,7 @@ from .session import Context
 
 CHECK_ID = "display.external-native-mode"
 MONITORS = ["hyprctl", "-j", "monitors", "all"]
+LAYERS = ["hyprctl", "-j", "layers"]
 SETTLE_SECONDS = 2
 KERNEL_LOG = ["timeout", "3", "journalctl", "--dmesg", "--boot=0", "--output=cat", "--no-pager"]
 DRM = "/sys/class/drm"
@@ -356,6 +357,17 @@ def _monitors_projection(text: str) -> str:
     return json.dumps([kept for kept in map(_monitor_projection, monitors) if kept is not None])
 
 
+def _layers_projection(text: str) -> str:
+    """Only each layer surface's size, by output and level: the video check's use for them (no namespaces, pids, addresses)."""
+    try:
+        outputs = json.loads(text)
+        return json.dumps({str(name): {"levels": {str(level): [{"w": surface.get("w"), "h": surface.get("h")} for surface in surfaces]
+                                                  for level, surfaces in output["levels"].items()}}
+                           for name, output in outputs.items()})
+    except (ValueError, AttributeError, KeyError, TypeError):
+        return ""
+
+
 def _drm_info_projection(text: str) -> str:
     try:
         devices = json.loads(text)
@@ -405,6 +417,8 @@ def recorded_output(argv: list[str], stdout: str, stderr: str) -> tuple[str, str
     (then only its DCP findings are rewritten, by recorded_text)."""
     if argv[:3] == ["hyprctl", "-j", "monitors"]:
         return _monitors_projection(stdout), ""
+    if argv == LAYERS:
+        return _layers_projection(stdout), ""
     if len(argv) >= 4 and argv[2] == "drm_info" and argv[:2] == ["timeout", "3"]:
         return _drm_info_projection(stdout), ""
     if argv == KERNEL_LOG:

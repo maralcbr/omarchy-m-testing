@@ -45,6 +45,14 @@ both checks are skipped. A result that would fail is asked again, as the screen
 can lock during the check. Where Hyprland can't say, an attended run carries on,
 and an unattended one, where nobody would see why it failed, is skipped.
 
+A full-screen overlay is the same: Omarchy's screensaver is a layer-shell
+overlay above a full-screen window, and on an M3 Air it put wrong colours in the
+screenshot of a screen that was not locked. So the built-in screen's overlay
+layer is read too (`hyprctl -j layers`, level 3), the same two times. Any
+surface there covering most of the screen counts, whoever drew it; a narrower
+one (notifications) or a lower layer (the bar) doesn't. A screensaver that comes
+and goes within one card can still reach a result.
+
 The test cards, screenshots and logs go in a private temporary directory
 that is removed when the section ends; none of it leaves the machine.
 """
@@ -94,7 +102,12 @@ CARD_FAILED, NO_BUILT_IN, NO_HYPRLAND, NO_SCREENSHOT, NEVER_SHOWN = 3, 4, 5, 6, 
 NOT_INSTALLED = 127
 
 LOCKED = "the screen is locked: a screenshot would show the lock screen, not the test card"
-LOCK_UNKNOWN = "Hyprland doesn't say whether the screen is locked, and a lock screen in the screenshot would look like a failure"
+COVERED = "a full-screen overlay (a screensaver, say) covers the screen: a screenshot would show it, not the test card"
+HIDDEN_UNKNOWN = "Hyprland doesn't say whether the screen is locked or covered, and either in the screenshot would look like a failure"
+OVERLAY_LEVEL = "3"
+# The part of the screen, each way, that makes an overlay surface full-screen: room for a reserved edge.
+COVERS = 0.9
+_BUILT_IN = re.compile(r"(eDP|LVDS|DSI)-")  # as testcard/video-card.sh finds it
 
 _HWDEC_USED = re.compile(r"Using hardware decoding \(([\w-]+)\)")
 _SOFTWARE = re.compile(r"Using software decoding|Falling back to software decoding")
@@ -142,30 +155,62 @@ def _blocked(ctx: Context) -> str | None:
         return over_ssh
     if not found.seat:
         return f"no local desktop session ({found.why_no_seat})"
-    locked = _locked(ctx.host)
+    hidden = _hidden(ctx.host)
+    return None if hidden == HIDDEN_UNKNOWN and not unattended else hidden
+
+
+def _hidden(host: Host) -> str | None:
+    """Why the card wouldn't be what a screenshot shows: LOCKED, COVERED, HIDDEN_UNKNOWN; None when it would (see the module docstring)."""
+    monitors = _ask(host, external_display.MONITORS)
+    locked = _locked(monitors)
     if locked:
         return LOCKED
-    return LOCK_UNKNOWN if locked is None and unattended else None
+    if locked is None:
+        return HIDDEN_UNKNOWN
+    layers = _ask(host, external_display.LAYERS)
+    if not isinstance(layers, dict):
+        return HIDDEN_UNKNOWN
+    return COVERED if _covered(monitors, layers) else None
 
 
-def _locked(host: Host) -> bool | None:
-    """Whether Hyprland holds a session lock; None when it can't say (see the module docstring).
+def _ask(host: Host, argv: list[str]) -> object:
+    answer = host.run(argv)
+    try:
+        return json.loads(answer.stdout) if answer.returncode == 0 else None
+    except ValueError:
+        return None
+
+
+def _locked(monitors: object) -> bool | None:
+    """Whether Hyprland holds a session lock; None when it can't say.
 
     Hyprland stops at the first reason on a monitor with no workspace yet, so
     there a missing LOCK means nothing.
     """
-    answer = host.run(external_display.MONITORS)
-    try:
-        monitors = json.loads(answer.stdout)
-    except ValueError:
-        return None
-    if answer.returncode != 0 or not isinstance(monitors, list):
+    if not isinstance(monitors, list):
         return None
     reasons = [monitor.get("solitaryBlockedBy") for monitor in monitors if isinstance(monitor, dict)]
     reasons = [reason for reason in reasons if isinstance(reason, list)]
     if any("LOCK" in reason for reason in reasons):
         return True
     return False if any("WORKSPACE" not in reason for reason in reasons) else None
+
+
+def _covered(monitors: list, layers: dict) -> bool:
+    """Whether an overlay surface covers most of the built-in screen. Layer sizes are logical pixels, monitors' physical."""
+    try:
+        for monitor in monitors:
+            if not _BUILT_IN.match(monitor["name"]):
+                continue
+            width, height = monitor["width"] / monitor["scale"], monitor["height"] / monitor["scale"]
+            if monitor.get("transform", 0) % 2:
+                width, height = height, width
+            for surface in layers.get(monitor["name"], {}).get("levels", {}).get(OVERLAY_LEVEL, []):
+                if surface["w"] >= COVERS * width and surface["h"] >= COVERS * height:
+                    return True
+    except (AttributeError, KeyError, TypeError, ZeroDivisionError):
+        pass
+    return False
 
 
 def hwdec_request(host: Host) -> Request:
@@ -212,8 +257,10 @@ def _config_hwdec(text: str) -> str | None:
 
 def _check(ctx: Context, directory: str, codec: str, label: str, check_id: str, request: Request, evidence: list[str]) -> dict:
     result = _play(ctx, directory, codec, label, check_id, request, evidence)
-    if result["status"] == "fail" and _locked(ctx.host):
-        return _skip(check_id, LOCKED, [*evidence, request.evidence])
+    if result["status"] == "fail":
+        hidden = _hidden(ctx.host)
+        if hidden in (LOCKED, COVERED):
+            return _skip(check_id, hidden, [*evidence, request.evidence])
     return result
 
 

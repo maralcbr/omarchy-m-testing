@@ -25,7 +25,7 @@ import zlib
 
 from omarchy_m_test import png
 from omarchy_m_test.app import main
-from omarchy_m_test.external_display import MONITORS
+from omarchy_m_test.external_display import LAYERS, MONITORS
 from omarchy_m_test.host import bundled_argv
 from omarchy_m_test.sections import APPLE
 from tests.desktop import HOME, command
@@ -54,11 +54,26 @@ ZERO_COPY_CONF = "hwdec=vaapi\nvo=gpu-next\n"
 
 # `hyprctl -j monitors all`, the part the lock check reads: the reasons as Hyprland 0.57 names them.
 def monitors(*blocked_by: list[str]) -> str:
-    return json.dumps([{"name": f"eDP-{i + 1}", "solitaryBlockedBy": reasons} for i, reasons in enumerate(blocked_by)])
+    return json.dumps([{"name": f"eDP-{i + 1}", "width": 3024, "height": 1964, "scale": 2.0, "transform": 0, "solitaryBlockedBy": reasons}
+                       for i, reasons in enumerate(blocked_by)])
 
 
 UNLOCKED = monitors(["WINDOWED", "CANDIDATE"])
 LOCKED = monitors(["LOCK", "WINDOWED", "CANDIDATE"])
+
+
+# `hyprctl -j layers`: what an Omarchy desktop keeps there (Hyprland 0.57, a 3024x1964 screen at scale 2) and what's on top.
+def layers(*overlays: dict, output: str = "eDP-1") -> str:
+    return json.dumps({output: {"levels": {
+        "0": [{"namespace": "omarchy-background", "x": 0, "y": 0, "w": 1512, "h": 982}],
+        "1": [],
+        "2": [{"namespace": "omarchy-bar", "x": 0, "y": 0, "w": 1512, "h": 982}],
+        "3": [{"namespace": "omarchy-notifications", "x": 1113, "y": 0, "w": 399, "h": 982}, *overlays],
+    }}})
+
+
+NO_OVERLAY = layers()
+SCREENSAVER = layers({"namespace": "screensaver", "x": 0, "y": 0, "w": 1512, "h": 982})
 
 with open(SCHEMA_PATH, encoding="utf-8") as f:
     SCHEMA = json.load(f)
@@ -145,11 +160,13 @@ def mpv_log(hwdec: str | None, vo: str, context: str, codec: str = "h264", end: 
 def desktop(
     shot: bytes | None = CORRECT, log: str | None = None, system_conf: str | None = SHIPPED_CONF, user_conf: str | None = None,
     hwdec_args: tuple[str, ...] = (), returncode: int = 0, stderr: str = "", env: dict | None = None, screen: tuple[str, ...] = (),
+    overlays: tuple[str, ...] = (NO_OVERLAY,),
 ) -> dict:
-    """The recorded M2 at its Hyprland desktop, with the answers the video section gets (`screen`: hyprctl's monitors, in turn)."""
+    """The recorded M2 at its Hyprland desktop, with the answers the video section gets (`screen`, `overlays`: hyprctl's monitors and layers, in turn)."""
     rec = live_recording({"WAYLAND_DISPLAY": "wayland-1", **(env or {})})
     if screen:
         rec["commands"] = [entry for entry in rec["commands"] if entry["argv"] != MONITORS] + [command(MONITORS, answer) for answer in screen]
+        rec["commands"] += [command(LAYERS, answer) for answer in overlays]
     log = mpv_log("vaapi-copy", "gpu", "wayland") if log is None else log
     rec["commands"] += [
         command(MAKE_TEMP, TEMP + "\n"),
@@ -388,6 +405,76 @@ class LockedScreenTest(unittest.TestCase):
         for screen in (monitors(["WORKSPACE"]), '[{"name": "eDP-1"}]', "not json"):
             with self.subTest(screen):
                 self.assertEqual(run(at_desktop(desktop(screen=(screen,))))[CHECKS[0]]["status"], "pass")
+
+
+class FullScreenOverlayTest(unittest.TestCase):
+    def assert_covered(self, checks: dict) -> None:
+        for check_id in CHECKS:
+            self.assertEqual(checks[check_id]["status"], "skip")
+            self.assertIn("a full-screen overlay", checks[check_id]["evidence"][-1])
+
+    def test_a_screensaver_plays_nothing(self):
+        host = at_desktop(desktop(screen=(UNLOCKED,), overlays=(SCREENSAVER,)))
+
+        self.assert_covered(run(host))
+
+        self.assertEqual(played(host), [])
+        self.assertNotIn(MAKE_TEMP, host.commands_run)
+
+    def test_a_screensaver_that_starts_during_the_check_is_skipped_not_failed(self):
+        checks = run(at_desktop(desktop(GREEN, mpv_log("vaapi", "gpu-next", "waylandvk"), screen=(UNLOCKED,), overlays=(NO_OVERLAY, SCREENSAVER))))
+
+        self.assert_covered(checks)
+        self.assertNotIn("wrong colour", " ".join(checks[CHECKS[0]]["evidence"]))
+
+    def test_with_no_overlay_a_wrong_picture_still_fails(self):
+        checks = run(at_desktop(desktop(GREEN, mpv_log("vaapi", "gpu-next", "waylandvk"), screen=(UNLOCKED,))))
+
+        for check_id in CHECKS:
+            self.assertEqual(checks[check_id]["status"], "fail")
+
+    def test_what_doesnt_cover_the_built_in_screen_doesnt_count(self):
+        full = {"namespace": "other", "x": 0, "y": 0, "w": 1512, "h": 982}
+        for name, overlay in (
+            ("notifications and a full-screen bar below", NO_OVERLAY),
+            ("a dialog", layers({"namespace": "dialog", "x": 400, "y": 300, "w": 700, "h": 400})),
+            ("a strip across the whole width", layers({"namespace": "strip", "x": 0, "y": 0, "w": 1512, "h": 200})),
+            ("full screen on an external display", layers(full, output="HDMI-A-1")),
+        ):
+            with self.subTest(name):
+                self.assertEqual(run(at_desktop(desktop(screen=(UNLOCKED,), overlays=(overlay,))))[CHECKS[0]]["status"], "pass")
+
+    def test_a_full_screen_overlay_on_an_external_display_only_doesnt_count(self):
+        both = json.loads(UNLOCKED)
+        both.append({**both[0], "name": "HDMI-A-1"})
+        overlay = {"HDMI-A-1": {"levels": {"3": [{"namespace": "other", "w": 1512, "h": 982}]}}, "eDP-1": {"levels": {"3": []}}}
+
+        checks = run(at_desktop(desktop(screen=(json.dumps(both),), overlays=(json.dumps(overlay),))))
+
+        self.assertEqual(checks[CHECKS[0]]["status"], "pass")
+
+    def test_what_nearly_covers_it_counts_and_a_rotated_screen_is_measured_rotated(self):
+        rotated = json.loads(UNLOCKED)
+        rotated[0]["transform"] = 1
+        for name, screen, surface in (
+            ("room for a reserved edge", UNLOCKED, {"w": 1512, "h": 950}),
+            ("rotated", json.dumps(rotated), {"w": 982, "h": 1512}),
+        ):
+            with self.subTest(name):
+                self.assert_covered(run(at_desktop(desktop(screen=(screen,), overlays=(layers(surface),)))))
+
+    def test_at_the_mac_layers_hyprland_cant_report_dont_stop_the_check(self):
+        self.assertEqual(run(at_desktop(desktop(screen=(UNLOCKED,), overlays=("not json",))))[CHECKS[0]]["status"], "pass")
+
+    def test_a_recording_keeps_only_the_layers_sizes(self):
+        host = at_desktop(desktop(screen=(UNLOCKED,), overlays=(SCREENSAVER,)))
+
+        self.assertEqual(main([*ARGS, "--record", RECORD_FILE], host, sections=VIDEO), 0)
+
+        recording = json.loads(host.written[RECORD_FILE])
+        kept = next(entry["stdout"] for entry in recording["commands"] if entry["argv"] == LAYERS)
+        self.assertEqual(json.loads(kept)["eDP-1"]["levels"]["3"][1], {"w": 1512, "h": 982})
+        self.assertNotIn("namespace", kept)
 
 
 class RecordModeTest(unittest.TestCase):
