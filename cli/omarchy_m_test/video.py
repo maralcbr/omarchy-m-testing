@@ -41,17 +41,25 @@ screenshot holds says nothing about video: logind's Active stays yes, and
 Omarchy's lock doesn't set its LockedHint, so Hyprland is asked, the way Omarchy
 asks (omarchy-hyprland-session-locked: LOCK among a monitor's
 solitaryBlockedBy). Locked before the card: nothing is played or installed, and
-both checks are skipped. A result that would fail is asked again, as the screen
-can lock during the check. Where Hyprland can't say, an attended run carries on,
-and an unattended one, where nobody would see why it failed, is skipped.
+both checks are skipped. Wrong colours are asked about again, as the screen can
+lock during the check. Where Hyprland can't say, an attended run carries on, and
+an unattended one, where nobody would see why it failed, is skipped.
 
 A full-screen overlay is the same: Omarchy's screensaver is a layer-shell
 overlay above a full-screen window, and on an M3 Air it put wrong colours in the
 screenshot of a screen that was not locked. So the built-in screen's overlay
-layer is read too (`hyprctl -j layers`, level 3), the same two times. Any
-surface there covering most of the screen counts, whoever drew it; a narrower
-one (notifications) or a lower layer (the bar) doesn't. A screensaver that comes
-and goes within one card can still reach a result.
+layer is read too (`hyprctl -j layers`, level 3). Before the card, any surface
+there covering most of the screen counts, whoever drew it; a narrower one
+(notifications) or a lower layer (the bar) doesn't. That is broad on purpose:
+Omarchy's OSD and its menus' dismiss surfaces are transparent and full-screen
+too, and a false skip only loses a test.
+
+The second look must not hide a true failure, so it is narrower. Only wrong
+colours get one, not software decode or mpv's own failures, and only a lock or
+Omarchy's screensaver (by its namespace) turns them into a skip, with the failure
+kept in the evidence. So another screensaver starting during the card is a
+visible FAIL, which is better than a real one hidden, and one that comes and goes
+within one card can still reach a result.
 
 The test cards, screenshots and logs go in a private temporary directory
 that is removed when the section ends; none of it leaves the machine.
@@ -105,6 +113,7 @@ LOCKED = "the screen is locked: a screenshot would show the lock screen, not the
 COVERED = "a full-screen overlay (a screensaver, say) covers the screen: a screenshot would show it, not the test card"
 HIDDEN_UNKNOWN = "Hyprland doesn't say whether the screen is locked or covered, and either in the screenshot would look like a failure"
 OVERLAY_LEVEL = "3"
+SCREENSAVER_NAMESPACE = external_display.SCREENSAVER_NAMESPACE
 # The part of the screen, each way, that makes an overlay surface full-screen: room for a reserved edge.
 COVERS = 0.9
 _BUILT_IN = re.compile(r"(eDP|LVDS|DSI)-")  # as testcard/video-card.sh finds it
@@ -139,7 +148,7 @@ def run(ctx: Context) -> list[dict]:
     ctx.changes.register("the video check's test cards and screenshots", ["rm", "-rf", "--", directory])
     request = hwdec_request(ctx.host)
     (ctx.ui or Ui(ctx.host)).text("The built-in screen shows colour bars for a few seconds, twice: leave the keyboard and trackpad alone until they go.")
-    return [_check(ctx, directory, codec, label, check_id, request, ready.evidence()) for codec, label, check_id in CODECS]
+    return [_play(ctx, directory, codec, label, check_id, request, ready.evidence()) for codec, label, check_id in CODECS]
 
 
 def _blocked(ctx: Context) -> str | None:
@@ -196,8 +205,9 @@ def _locked(monitors: object) -> bool | None:
     return False if any("WORKSPACE" not in reason for reason in reasons) else None
 
 
-def _covered(monitors: list, layers: dict) -> bool:
-    """Whether an overlay surface covers most of the built-in screen. Layer sizes are logical pixels, monitors' physical."""
+def _overlays(monitors: object, layers: object) -> list[tuple[dict, float, float]]:
+    """The built-in screen's overlay surfaces, each with that screen's logical size (layer sizes are logical, monitors' physical)."""
+    found = []
     try:
         for monitor in monitors:
             if not _BUILT_IN.match(monitor["name"]):
@@ -205,12 +215,28 @@ def _covered(monitors: list, layers: dict) -> bool:
             width, height = monitor["width"] / monitor["scale"], monitor["height"] / monitor["scale"]
             if monitor.get("transform", 0) % 2:
                 width, height = height, width
-            for surface in layers.get(monitor["name"], {}).get("levels", {}).get(OVERLAY_LEVEL, []):
-                if surface["w"] >= COVERS * width and surface["h"] >= COVERS * height:
-                    return True
+            found += [(surface, width, height) for surface in layers.get(monitor["name"], {}).get("levels", {}).get(OVERLAY_LEVEL, [])]
     except (AttributeError, KeyError, TypeError, ZeroDivisionError):
         pass
-    return False
+    return found
+
+
+def _covered(monitors: object, layers: object) -> bool:
+    """Whether an overlay surface covers most of the built-in screen."""
+    try:
+        return any(surface["w"] >= COVERS * width and surface["h"] >= COVERS * height for surface, width, height in _overlays(monitors, layers))
+    except (KeyError, TypeError):
+        return False
+
+
+def _since_taken(host: Host) -> str | None:
+    """The second look at wrong colours: why the screenshot wasn't of the card, only if that's certain (see the module docstring)."""
+    monitors = _ask(host, external_display.MONITORS)
+    locked = _locked(monitors)
+    if locked or locked is None:
+        return LOCKED if locked else None
+    layers = _ask(host, external_display.LAYERS)
+    return COVERED if any(surface.get("namespace") == SCREENSAVER_NAMESPACE for surface, _, _ in _overlays(monitors, layers) if isinstance(surface, dict)) else None
 
 
 def hwdec_request(host: Host) -> Request:
@@ -255,15 +281,6 @@ def _config_hwdec(text: str) -> str | None:
     return value
 
 
-def _check(ctx: Context, directory: str, codec: str, label: str, check_id: str, request: Request, evidence: list[str]) -> dict:
-    result = _play(ctx, directory, codec, label, check_id, request, evidence)
-    if result["status"] == "fail":
-        hidden = _hidden(ctx.host)
-        if hidden in (LOCKED, COVERED):
-            return _skip(check_id, hidden, [*evidence, request.evidence])
-    return result
-
-
 def _play(ctx: Context, directory: str, codec: str, label: str, check_id: str, request: Request, evidence: list[str]) -> dict:
     played = ctx.host.run_bundled(SCRIPT, [directory, codec, *request.args])
     lines = [*evidence, request.evidence]
@@ -303,6 +320,10 @@ def _play(ctx: Context, directory: str, codec: str, label: str, check_id: str, r
         lines.append("on screen: every bar in its colour")
     if not hardware:
         lines.append("hardware decode: not used, mpv decoded the test card in software")
+    if wrong:
+        taken = _since_taken(ctx.host)
+        if taken:
+            return _skip(check_id, taken, lines)
     return _result(check_id, "fail" if wrong or not hardware else "pass", lines)
 
 

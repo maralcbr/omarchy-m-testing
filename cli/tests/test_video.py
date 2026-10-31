@@ -73,7 +73,10 @@ def layers(*overlays: dict, output: str = "eDP-1") -> str:
 
 
 NO_OVERLAY = layers()
-SCREENSAVER = layers({"namespace": "screensaver", "x": 0, "y": 0, "w": 1512, "h": 982})
+SCREENSAVER = layers({"namespace": "org.omarchy.screensaver", "x": 0, "y": 0, "w": 1512, "h": 982})
+# Omarchy's OSD: transparent and full-screen (shell/plugins/osd/Osd.qml, Ui/OverlayWindow.qml), with its card low down.
+TRANSPARENT = layers({"namespace": "omarchy-osd", "x": 0, "y": 0, "w": 1512, "h": 982})
+OTHER_SCREENSAVER = layers({"namespace": "swaylock-plugin-saver", "x": 0, "y": 0, "w": 1512, "h": 982})
 
 with open(SCHEMA_PATH, encoding="utf-8") as f:
     SCHEMA = json.load(f)
@@ -379,16 +382,31 @@ class LockedScreenTest(unittest.TestCase):
         self.assertNotIn(MAKE_TEMP, host.commands_run)
         self.assertFalse(any(argv[:2] == ["pacman", "-Sp"] for argv in host.commands_run))
 
-    def test_a_screen_that_locks_during_the_check_is_skipped_not_failed(self):
-        wrong_picture = {"shot": GREEN, "log": mpv_log("vaapi", "gpu-next", "waylandvk")}
+    def test_wrong_colours_on_a_screen_that_locks_during_the_check_are_skipped_with_the_failure_kept(self):
+        checks = run(at_desktop(desktop(GREEN, mpv_log("vaapi", "gpu-next", "waylandvk"), screen=(UNLOCKED, LOCKED))))
+
+        self.assert_locked(checks)
+        self.assertIn("in the wrong colour", " ".join(checks[CHECKS[0]]["evidence"]))
+        self.assertIn("red bar: expected #ff0000, saw #006f00 (wrong)", checks[CHECKS[0]]["evidence"])
+
+    def test_only_wrong_colours_get_a_second_look(self):
         never_shown = {"shot": None, "log": "[  20.0][e][testcard] omarchy-m-test: the test card never started playing\n", "returncode": 7}
         mpv_stopped = {"shot": None, "log": "[   1.0][e][vo/gpu] no frame\n", "returncode": 1}
-        for name, outcome in (("wrong picture", wrong_picture), ("never shown", never_shown), ("mpv stopped", mpv_stopped)):
+        software = {"shot": CORRECT, "log": mpv_log(None, "gpu", "wayland")}
+        for name, outcome in (("never shown", never_shown), ("mpv stopped", mpv_stopped), ("software decode", software)):
             with self.subTest(name):
-                checks = run(at_desktop(desktop(screen=(UNLOCKED, LOCKED), **outcome)))
+                host = at_desktop(desktop(screen=(UNLOCKED, LOCKED), overlays=(NO_OVERLAY, SCREENSAVER), **outcome))
 
-                self.assert_locked(checks)
-                self.assertNotIn("wrong colour", " ".join(checks[CHECKS[0]]["evidence"]))
+                self.assertEqual(run(host)[CHECKS[0]]["status"], "fail")
+                self.assertEqual(host.commands_run.count(MONITORS), 1)
+
+    def test_a_pass_stays_a_pass_when_the_second_read_would_say_locked_or_covered(self):
+        for screen, overlays in (((UNLOCKED, LOCKED), (NO_OVERLAY,)), ((UNLOCKED,), (NO_OVERLAY, SCREENSAVER))):
+            with self.subTest(screen=screen, overlays=overlays):
+                host = at_desktop(desktop(screen=screen, overlays=overlays))
+
+                self.assertEqual(run(host)[CHECKS[1]]["status"], "pass")
+                self.assertEqual(host.commands_run.count(MONITORS), 1)
 
     def test_on_a_screen_that_stays_unlocked_a_wrong_picture_still_fails(self):
         checks = run(at_desktop(desktop(GREEN, mpv_log("vaapi", "gpu-next", "waylandvk"), screen=(UNLOCKED,))))
@@ -421,11 +439,33 @@ class FullScreenOverlayTest(unittest.TestCase):
         self.assertEqual(played(host), [])
         self.assertNotIn(MAKE_TEMP, host.commands_run)
 
-    def test_a_screensaver_that_starts_during_the_check_is_skipped_not_failed(self):
+    def test_wrong_colours_under_omarchys_screensaver_starting_during_the_check_are_skipped_with_the_failure_kept(self):
         checks = run(at_desktop(desktop(GREEN, mpv_log("vaapi", "gpu-next", "waylandvk"), screen=(UNLOCKED,), overlays=(NO_OVERLAY, SCREENSAVER))))
 
         self.assert_covered(checks)
-        self.assertNotIn("wrong colour", " ".join(checks[CHECKS[0]]["evidence"]))
+        self.assertIn("in the wrong colour", " ".join(checks[CHECKS[0]]["evidence"]))
+
+    def test_at_the_second_look_any_other_full_screen_surface_leaves_the_failure_visible(self):
+        for name, overlay in (("transparent OSD", TRANSPARENT), ("another screensaver", OTHER_SCREENSAVER)):
+            with self.subTest(name):
+                checks = run(at_desktop(desktop(GREEN, mpv_log("vaapi", "gpu-next", "waylandvk"), screen=(UNLOCKED,), overlays=(NO_OVERLAY, overlay))))
+
+                for check_id in CHECKS:
+                    self.assertEqual(checks[check_id]["status"], "fail")
+
+    def test_before_the_card_a_transparent_full_screen_surface_is_a_skip(self):
+        host = at_desktop(desktop(screen=(UNLOCKED,), overlays=(TRANSPARENT,)))
+
+        self.assert_covered(run(host))
+        self.assertEqual(played(host), [])
+
+    def test_a_fractional_scale_is_measured_in_logical_pixels(self):
+        fractional = json.loads(UNLOCKED)
+        fractional[0].update(width=2880, height=1864, scale=1.8)
+        for name, surface, status in (("covers 1600x1036", {"w": 1600, "h": 1036}, "skip"), ("too small at 1.8, enough at 2", {"w": 1350, "h": 900}, "pass")):
+            with self.subTest(name):
+                checks = run(at_desktop(desktop(screen=(json.dumps(fractional),), overlays=(layers(surface),))))
+                self.assertEqual(checks[CHECKS[0]]["status"], status)
 
     def test_with_no_overlay_a_wrong_picture_still_fails(self):
         checks = run(at_desktop(desktop(GREEN, mpv_log("vaapi", "gpu-next", "waylandvk"), screen=(UNLOCKED,))))
@@ -466,15 +506,39 @@ class FullScreenOverlayTest(unittest.TestCase):
     def test_at_the_mac_layers_hyprland_cant_report_dont_stop_the_check(self):
         self.assertEqual(run(at_desktop(desktop(screen=(UNLOCKED,), overlays=("not json",))))[CHECKS[0]]["status"], "pass")
 
-    def test_a_recording_keeps_only_the_layers_sizes(self):
+    def test_a_recording_keeps_the_layers_sizes_and_no_name_but_the_screensavers(self):
         host = at_desktop(desktop(screen=(UNLOCKED,), overlays=(SCREENSAVER,)))
 
         self.assertEqual(main([*ARGS, "--record", RECORD_FILE], host, sections=VIDEO), 0)
 
         recording = json.loads(host.written[RECORD_FILE])
-        kept = next(entry["stdout"] for entry in recording["commands"] if entry["argv"] == LAYERS)
-        self.assertEqual(json.loads(kept)["eDP-1"]["levels"]["3"][1], {"w": 1512, "h": 982})
-        self.assertNotIn("namespace", kept)
+        kept = json.loads(next(entry["stdout"] for entry in recording["commands"] if entry["argv"] == LAYERS))["eDP-1"]["levels"]["3"]
+        self.assertEqual(kept, [{"w": 399, "h": 982}, {"w": 1512, "h": 982, "namespace": "org.omarchy.screensaver"}])
+
+    def test_a_recording_keeps_only_hyprlands_own_reasons(self):
+        host = at_desktop(desktop(screen=(monitors(["LOCK", "WINDOWED", "SYNTHMODEL"]),)))
+
+        self.assertEqual(main([*ARGS, "--record", RECORD_FILE], host, sections=VIDEO), 0)
+
+        recording = json.loads(host.written[RECORD_FILE])
+        kept = json.loads(next(entry["stdout"] for entry in recording["commands"] if entry["argv"] == MONITORS))
+        self.assertEqual(kept[0]["solitaryBlockedBy"], ["LOCK", "WINDOWED"])
+
+    def test_a_recording_replays_a_lock_and_a_screensaver_as_it_saw_them(self):
+        for name, screen, overlay, reason in (("locked", LOCKED, NO_OVERLAY, "the screen is locked"), ("screensaver", UNLOCKED, SCREENSAVER, "a full-screen overlay")):
+            with self.subTest(name):
+                host = at_desktop(desktop(screen=(screen,), overlays=(overlay,)))
+                self.assertEqual(main([*ARGS, "--record", RECORD_FILE], host, sections=VIDEO), 0)
+
+                saved = json.loads(host.written[RECORD_FILE])["commands"]
+                kept_screen = next(entry["stdout"] for entry in saved if entry["argv"] == MONITORS)
+                # A locked screen never gets as far as asking for the layers.
+                kept_overlay = next((entry["stdout"] for entry in saved if entry["argv"] == LAYERS), NO_OVERLAY)
+
+                checks = run(at_desktop(desktop(screen=(kept_screen,), overlays=(kept_overlay,))))
+
+                self.assertEqual(checks[CHECKS[0]]["status"], "skip")
+                self.assertIn(reason, checks[CHECKS[0]]["evidence"][-1])
 
 
 class RecordModeTest(unittest.TestCase):

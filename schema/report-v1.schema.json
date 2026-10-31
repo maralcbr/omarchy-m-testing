@@ -88,7 +88,7 @@
       }
     },
     "unattended": {
-      "description": "Present (true) when nobody was at the Mac for the run (omarchy-m-test --unattended): only the automatic checks ran, every human check is skipped with that reason, and nothing disruptive was done. Absent when someone was there to be asked.",
+      "description": "Present (true) when nobody was at the Mac for the run (omarchy-m-test --unattended): only the automatic checks ran, every human check is skipped with that reason, and no disruptive section ran. The on-screen video check may have shown its test card full screen on an active, unlocked local session. Absent when someone was there to be asked.",
       "const": true
     },
     "inventory": {

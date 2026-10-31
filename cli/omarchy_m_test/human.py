@@ -54,7 +54,10 @@ def check(ctx: Context, check_id: str, question: str, evidence: Sequence[str] = 
 
 
 def unattended(ctx: Context) -> bool:
-    """Nobody is at the Mac (--unattended): ask nothing, and do nothing only a person would see or hear."""
+    """Nobody is at the Mac (--unattended): ask nothing, and do nothing only a person would see or hear.
+
+    The on-screen video check still shows its test card (video.py): the tool reads that itself.
+    """
     return bool(ctx.cache.get(presence.UNATTENDED_KEY))
 
 

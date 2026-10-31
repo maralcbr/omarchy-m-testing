@@ -151,12 +151,25 @@ class UnattendedVideoTest(unittest.TestCase):
     def test_under_a_full_screen_overlay_nothing_is_played(self):
         self.assert_skipped_without_playing(at_desktop(desktop(screen=(UNLOCKED,), overlays=(SCREENSAVER,))), "a full-screen overlay")
 
-    def test_a_screensaver_that_starts_during_the_check_is_skipped_not_failed(self):
+    def test_wrong_colours_under_a_screensaver_starting_during_the_check_are_skipped_with_the_failure_kept(self):
         checks = self.run_it(at_desktop(desktop(GREEN, mpv_log("vaapi", "gpu-next", "waylandvk"), screen=(UNLOCKED,), overlays=(NO_OVERLAY, SCREENSAVER))))
 
         for check_id in CHECKS:
             self.assertEqual(checks[check_id]["status"], "skip")
             self.assertIn("a full-screen overlay", checks[check_id]["evidence"][-1])
+            self.assertIn("in the wrong colour", " ".join(checks[check_id]["evidence"]))
+
+    def test_a_pass_stays_a_pass_whatever_a_second_read_would_say(self):
+        checks = self.run_it(at_desktop(desktop(screen=(UNLOCKED, LOCKED), overlays=(NO_OVERLAY, SCREENSAVER))))
+
+        for check_id in CHECKS:
+            self.assertEqual(checks[check_id]["status"], "pass")
+
+    def test_software_decode_stays_a_failure_whatever_a_second_read_would_say(self):
+        checks = self.run_it(at_desktop(desktop(log=mpv_log(None, "gpu", "wayland"), screen=(UNLOCKED, LOCKED), overlays=(NO_OVERLAY, SCREENSAVER))))
+
+        for check_id in CHECKS:
+            self.assertEqual(checks[check_id]["status"], "fail")
 
     def test_where_hyprland_cant_say_whats_on_screen_nothing_is_played(self):
         for screen, overlays in ((monitors(["WORKSPACE"]), NO_OVERLAY), ('[{"name": "eDP-1"}]', NO_OVERLAY), ("not json", NO_OVERLAY), (UNLOCKED, "not json")):
@@ -184,6 +197,13 @@ class UnattendedVideoTest(unittest.TestCase):
         self.assertIn("installed for this run, removed at its end: mpv grim", checks[CHECKS[0]]["evidence"])
         self.assertNotIn("mpv", host.state.installed)
         self.assertEqual(prompts(host), [ACCEPT_PROMPT])
+
+    def test_the_run_says_the_card_can_take_the_screen(self):
+        host = at_desktop(desktop(screen=(UNLOCKED,)))
+
+        self.run_it(host)
+
+        self.assertIn("can still take this screen", " ".join(host.output.split()))
 
     def test_a_whole_run_at_a_desktop_changes_nothing_else(self):
         # Hyprland's monitors for the video section; then what the Display section's own read answers on the recorded M2.
