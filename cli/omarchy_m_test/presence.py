@@ -18,12 +18,13 @@ The helpers that make disruptive changes (changes.py) check this again
 themselves, so a section that forgot to say it's disruptive still can't cut
 an SSH connection.
 
-An unattended run (--unattended) is nobody at the Mac: nothing is detected,
+An unattended run (--unattended) is nobody at the Mac: of() detects nothing,
 and every disruptive section, plug-in prompt and human question is skipped
-with that reason.
+with that reason. The on-screen video check (video.py) needs a screen, not a
+person, so it calls detect() itself.
 
-Detection happens once per run, only when something needs it, and is kept in
-the run's cache.
+of() detects once per run, only when something needs it, and keeps it in the
+run's cache.
 """
 
 from __future__ import annotations

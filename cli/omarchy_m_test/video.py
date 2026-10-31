@@ -22,20 +22,40 @@ files, and only it reaches the evidence.
 It claims nothing about tearing, frame pacing or VRR: one paused frame is
 checked.
 
-Needs the human's desktop: a Wayland session (WAYLAND_DISPLAY), a local seat
-and no SSH (presence.py), Hyprland (the built-in screen is found with
-hyprctl) and mpv, grim and ffmpeg, installed for the run with consent if
-missing (packages.py). Otherwise both checks are skipped, with the reason.
+Needs a desktop at the Mac: a Wayland session (WAYLAND_DISPLAY), a local seat
+and no SSH (presence.py), an unlocked screen, Hyprland (the built-in screen is
+found with hyprctl) and mpv, grim and ffmpeg, installed for the run with
+consent if missing (packages.py). Otherwise both checks are skipped, with the
+reason.
+
+It needs a screen, not a person: the tool takes the screenshot and reads the
+colours itself. So an unattended run (--unattended) still runs it, where it
+really finds an active local seat by asking logind (presence.detect, since
+presence.of says nobody is at the Mac), and the test card briefly takes the
+screen of whatever session is active there. It never asks for a password: test
+packages it can't install with sudo's cached or passwordless credentials skip
+the checks.
+
+A locked screen shows the lock surface over the card, so whatever the
+screenshot holds says nothing about video: logind's Active stays yes, and
+Omarchy's lock doesn't set its LockedHint, so Hyprland is asked, the way Omarchy
+asks (omarchy-hyprland-session-locked: LOCK among a monitor's
+solitaryBlockedBy). Locked before the card: nothing is played or installed, and
+both checks are skipped. A result that would fail is asked again, as the screen
+can lock during the check. Where Hyprland can't say, an attended run carries on,
+and an unattended one, where nobody would see why it failed, is skipped.
+
 The test cards, screenshots and logs go in a private temporary directory
 that is removed when the section ends; none of it leaves the machine.
 """
 
 from __future__ import annotations
 
+import json
 import re
 from dataclasses import dataclass
 
-from . import packages, png, presence
+from . import external_display, human, packages, png, presence
 from .host import Host
 from .session import Context
 from .ui import Ui
@@ -73,6 +93,9 @@ TOLERANCE = 64
 CARD_FAILED, NO_BUILT_IN, NO_HYPRLAND, NO_SCREENSHOT, NEVER_SHOWN = 3, 4, 5, 6, 7
 NOT_INSTALLED = 127
 
+LOCKED = "the screen is locked: a screenshot would show the lock screen, not the test card"
+LOCK_UNKNOWN = "Hyprland doesn't say whether the screen is locked, and a lock screen in the screenshot would look like a failure"
+
 _HWDEC_USED = re.compile(r"Using hardware decoding \(([\w-]+)\)")
 _SOFTWARE = re.compile(r"Using software decoding|Falling back to software decoding")
 _VO = re.compile(r"\bVO: \[([\w-]+)\]")
@@ -93,7 +116,7 @@ def run(ctx: Context) -> list[dict]:
     why = _blocked(ctx)
     if why:
         return [_skip(check_id, why) for check_id in CHECK_IDS]
-    ready = packages.temporary(ctx, PACKAGES, "The on-screen video check")
+    ready = packages.temporary(ctx, PACKAGES, "The on-screen video check", ask=not human.unattended(ctx))
     if not ready.ready:
         return [_skip(check_id, ready.skipped or "", ready.evidence()) for check_id in CHECK_IDS]
     made = ctx.host.run(MAKE_TEMP)
@@ -103,21 +126,46 @@ def run(ctx: Context) -> list[dict]:
     ctx.changes.register("the video check's test cards and screenshots", ["rm", "-rf", "--", directory])
     request = hwdec_request(ctx.host)
     (ctx.ui or Ui(ctx.host)).text("The built-in screen shows colour bars for a few seconds, twice: leave the keyboard and trackpad alone until they go.")
-    return [_play(ctx, directory, codec, label, check_id, request, ready.evidence()) for codec, label, check_id in CODECS]
+    return [_check(ctx, directory, codec, label, check_id, request, ready.evidence()) for codec, label, check_id in CODECS]
 
 
 def _blocked(ctx: Context) -> str | None:
-    over_ssh = "running over SSH: the test card is played on this Mac's own screen, for someone at it"
+    unattended = human.unattended(ctx)
+    over_ssh = "running over SSH: the test card is played on this Mac's own screen" + ("" if unattended else ", for someone at it")
     if any(ctx.host.env(name) for name in presence.SSH_VARIABLES):
         return over_ssh
     if not ctx.host.env("WAYLAND_DISPLAY"):
         return "no Wayland desktop session to show the test card in"
-    found = presence.of(ctx.host, ctx.cache)
+    # presence.of is "nobody's at the Mac" all through an unattended run; this asks logind, and doesn't change that.
+    found = presence.detect(ctx.host) if unattended else presence.of(ctx.host, ctx.cache)
     if found.ssh:
         return over_ssh
     if not found.seat:
         return f"no local desktop session ({found.why_no_seat})"
-    return None
+    locked = _locked(ctx.host)
+    if locked:
+        return LOCKED
+    return LOCK_UNKNOWN if locked is None and unattended else None
+
+
+def _locked(host: Host) -> bool | None:
+    """Whether Hyprland holds a session lock; None when it can't say (see the module docstring).
+
+    Hyprland stops at the first reason on a monitor with no workspace yet, so
+    there a missing LOCK means nothing.
+    """
+    answer = host.run(external_display.MONITORS)
+    try:
+        monitors = json.loads(answer.stdout)
+    except ValueError:
+        return None
+    if answer.returncode != 0 or not isinstance(monitors, list):
+        return None
+    reasons = [monitor.get("solitaryBlockedBy") for monitor in monitors if isinstance(monitor, dict)]
+    reasons = [reason for reason in reasons if isinstance(reason, list)]
+    if any("LOCK" in reason for reason in reasons):
+        return True
+    return False if any("WORKSPACE" not in reason for reason in reasons) else None
 
 
 def hwdec_request(host: Host) -> Request:
@@ -160,6 +208,13 @@ def _config_hwdec(text: str) -> str | None:
         if found:
             value = found.group(1)
     return value
+
+
+def _check(ctx: Context, directory: str, codec: str, label: str, check_id: str, request: Request, evidence: list[str]) -> dict:
+    result = _play(ctx, directory, codec, label, check_id, request, evidence)
+    if result["status"] == "fail" and _locked(ctx.host):
+        return _skip(check_id, LOCKED, [*evidence, request.evidence])
+    return result
 
 
 def _play(ctx: Context, directory: str, codec: str, label: str, check_id: str, request: Request, evidence: list[str]) -> dict:

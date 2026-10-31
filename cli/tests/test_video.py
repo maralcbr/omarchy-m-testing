@@ -25,6 +25,7 @@ import zlib
 
 from omarchy_m_test import png
 from omarchy_m_test.app import main
+from omarchy_m_test.external_display import MONITORS
 from omarchy_m_test.host import bundled_argv
 from omarchy_m_test.sections import APPLE
 from tests.desktop import HOME, command
@@ -50,6 +51,14 @@ CODECS = ("h264", "hevc")
 
 SHIPPED_CONF = "# omarchy-mac: Apple Silicon video decode\nhwdec=vaapi-copy\nhwdec-codecs=h264,hevc,vp9\nvo=gpu\ngpu-api=opengl\n"
 ZERO_COPY_CONF = "hwdec=vaapi\nvo=gpu-next\n"
+
+# `hyprctl -j monitors all`, the part the lock check reads: the reasons as Hyprland 0.57 names them.
+def monitors(*blocked_by: list[str]) -> str:
+    return json.dumps([{"name": f"eDP-{i + 1}", "solitaryBlockedBy": reasons} for i, reasons in enumerate(blocked_by)])
+
+
+UNLOCKED = monitors(["WINDOWED", "CANDIDATE"])
+LOCKED = monitors(["LOCK", "WINDOWED", "CANDIDATE"])
 
 with open(SCHEMA_PATH, encoding="utf-8") as f:
     SCHEMA = json.load(f)
@@ -135,10 +144,12 @@ def mpv_log(hwdec: str | None, vo: str, context: str, codec: str = "h264", end: 
 
 def desktop(
     shot: bytes | None = CORRECT, log: str | None = None, system_conf: str | None = SHIPPED_CONF, user_conf: str | None = None,
-    hwdec_args: tuple[str, ...] = (), returncode: int = 0, stderr: str = "", env: dict | None = None,
+    hwdec_args: tuple[str, ...] = (), returncode: int = 0, stderr: str = "", env: dict | None = None, screen: tuple[str, ...] = (),
 ) -> dict:
-    """The recorded M2 at its Hyprland desktop, with the answers the video section gets."""
+    """The recorded M2 at its Hyprland desktop, with the answers the video section gets (`screen`: hyprctl's monitors, in turn)."""
     rec = live_recording({"WAYLAND_DISPLAY": "wayland-1", **(env or {})})
+    if screen:
+        rec["commands"] = [entry for entry in rec["commands"] if entry["argv"] != MONITORS] + [command(MONITORS, answer) for answer in screen]
     log = mpv_log("vaapi-copy", "gpu", "wayland") if log is None else log
     rec["commands"] += [
         command(MAKE_TEMP, TEMP + "\n"),
@@ -333,6 +344,50 @@ class NotRunTest(unittest.TestCase):
         self.assertIn("mpv grim (with libplacebo)", host.output)
         self.assertEqual(played(host), [])
         self.assertFalse(any(argv[:2] == ["sudo", "-n"] and argv != ["sudo", "-n", "true"] for argv in host.commands_run))
+
+
+class LockedScreenTest(unittest.TestCase):
+    def assert_locked(self, checks: dict) -> None:
+        for check_id in CHECKS:
+            self.assertEqual(checks[check_id]["status"], "skip")
+            self.assertIn("the screen is locked", checks[check_id]["evidence"][-1])
+
+    def test_a_locked_screen_plays_and_installs_nothing(self):
+        host = at_desktop(desktop(screen=(LOCKED,)), state=MacState(installed={"mesa", "pipewire", "ffmpeg"}))
+        host.state.repository.update({"mpv": ["mpv"], "grim": ["grim"]})
+
+        self.assert_locked(run(host))
+
+        self.assertEqual(played(host), [])
+        self.assertNotIn(MAKE_TEMP, host.commands_run)
+        self.assertFalse(any(argv[:2] == ["pacman", "-Sp"] for argv in host.commands_run))
+
+    def test_a_screen_that_locks_during_the_check_is_skipped_not_failed(self):
+        wrong_picture = {"shot": GREEN, "log": mpv_log("vaapi", "gpu-next", "waylandvk")}
+        never_shown = {"shot": None, "log": "[  20.0][e][testcard] omarchy-m-test: the test card never started playing\n", "returncode": 7}
+        mpv_stopped = {"shot": None, "log": "[   1.0][e][vo/gpu] no frame\n", "returncode": 1}
+        for name, outcome in (("wrong picture", wrong_picture), ("never shown", never_shown), ("mpv stopped", mpv_stopped)):
+            with self.subTest(name):
+                checks = run(at_desktop(desktop(screen=(UNLOCKED, LOCKED), **outcome)))
+
+                self.assert_locked(checks)
+                self.assertNotIn("wrong colour", " ".join(checks[CHECKS[0]]["evidence"]))
+
+    def test_on_a_screen_that_stays_unlocked_a_wrong_picture_still_fails(self):
+        checks = run(at_desktop(desktop(GREEN, mpv_log("vaapi", "gpu-next", "waylandvk"), screen=(UNLOCKED,))))
+
+        for check_id in CHECKS:
+            self.assertEqual(checks[check_id]["status"], "fail")
+
+    def test_a_lock_on_any_monitor_counts_and_a_monitor_with_no_workspace_says_nothing(self):
+        for screen, status in ((monitors(["WORKSPACE"], ["LOCK"]), "skip"), (monitors(["WORKSPACE"], ["WINDOWED"]), "pass")):
+            with self.subTest(screen):
+                self.assertEqual(run(at_desktop(desktop(screen=(screen,))))[CHECKS[0]]["status"], status)
+
+    def test_at_the_mac_a_lock_hyprland_cant_report_doesnt_stop_the_check(self):
+        for screen in (monitors(["WORKSPACE"]), '[{"name": "eDP-1"}]', "not json"):
+            with self.subTest(screen):
+                self.assertEqual(run(at_desktop(desktop(screen=(screen,))))[CHECKS[0]]["status"], "pass")
 
 
 class RecordModeTest(unittest.TestCase):
