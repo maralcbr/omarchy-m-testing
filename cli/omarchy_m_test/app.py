@@ -67,7 +67,7 @@ def _parse(argv: Sequence[str], host: Host) -> argparse.Namespace:
     parser.add_argument("--catalogue", metavar="FILE", help="use this feature catalogue instead of the bundled one (for trying a catalogue change)")
     parser.add_argument("--explain", metavar="REPORT", help="explain a saved report's results against the catalogue; runs no checks")
     parser.add_argument("--record", metavar="FILE", help="also save what this Mac answered, scrubbed, as a test recording")
-    parser.add_argument("--unattended", action="store_true", help="nobody is at the Mac: run the automatic checks only, ask nothing about the hardware and skip anything disruptive; the report says so")
+    parser.add_argument("--unattended", action="store_true", help="nobody is at the Mac: run the automatic checks only, ask nothing about the hardware and skip the disruptive sections; the on-screen video check still takes an active, unlocked screen for a few seconds (--skip video leaves it out); the report says so")
     parser.add_argument("--skip", metavar="SECTION", action="append", default=[], help="skip a section (repeat, or separate with commas); the run lists them")
     parser.add_argument("--sign-in", action="store_true", help="testers: sign this Mac in with GitHub, once; its runs then count as tester runs. Runs no checks")
     parser.add_argument("--sign-out", action="store_true", help="testers: unlink this Mac from its GitHub handle; its later runs are community runs. Runs no checks")
@@ -223,7 +223,7 @@ def _run(args: argparse.Namespace, host: Host, sections: Sequence[Section]) -> i
         ui.text(f"Build: {found.build()}.")
     ui.text("Checks that need root use passwordless sudo when it's set up, and are skipped otherwise.")
     if args.unattended:
-        ui.text("Unattended: only the automatic checks run; nothing asks you to look, listen or plug anything in.")
+        ui.text("Unattended: only the automatic checks run; nothing asks you to look, listen or plug anything in. The on-screen video check can still take this screen for a few seconds.")
     shared = state.shared
     running = [section for section in sections if section.id in state.selected and section.id not in blocked]
     try:
