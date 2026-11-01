@@ -14,7 +14,7 @@ import sys
 PACKAGE = pathlib.Path(__file__).resolve().parent.parent / "omarchy_m_test"
 # The isolated bundled GPU supervisor is an executable host operation, reached
 # through Host.run_bundled only, never imported by the CLI's pure modules.
-ALLOWED_IO = {"host.py", "recording.py", "__main__.py", "bundled.py", "gpu_native/launcher.py"}
+ALLOWED_IO = {"host.py", "recording.py", "__main__.py", "bundled.py", "gpu_native/launcher.py", "gl_spec/glprobe.py"}
 IO_MODULES = {
     "os", "subprocess", "socket", "urllib", "http", "shutil", "pathlib", "glob", "tempfile",
     "platform", "getpass", "termios", "tty", "select", "pty", "ctypes", "io", "importlib",

@@ -240,6 +240,15 @@
     },
     {
       "argv": [
+        "read:hardware",
+        "gpu-spec"
+      ],
+      "returncode": 0,
+      "stdout": "{\"observed\": false}",
+      "stderr": ""
+    },
+    {
+      "argv": [
         "sh",
         "-c",
         "for c in /sys/class/drm/card*-*; do\n  [ -r \"$c/status\" ] || continue\n  echo \"connector ${c##*/} $(cat \"$c/status\") $(cat \"$c/enabled\" 2>/dev/null) $(head -n 1 \"$c/modes\" 2>/dev/null)\"\ndone"

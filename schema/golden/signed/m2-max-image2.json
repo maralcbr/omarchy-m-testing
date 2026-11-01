@@ -1041,6 +1041,40 @@
       }
     },
     {
+      "id": "graphics.vulkan-spec",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "not read in this run (it predates this check)"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "gpu",
+        "layer": "asahi",
+        "expected": {
+          "asahi": "linux-asahi",
+          "aurora": "asahi"
+        }
+      }
+    },
+    {
+      "id": "graphics.gl-spec",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "not read in this run (it predates this check)"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "gpu",
+        "layer": "asahi",
+        "expected": {
+          "asahi": "linux-asahi",
+          "aurora": "asahi"
+        }
+      }
+    },
+    {
       "id": "video.h264-on-screen",
       "kind": "automatic",
       "status": "skip",
@@ -2186,6 +2220,6 @@
   ],
   "signature": {
     "public_key": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHWZLEbyxAyRBj1yRyeHbRhQvVhcrUqpMaNH7ivMU1DW",
-    "signature": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgdZksRvLEDJEGPXJHJ4dtGFC9WF\nytSqkxo0fuK8xTUNYAAAAVb21hcmNoeS1tLXRlc3QtcmVwb3J0AAAAAAAAAAZzaGE1MTIA\nAABTAAAAC3NzaC1lZDI1NTE5AAAAQFM8O+I2nRrwFQVJF5kDTR5mikztTrd0niCHqpzBe0\nRJ66I9J55GWcpT9bP4X5aVHCzemNHD1xGDr8lwAnEwjAE=\n-----END SSH SIGNATURE-----"
+    "signature": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgdZksRvLEDJEGPXJHJ4dtGFC9WF\nytSqkxo0fuK8xTUNYAAAAVb21hcmNoeS1tLXRlc3QtcmVwb3J0AAAAAAAAAAZzaGE1MTIA\nAABTAAAAC3NzaC1lZDI1NTE5AAAAQO6omxyjCIrwXg4oZ/pz6r6jXDiCvtAhuqqDX/+aNo\n0XIftr8Spl86ZI8WNOCGBOZTtyJIe1ev1/tCxmljBi+QU=\n-----END SSH SIGNATURE-----"
   }
 }

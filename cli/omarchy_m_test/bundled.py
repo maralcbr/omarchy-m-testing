@@ -35,6 +35,7 @@ SCRIPTS = {
     "apple-display-check": os.path.join(VENDOR, "apple-display-check.sh"),
     "video-card": os.path.join(TESTCARD, "video-card.sh"),  # with testcard.lua beside it
     "gpu-benchmark": os.path.join(_PACKAGE,"gpu_native","run.sh"),
+    "gl-spec": os.path.join(_PACKAGE, "gl_spec", "run.sh"),
 }
 
 

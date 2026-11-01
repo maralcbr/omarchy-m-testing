@@ -8,7 +8,8 @@
 
 Parent spec: maralcbr/omarchy-m-testing#63
 
-- [ ] `graphics.vulkan-spec`: conformance version and missing mandatory features (1.1–1.4 tables, spec sections cited in the code) from `vulkaninfo --json`
-- [ ] `graphics.gl-spec`: GL 4.6 core/compat and GLES 3.2 limits vs spec minimums through EGL surfaceless; other versions reported as not checked; path recorded as native, Zink or llvmpipe
-- [ ] Tables credit aurora-diag's `compliance.py` (MIT)
-- [ ] Recordings with a passing and a missing-feature device; golden reports updated
+- [x] `graphics.vulkan-spec`: conformance version and missing mandatory features (1.1–1.4 tables, spec sections cited in the code) from `vulkaninfo --json`
+- [x] `graphics.gl-spec`: GL 4.6 core/compat and GLES 3.2 limits vs spec minimums through EGL surfaceless; other versions reported as not checked; path recorded as native, Zink or llvmpipe
+- [x] Tables credit aurora-diag's `compliance.py` (MIT)
+- [x] Golden reports updated; verdicts tested on synthetic passing and missing-feature devices
+- [ ] Real recordings from a Mac, and glprobe run against a real GPU (the lab Macs were offline; macOS has no EGL)

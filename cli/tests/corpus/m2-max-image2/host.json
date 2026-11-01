@@ -748,6 +748,16 @@
       "stdout": "{\"observed\": false}",
       "stderr": "",
       "note": "SSD capacity was not read in this historical run; the report leaves it out rather than guessing."
+    },
+    {
+      "argv": [
+        "read:hardware",
+        "gpu-spec"
+      ],
+      "returncode": 0,
+      "stdout": "{\"observed\": false}",
+      "stderr": "",
+      "note": "The Vulkan and GL spec checks were not read in this historical run; explicitly unavailable, never a reconstructed result."
     }
   ],
   "files": {

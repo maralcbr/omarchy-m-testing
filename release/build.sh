@@ -24,7 +24,7 @@ install -m 0644 "$repo/catalogue/catalogue.json" "$root/omarchy_m_test/catalogue
 mkdir -p "$root/omarchy_m_test/asahi-kernel"
 install -m 0644 "$repo/catalogue/asahi-kernel/source.json" "$repo/catalogue/asahi-kernel/config" "$root/omarchy_m_test/asahi-kernel/"
 # Vendored check scripts and the video test card script (omarchy_m_test/bundled.py runs them), modes kept.
-(cd "$repo/cli/omarchy_m_test" && find vendor testcard gpu_native -type f ! -name '*.pyc' ! -path '*/__pycache__/*' ! -path '*/bin/*' | sort | while read -r f; do
+(cd "$repo/cli/omarchy_m_test" && find vendor testcard gpu_native gl_spec -type f ! -name '*.pyc' ! -path '*/__pycache__/*' ! -path '*/bin/*' | sort | while read -r f; do
   install -D -m "$([[ -x $f ]] && echo 0755 || echo 0644)" "$f" "$root/omarchy_m_test/$f"
 done)
 # Native helper inclusion is explicit; source-only archives report it unsupported.

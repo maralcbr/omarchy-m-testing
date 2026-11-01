@@ -52,7 +52,7 @@ APPLE: tuple[Section, ...] = (
     _section("hardware", "Hardware", "Every hardware node and whether a driver claimed it, firmware and probe errors, and the kernel's build options against Asahi's.", (
         "hardware.drivers", "hardware.firmware", "hardware.probe-errors", "hardware.kernel-config",
     ), checks.hardware_inventory),
-    _section("graphics", "Graphics", "The GPU driver, Vulkan and OpenGL.", ("gpu.driver", "gpu.vulkan", "gpu.opengl"), checks.graphics),
+    _section("graphics", "Graphics", "The GPU driver, Vulkan and OpenGL, and spot checks of both against their specs.", ("gpu.driver", "gpu.vulkan", "gpu.opengl", "graphics.vulkan-spec", "graphics.gl-spec"), checks.graphics),
     _section("video", "Video", "Plays a test card full screen on the built-in screen with hardware decode (H.264, HEVC) and checks its colours in a screenshot.",
              video.CHECK_IDS, video.run),
     _section("display", "Display", "Outputs and external native resolutions, the display controller, the backlight and the notch strip; then you look: the bar and the notch, brightness steps, the cursor.", (
