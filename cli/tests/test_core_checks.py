@@ -97,7 +97,7 @@ class GoldenRunsTest(unittest.TestCase):
         _, _, report = run(M2_MAX)
 
         prefixes = {check["id"].split(".")[0] for check in report["checks"]}
-        self.assertEqual(prefixes, {"system", "boot", "packages", "setup", "hardware", "thermal", "gpu", "video", "display", "audio", "network", "sleep", "input", "sep", "touch-id", "camera", "ports", "power", "cpu", "benchmark"})
+        self.assertEqual(prefixes, {"system", "boot", "packages", "setup", "hardware", "thermal", "sensors", "gpu", "video", "display", "audio", "network", "sleep", "input", "sep", "touch-id", "camera", "ports", "power", "cpu", "benchmark"})
         humans = {check["id"] for check in report["checks"] if check["kind"] == "human"}
         self.assertEqual(humans, {"display.notch-bar", "display.brightness-steps", "display.cursor",
                                   "audio.speaker-tone", "audio.headphone-detection", "network.bluetooth-pairing",

@@ -105,12 +105,14 @@ TICK_FUNCTION = LONG_RUNNING + r"""tick() {
 done_ticking() { if [ "$tty" != 0 ]; then printf '\r\033[2K' >&2; fi; }
 """
 
+LID_ANGLE = "lid_angle"  # in the shared state
+
 # Run as `sh -c SCRIPT sh CLOSE CLOSED AFTER TTY LABEL` (seconds, counted in 0.5 s polls; TTY the terminal's
 # width, 0 off one; LABEL the countdown's first words). Times are hundredths of a second since "start", the wall clock in nanoseconds.
 LID_WATCH_SCRIPT = TICK_FUNCTION + r"""wait=$(($1 * 2)) closed=$(($2 * 2)) after=$(($3 * 2)) tty=$4 label=$5
 start=$(date +%s%N)
 echo "start $start"
-state=open seen=0 n=0 last=
+state=open seen=0 n=0 last= angle=
 while :; do
   t=$(( ($(date +%s%N) - start) / 10000000 ))
   case "$(busctl get-property org.freedesktop.login1 /org/freedesktop/login1 org.freedesktop.login1.Manager LidClosed 2>/dev/null)" in
@@ -121,6 +123,8 @@ while :; do
   m=$(@MONITORS@)
   if [ "$lid" != "$state" ]; then echo "$lid $t"; state=$lid n=0; if [ "$lid" = closed ]; then seen=1; fi; fi
   if [ "$m" != "$last" ]; then echo "monitors $t $m"; last=$m; fi
+  a=$(cat /sys/bus/iio/devices/iio:device*/in_angl_raw 2>/dev/null | head -n 1)
+  if [ -n "$a" ] && [ "$a" != "$angle" ]; then echo "angle $t $a"; angle=$a; fi
   n=$((n + 1))
   if [ "$seen" = 0 ] && [ "$n" -ge "$wait" ]; then done_ticking; echo "timeout $t"; exit 0; fi
   if [ "$state" = closed ] && [ "$n" -ge "$closed" ]; then done_ticking; echo "timeout $t"; exit 0; fi
@@ -212,6 +216,7 @@ class Lid:
     closed: float | None = None
     opened: float | None = None
     monitors: list[tuple[float, dict[str, bool]]] = field(default_factory=list)
+    angles: list[float] = field(default_factory=list)  # the lid-angle sensor's raw readings, as they changed
     end: str = ""  # "end", "timeout", "nolid" or "skipped" (a key while waiting for the lid)
 
     def first_displays(self) -> dict[str, bool] | None:
@@ -235,6 +240,9 @@ class Lid:
         return None if t is None or self.start is None else self.start + t
 
 
+_ANGLE = re.compile(r"-?[0-9]{1,12}(\.[0-9]{1,6})?")
+
+
 def parse_lid(stdout: str) -> Lid:
     lid = Lid()
     for line in stdout.splitlines():
@@ -252,6 +260,8 @@ def parse_lid(stdout: str) -> Lid:
             lid.opened = t
         elif word == "monitors":
             lid.monitors.append((t, _monitors(tail)))
+        elif word == "angle" and _ANGLE.fullmatch(tail):
+            lid.angles.append(float(tail))
         elif word in ("end", "timeout", "nolid", "skipped"):
             lid.end = word
     return lid
@@ -419,6 +429,12 @@ def run(ctx: Context) -> list[dict]:
     return [results[check_id] for check_id in CHECK_IDS]
 
 
+def _note_angle(ctx: Context, lid: Lid) -> None:
+    """For the Sensors section, which runs later: what the lid-angle sensor did while the lid closed."""
+    if lid.closed is not None and lid.angles:
+        ctx.shared[LID_ANGLE] = {"before": lid.angles[0], "lowest": min(lid.angles)}
+
+
 def _ui(ctx: Context) -> Ui:
     return ctx.ui or Ui(ctx.host)
 
@@ -431,6 +447,7 @@ def _suspend(ctx: Context, progress: dict, results: dict) -> None:
         return
     step = _begin(ctx, progress, "suspend", {"logind": _logind(ctx)})
     lid = watch_lid(ctx, "Sleep")
+    _note_angle(ctx, lid)
     journal = read_journal(ctx, step.since)
     results[LID_SUSPEND] = judge_suspend(lid, journal, step.before.get("logind", {}))
     _after_resume(ctx, results, step, _resumed(lid, journal))

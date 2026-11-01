@@ -528,6 +528,16 @@
       "stdout": "{\"observed\": false}",
       "stderr": "",
       "note": "Temperatures and fans were not read in this historical run; explicitly unavailable, never a reconstructed reading."
+    },
+    {
+      "argv": [
+        "read:hardware",
+        "sensors"
+      ],
+      "returncode": 0,
+      "stdout": "{\"observed\": false}",
+      "stderr": "",
+      "note": "Motion, lid-angle and light sensors were not read in this historical run; explicitly unavailable, never a reconstructed reading."
     }
   ],
   "files": {
