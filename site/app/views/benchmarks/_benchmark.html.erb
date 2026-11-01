@@ -2,17 +2,27 @@
 <%= card "#{benchmark.name.downcase} · suite #{benchmark.suite}", klass: "benchmark", id: "benchmark-#{benchmark.id}" do %>
   <p class="dim"><%= benchmark.how %>; <%= benchmark.unit_words %>, higher is better.</p>
   <table class="list benchmark-table">
-    <thead><tr><% if models %><th>Mac</th><% end %><th>Stack / version</th><th class="score-head"><%= benchmark.unit_words %></th><th>Machines</th><th>Tool</th></tr></thead>
+    <thead><tr><% if models %><th>Mac</th><% end %><% if benchmark.by_capacity? %><th>SSD</th><% end %><th>Stack / version</th><th class="score-head"><%= benchmark.unit_words %></th><% if benchmark.macos? %><th>macOS</th><% end %><th>Machines</th><th>Tool</th></tr></thead>
     <tbody>
       <% benchmark.rows.each do |row| %>
         <tr class="score-row" data-board="<%= row.configuration.board %>" data-stack="<%= row.configuration.stack %>" data-version="<%= row.configuration.version %>" data-build="<%= row.configuration.build_id %>">
           <% if models %><td><a href="<%= model_path(row.configuration.board) %>"><%= row.model_name %></a> <span class="dim"><%= row.chip %></span></td><% end %>
+          <% if benchmark.by_capacity? %><td class="capacity-cell nowrap"><%= row.capacity || "unknown" %></td><% end %>
           <td><%= row.configuration.label %></td>
           <td class="score-cell">
             <span class="score-bar" style="--share: <%= benchmark.best.positive? ? (100.0 * row.median / benchmark.best).round(1) : 0 %>%"></span>
             <a class="score-value" href="<%= report_path(row.latest.report) %>" title="Latest run"><%= score_words(row.median) %></a>
             <% if row.machines > 1 %><span class="dim score-range"><%= score_words(row.low) %>–<%= score_words(row.high) %></span><% end %>
           </td>
+          <% if benchmark.macos? %>
+            <td class="macos-cell nowrap">
+              <% if (macos = row.macos(benchmark.check_id)) %>
+                <span title="<%= row.macos_conditions %>"><%= score_words(macos) %></span> <span class="dim"><%= row.macos_conditions %></span>
+              <% else %>
+                <span class="dim"><%= row.macos_gap(benchmark.check_id) || "–" %></span>
+              <% end %>
+            </td>
+          <% end %>
           <td class="nowrap"><%= row.machines %><% if row.runs > row.machines %> <span class="dim">(<%= pluralize(row.runs, "run") %>)</span><% end %><% if row.tester? %> <span class="badge badge-tester">tester</span><% end %></td>
           <td class="dim nowrap"><%= row.tools.join(", ") %></td>
         </tr>

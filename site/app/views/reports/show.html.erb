@@ -13,6 +13,7 @@
     </p>
     <dl class="machine">
       <dt>chip</dt><dd><%= @report.machine["chip"] %> (<%= @report.machine["soc"] %>, board <%= @report.machine["board"] %>)</dd>
+      <% if @report.storage %><dt>SSD</dt><dd id="storage"><%= @report.storage %></dd><% end %>
       <dt>kernel</dt><dd><%= @report.machine["kernel"] %></dd>
       <dt>stack</dt><dd><%= @report.stack_words %> <%= @report.omarchy_version %><% if @report.candidate_set %>, candidate set <a href="<%= candidate_path(@report.candidate_set) %>"><%= @report.candidate_set %></a><% end %></dd>
       <dt>build</dt><dd id="build"><%= build_summary(@report, long: true) %></dd>

@@ -24,6 +24,127 @@ class BenchmarksTest < ActionDispatch::IntegrationTest
   end
 
   def opengl_rows = css_select("#benchmark-opengl-suite-1 tr.score-row")
+  def storage_rows = css_select("#benchmark-storage-suite-1 tr.score-row")
+
+  # A golden run with a storage score, on the given capacity (nil: a report from before capacity was recorded).
+  def storage_run(value, capacity: "1TB", on: nil)
+    run_with(1, on:).tap do |report|
+      report["machine"]["storage"] = capacity if capacity
+      report["checks"] << { "id" => "benchmark.storage", "kind" => "automatic", "status" => "pass", "evidence" => [ "sequential read: #{value} MB/s" ],
+                            "classification" => { "outcome" => "works", "feature" => "nvme", "layer" => "asahi", "expected" => { "asahi" => "upstream" } },
+                            "score" => { "value" => value, "unit" => "MBps", "tool" => "fio 3.38", "suite" => 1 } }
+    end
+  end
+
+  def with_reference(board, document)
+    Dir.mktmpdir do |dir|
+      File.write(File.join(dir, "#{board}.json"), document.to_json)
+      previous = ENV["MACOS_REFERENCE_PATH"]
+      ENV["MACOS_REFERENCE_PATH"] = dir
+      MacosReference.instance_variable_set(:@references, nil)
+      yield
+    ensure
+      ENV["MACOS_REFERENCE_PATH"] = previous
+      MacosReference.instance_variable_set(:@references, nil)
+    end
+  end
+
+  REFERENCE = { "conditions" => { "power" => "ac", "brightness" => "about 50%", "displays" => 1 }, "macos" => { "version" => "26.6" }, "captured" => "2026-11-01",
+                "metrics" => { "h264_decode_fps" => 900 }, "storage" => { "1TB" => { "read_mbps" => 6000 } } }.freeze
+
+  test "storage rows split by capacity" do
+    upload_report storage_run(3000, capacity: "1TB"), machine: "a"
+    upload_report storage_run(6000, capacity: "2TB"), machine: "b"
+
+    get "/benchmarks"
+
+    assert_select "#benchmark-storage-suite-1 .card-title", "storage · suite 1"
+    assert_equal [ "2TB", "1TB" ], storage_rows.map { |row| css_select(row, ".capacity-cell").text.strip }
+    assert_select "#benchmark-storage-suite-1 tr.score-row .score-value", "6,000"
+    assert_select "#benchmark-storage-suite-1 th", "MB/s"
+  end
+
+  test "a report without a capacity is accepted and shows as unknown" do
+    upload_report storage_run(3000, capacity: nil), machine: "a"
+
+    get "/benchmarks"
+
+    assert_select "#benchmark-storage-suite-1 .capacity-cell", "unknown"
+  end
+
+  test "other benchmarks don't split by capacity" do
+    upload_report storage_run(3000, capacity: "1TB"), machine: "a"
+    upload_report storage_run(6000, capacity: "2TB"), machine: "b"
+
+    get "/benchmarks"
+
+    assert_equal 1, opengl_rows.size
+    assert_select "#benchmark-opengl-suite-1 .capacity-cell", false
+  end
+
+  test "the macOS column shows the same board's number with its conditions" do
+    with_reference("j416c", REFERENCE) do
+      upload_report golden(M2), machine: "a"
+
+      get "/benchmarks"
+
+      assert_select "#benchmark-h264-decode-suite-1 .macos-cell", /900/
+      assert_select "#benchmark-h264-decode-suite-1 .macos-cell", /macOS 26\.6, on AC, brightness about 50%, 1 display, 2026-11-01/
+    end
+  end
+
+  test "GL and Vulkan have no macOS column" do
+    with_reference("j416c", REFERENCE) do
+      upload_report golden(M2), machine: "a"
+
+      get "/benchmarks"
+
+      assert_select "#benchmark-opengl-suite-1 th", { text: "macOS", count: 0 }
+      assert_select "#benchmark-vulkan-suite-1 .macos-cell", false
+    end
+  end
+
+  test "storage shows macOS only at the same capacity" do
+    with_reference("j416c", REFERENCE) do
+      upload_report storage_run(3000, capacity: "1TB"), machine: "a"
+      upload_report storage_run(6000, capacity: "2TB"), machine: "b"
+
+      get "/benchmarks"
+
+      two, one = storage_rows
+      assert_select one, ".macos-cell", /6,000/
+      assert_select two, ".macos-cell", /no macOS reference at this capacity/
+    end
+  end
+
+  test "a board with no reference shows a dash" do
+    upload_report golden(M2), machine: "a"
+
+    get "/benchmarks"
+
+    assert_select "#benchmark-h264-decode-suite-1 .macos-cell", "–"
+  end
+
+  test "the export carries the capacity and the macOS number" do
+    with_reference("j416c", REFERENCE) do
+      upload_report storage_run(3000, capacity: "1TB"), machine: "a"
+
+      get "/api/v1/benchmarks"
+
+      row = JSON.parse(response.body)["benchmarks"].find { |benchmark| benchmark["check"] == "benchmark.storage" }["rows"].first
+      assert_equal [ "1TB", 6000 ], row.values_at("capacity", "macos")
+    end
+  end
+
+  test "the run page shows the SSD's capacity, and a report without it leaves it out" do
+    with_capacity = upload_report storage_run(3000, capacity: "1TB"), machine: "a"
+    without = upload_report golden(M2), machine: "b"
+
+    get path_of(with_capacity["report_url"])
+    assert_select "dd#storage", "1TB"
+    get path_of(without["report_url"])
+    assert_select "dd#storage", false
+  end
 
   test "the golden benchmark report uploads with its scores" do
     body = upload_report golden(M2)
