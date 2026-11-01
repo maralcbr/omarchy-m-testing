@@ -47,6 +47,7 @@ ORDER = (
     "cpu.frequency-scaling",
     "thermal.sensors", "thermal.fans",
     "sensors.motion", "sensors.lid-angle", "sensors.light",
+    "storage.health", "benchmark.storage",
 )
 
 

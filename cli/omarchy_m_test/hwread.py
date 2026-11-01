@@ -14,6 +14,7 @@ The areas' discovery follows aurora-diag's kernel-class walkers
 
 from __future__ import annotations
 
+import json
 import math
 import re
 
@@ -23,6 +24,8 @@ HWMON = "/sys/class/hwmon"
 THERMAL = "/sys/class/thermal"
 IIO = "/sys/bus/iio/devices"
 DEVICE_TREE = "/sys/firmware/devicetree/base"
+NVME = "/sys/class/nvme"
+BLOCK = "/sys/block"
 
 MAX_READINGS = 400
 _LABEL = re.compile(r"[A-Za-z0-9][A-Za-z0-9 ._+/()-]{0,47}")
@@ -178,5 +181,89 @@ def _channel(host: Host, path: str, entries: set[str], stem: str, kind: str) -> 
     return raw * scale if scale is not None else raw
 
 
-_AREAS = {"thermal": _thermal, "sensors": _sensors}
+# -- storage: the Mac's own SSD. Never its serial, EUI-64, NGUID or namespace ids, and only a capacity tier. --
+
+_CONTROLLER = re.compile(r"nvme[0-9]{1,3}")
+_NAMESPACE = re.compile(r"nvme[0-9]{1,3}n[0-9]{1,3}")
+_APPLE_SSD = re.compile(r"APPLE SSD [A-Za-z0-9 ._-]{1,32}")
+_FIRMWARE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,31}")
+_SECTOR = 512
+_DATA_UNIT = 512_000  # NVMe counts data in units of 1000 512-byte sectors
+_TERABYTE = 10**12
+TIERS = (("256GB", 256 * 10**9), ("512GB", 512 * 10**9), ("1TB", 10**12), ("2TB", 2 * 10**12), ("4TB", 4 * 10**12), ("8TB", 8 * 10**12))
+TIER_TOLERANCE = 0.15
+SMART_INTEGERS = ("critical_warning", "available_spare", "available_spare_threshold", "percentage_used", "power_cycles",
+                  "power_on_hours", "unsafe_shutdowns", "media_errors", "temperature")
+
+
+def smart_argv(controller: str) -> list[str]:
+    return ["sudo", "-n", "smartctl", "-j", "-a", f"/dev/{controller}"]
+
+
+SMART_VERSION = ["smartctl", "--version"]
+
+
+def tier(size_bytes: int) -> str | None:
+    """Apple's sales size nearest a namespace's size in bytes, when one is close enough."""
+    name, wanted = min(TIERS, key=lambda t: abs(math.log(size_bytes / t[1]))) if size_bytes > 0 else (None, 0)
+    return name if name and abs(size_bytes - wanted) <= wanted * TIER_TOLERANCE else None
+
+
+def _apple_controllers(host: Host) -> tuple[list[tuple[str, str]], int]:
+    """(controller, model) of each of the Mac's own SSD controllers, and how many other NVMe controllers there are."""
+    found, others = [], 0
+    for controller in names(host, NVME) or []:
+        if not _CONTROLLER.fullmatch(controller):
+            continue
+        model = text(host, f"{NVME}/{controller}/model") or ""
+        if _APPLE_SSD.fullmatch(model):
+            found.append((controller, model))
+        else:
+            others += 1
+    return found, others
+
+
+def _largest_namespace(host: Host, controller: str) -> tuple[int, int]:
+    """(namespaces, the largest one's size in bytes)."""
+    sizes = [whole(text(host, f"{BLOCK}/{entry}/size")) or 0 for entry in names(host, f"{NVME}/{controller}") or [] if _NAMESPACE.fullmatch(entry)]
+    return len(sizes), max(sizes, default=0) * _SECTOR
+
+
+def _capacity(host: Host) -> dict:
+    controllers, _ = _apple_controllers(host)
+    return {"tier": tier(_largest_namespace(host, controllers[0][0])[1]) if controllers else None}
+
+
+def _smart(host: Host, controller: str) -> tuple[dict | None, str]:
+    """The allowlisted SMART health log, or why there is none. smartctl's serial, WWN and namespace ids stay here."""
+    if host.run(SMART_VERSION).returncode == 127:
+        return None, "not-installed"
+    done = host.run(smart_argv(controller))
+    try:
+        log = json.loads(done.stdout).get("nvme_smart_health_information_log")
+    except (ValueError, AttributeError):
+        log = None
+    if not isinstance(log, dict):
+        return None, "needs-root" if done.returncode == 1 else "no-log"
+    smart = {key: log[key] for key in SMART_INTEGERS if isinstance(log.get(key), int) and not isinstance(log.get(key), bool)}
+    for key, field in (("data_read_tb", "data_units_read"), ("data_written_tb", "data_units_written")):
+        if isinstance(log.get(field), int):
+            smart[key] = round(log[field] * _DATA_UNIT / _TERABYTE)
+    return smart, ""
+
+
+def _storage(host: Host) -> dict:
+    controllers, others = _apple_controllers(host)
+    found = []
+    for controller, model in controllers:
+        path = f"{NVME}/{controller}"
+        firmware = text(host, f"{path}/firmware_rev")
+        smart, missing = _smart(host, controller)
+        found.append({"model": model, "firmware": firmware if firmware and _FIRMWARE.fullmatch(firmware) else None,
+                      "state": label(text(host, f"{path}/state")), "namespaces": _largest_namespace(host, controller)[0],
+                      "smart": smart, "smart_missing": missing})
+    return {"controllers": found, "other_controllers": others, "any_nvme": bool(controllers) or others > 0}
+
+
+_AREAS = {"thermal": _thermal, "sensors": _sensors, "storage": _storage, "capacity": _capacity}
 AREAS = tuple(_AREAS)

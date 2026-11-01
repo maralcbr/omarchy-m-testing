@@ -41,7 +41,8 @@
         "soc": { "description": "SoC id from the device-tree compatible list, e.g. \"t6021\".", "type": "string", "pattern": "^t[0-9]{4}$" },
         "chip": { "description": "Marketing chip name for the SoC, e.g. \"M2 Max\" or \"A18 Pro\"; \"unknown\" when the SoC isn't known yet.", "type": "string", "pattern": "^((M|A)[0-9]+( Pro| Max| Ultra)?|unknown)$" },
         "arch": { "const": "aarch64" },
-        "kernel": { "description": "Kernel release (uname -r).", "type": "string", "minLength": 1, "maxLength": 100 }
+        "kernel": { "description": "Kernel release (uname -r).", "type": "string", "minLength": 1, "maxLength": 100 },
+        "storage": { "description": "The SSD's capacity as Apple sells it, rounded from its largest namespace: storage performance differs by capacity. Absent when it couldn't be read.", "enum": ["256GB", "512GB", "1TB", "2TB", "4TB", "8TB"] }
       }
     },
     "system": {
@@ -179,13 +180,13 @@
             "const": true
           },
           "score": {
-            "description": "A benchmark's measurement (benchmark.* checks that passed): the value in its unit (points for glmark2 and vkmark, frames per second for decode), the tool and version that measured it, and the benchmark suite: the version of omarchy-m-test's fixed scenes, clip and settings. Only scores of the same check, suite and unit are compared. Absent on every other check.",
+            "description": "A benchmark's measurement (benchmark.* checks that passed): the value in its unit (points for glmark2 and vkmark, frames per second for decode, megabytes per second for storage), the tool and version that measured it, and the benchmark suite: the version of omarchy-m-test's fixed scenes, clip and settings. Only scores of the same check, suite and unit are compared. Absent on every other check.",
             "type": "object",
             "additionalProperties": false,
             "required": ["value", "unit", "tool", "suite"],
             "properties": {
               "value": { "description": "A whole number: reports carry no floating-point numbers (the signature's canonical form).", "type": "integer", "minimum": 0, "maximum": 1000000000 },
-              "unit": { "enum": ["points", "fps"] },
+              "unit": { "enum": ["points", "fps", "MBps"] },
               "tool": { "description": "e.g. \"glmark2 2023.01\" or \"ffmpeg n8.0.1\".", "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9 ._+~:()-]{0,79}$" },
               "suite": { "type": "integer", "minimum": 1 }
             }

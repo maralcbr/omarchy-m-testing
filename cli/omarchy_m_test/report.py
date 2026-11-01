@@ -11,12 +11,13 @@ from .machine import Machine
 
 
 def build(machine: Machine, system: dict, checks: list[dict], catalogue: Catalogue, inventory: dict | None = None,
-          unattended: bool = False) -> dict:
+          unattended: bool = False, storage: str | None = None) -> dict:
     """The report, with every check result explained against the catalogue.
 
     `inventory` is the hardware inventory's block (inventory.py); a run that
     skipped the Hardware section has none. An unattended run (nobody at the
-    Mac, so no human checks) says so with "unattended": true.
+    Mac, so no human checks) says so with "unattended": true. `storage` is the
+    SSD's capacity tier (hwread.py), whichever sections ran.
     """
     classified = [{**check, "classification": catalogue.classify(check, machine.soc, machine.board)} for check in checks]
     built = {
@@ -31,6 +32,7 @@ def build(machine: Machine, system: dict, checks: list[dict], catalogue: Catalog
             "chip": machine.chip,
             "arch": machine.arch,
             "kernel": machine.kernel,
+            **({"storage": storage} if storage else {}),
         },
         "system": system,
         **({"unattended": True} if unattended else {}),

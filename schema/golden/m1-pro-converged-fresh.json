@@ -2071,6 +2071,40 @@
       }
     },
     {
+      "id": "storage.health",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "not read in this run (it predates this check)"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "nvme",
+        "layer": "asahi",
+        "expected": {
+          "asahi": "upstream",
+          "aurora": "asahi"
+        }
+      }
+    },
+    {
+      "id": "benchmark.storage",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "not read in this run (it predates this check)"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "nvme",
+        "layer": "asahi",
+        "expected": {
+          "asahi": "upstream",
+          "aurora": "asahi"
+        }
+      }
+    },
+    {
       "id": "benchmark.opengl",
       "kind": "automatic",
       "status": "skip",

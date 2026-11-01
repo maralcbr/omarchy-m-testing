@@ -97,7 +97,7 @@ REPORT_ALLOWLIST: dict[str, Any] = {
     "tool": {"name": True, "version": True},
     "consent_version": True,
     "catalogue_version": True,
-    "machine": {"model": True, "board": True, "soc": True, "chip": True, "arch": True, "kernel": True},
+    "machine": {"model": True, "board": True, "soc": True, "chip": True, "arch": True, "kernel": True, "storage": True},
     "system": _SYSTEM,
     "unattended": True,
     "inventory": _INVENTORY,
