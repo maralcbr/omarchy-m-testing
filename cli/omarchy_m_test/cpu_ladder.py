@@ -14,13 +14,13 @@ from .session import Context
 
 LADDER = "cpu.dvfs-ladder"
 NOT_READ = "not read in this run (it predates this check)"
-NAMES = {"e": "Efficiency", "p": "Performance"}
+NAMES = {"e": "Efficiency", "p": "Performance", "only": "The only readable"}
 
 
 def clusters(policies: list[dict]) -> dict[str, tuple[int, int, int]]:
-    """(steps, lowest, highest) of the efficiency and performance clusters."""
+    """(steps, lowest, highest) of the efficiency and performance clusters; a lone cluster can't be told which it is."""
     found = sorted({(len(policy["mhz"]), policy["mhz"][0], policy["mhz"][-1]) for policy in policies if policy["mhz"]}, key=lambda c: c[2])
-    return dict(zip("ep", found[:1] + found[-1:])) if len(found) > 1 else dict(zip("e", found))
+    return {"e": found[0], "p": found[-1]} if len(found) > 1 else {"only": found[0]} if found else {}
 
 
 def check(ctx: Context) -> dict:
