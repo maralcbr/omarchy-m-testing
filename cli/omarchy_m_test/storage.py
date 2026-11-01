@@ -7,11 +7,13 @@
                      without it the check skips, with why. No serial, EUI-64,
                      NGUID, namespace id or exact capacity ever leaves the host.
   benchmark.storage  fio: 1 GiB sequential write and read, then 4K random reads
-                     at queue depths 1 and 32, with direct I/O, on one temporary
-                     file in $XDG_CACHE_HOME/omarchy-m-test/. It never opens a
-                     block device. A restorer that removes the file is registered
-                     before it's made, so it goes on success, on an error and
-                     when the run is stopped. Skipped under 4 GiB free.
+                     at queue depths 1 and 32, with direct I/O, on one file in a
+                     new private directory under $XDG_CACHE_HOME/omarchy-m-test/:
+                     made fresh by mktemp, so nothing already there, a symlink
+                     or a block device included, can be what fio opens. A
+                     restorer that removes it is registered before the file is
+                     made, so it goes on success, on an error and when the run
+                     is stopped. Skipped under 4 GiB free.
 
 The score is the sequential read in megabytes per second. Comparing it means
 comparing the same capacity (machine.storage), and the evidence says whether the
@@ -33,7 +35,8 @@ CHECK_IDS = (HEALTH, BENCHMARK)
 NOT_READ = "not read in this run (it predates this check)"
 SMARTMONTOOLS, FIO = "smartmontools", "fio"
 SUITE = 1  # bump when the jobs below change: scores of different suites aren't compared
-FILE_NAME = "storage-benchmark.tmp"
+FILE_NAME = "benchmark.tmp"
+TEMP_PREFIX = "bench."
 FREE_BYTES_NEEDED = 4 * 2**30
 RANDOM_SECONDS = 5
 NOT_INSTALLED, TIMED_OUT = 127, 124
@@ -109,6 +112,10 @@ def directory(ctx: Context) -> str | None:
     return f"{base}/omarchy-m-test" if base else None
 
 
+def make_temp_argv(where: str) -> list[str]:
+    return ["mktemp", "-d", "-p", where, f"{TEMP_PREFIX}XXXXXXXX"]
+
+
 def fio_argv(path: str) -> list[str]:
     return ["fio", "--output-format=json", f"--filename={path}", "--size=1g", "--direct=1", "--ioengine=libaio", "--stonewall",
             "--name=write", "--rw=write", "--bs=1m", "--iodepth=8",
@@ -134,14 +141,17 @@ def benchmark(ctx: Context) -> dict:
         return _skip(ready.skipped or "fio isn't available", evidence)
     evidence += _conditions(ctx, where)
     (ctx.ui or Ui(ctx.host)).text("A short storage benchmark runs now, about 20 s, on a temporary file. Leave the Mac alone until it finishes: anything else it does lowers the score.")
-    path = f"{where}/{FILE_NAME}"
-    ctx.changes.register("the storage benchmark's temporary file", ["rm", "-f", "--", path])
-    done = ctx.host.run(fio_argv(path))
+    made = ctx.host.run(make_temp_argv(where))
+    private = made.stdout.strip()
+    if made.returncode != 0 or not re.fullmatch(re.escape(f"{where}/{TEMP_PREFIX}") + r"[A-Za-z0-9]+", private):
+        return _skip("couldn't make a private directory for the temporary file", evidence)
+    ctx.changes.register("the storage benchmark's temporary file", ["rm", "-rf", "--", private])
+    done = ctx.host.run(fio_argv(f"{private}/{FILE_NAME}"))
     if done.returncode == NOT_INSTALLED:
         return _skip("fio isn't installed", evidence)
     measured = _measured(done)
     if measured is None:
-        return _result(BENCHMARK, "fail", [*evidence, f"fio gave no result (exit {done.returncode})"])
+        return _result(BENCHMARK, "fail", [*evidence, f"fio gave no result, or a job failed (exit {done.returncode})"])
     version = _FIO_VERSION.search(ctx.host.run(["fio", "--version"]).stdout)
     evidence += [f"sequential write: {measured['write']} MB/s", f"sequential read: {measured['read']} MB/s",
                  f"4K random read, queue depth 1: {measured['random1']} IOPS", f"4K random read, queue depth 32: {measured['random32']} IOPS",
@@ -165,8 +175,12 @@ def _conditions(ctx: Context, where: str) -> list[str]:
 def _measured(done: CommandResult) -> dict | None:
     """Only fio's numbers; its JSON also names the file and the options."""
     start = done.stdout.find("{")
+    if done.returncode != 0 or start < 0:
+        return None
     try:
-        jobs = {job["jobname"]: job for job in json.loads(done.stdout[start:])["jobs"]} if start >= 0 else {}
+        jobs = {job["jobname"]: job for job in json.loads(done.stdout[start:])["jobs"]}
+        if any(job.get("error") for job in jobs.values()):
+            return None
         found = {"write": round(jobs["write"]["write"]["bw_bytes"] / MB), "read": round(jobs["read"]["read"]["bw_bytes"] / MB),
                  "random1": round(jobs["random1"]["read"]["iops"]), "random32": round(jobs["random32"]["read"]["iops"])}
     except (ValueError, KeyError, TypeError):

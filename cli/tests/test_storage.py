@@ -37,7 +37,8 @@ FIO_OUT = json.dumps({"jobs": [
     {"jobname": "random1", "read": {"iops": 18000.4}}, {"jobname": "random32", "read": {"iops": 240000.6}},
 ], "global options": {"filename": "/home/tester/.cache/omarchy-m-test/storage-benchmark.tmp"}})
 CACHE = "/home/tester/.cache/omarchy-m-test"
-PATH = f"{CACHE}/{storage.FILE_NAME}"
+PRIVATE = f"{CACHE}/bench.AbC123xy"
+PATH = f"{PRIVATE}/{storage.FILE_NAME}"
 
 
 class Sysfs(FakeSysfs):
@@ -193,6 +194,7 @@ def bench(fio: dict | None = None, free: str = "     Avail\n500000000000\n") -> 
     mac = recorded(GOOD, [
         command(["mkdir", "-p", "--", CACHE]), command(["df", "--output=avail", "-B1", "--", CACHE], free),
         command(["pacman", "-Q", "fio"], "fio 3.38-1\n"), command(["findmnt", "--noheadings", "--output", "FSTYPE", "--target", CACHE], "btrfs\n"),
+        command(storage.make_temp_argv(CACHE), PRIVATE + "\n"),
         fio or command(storage.fio_argv(PATH), FIO_OUT), command(["fio", "--version"], "fio-3.38\n"),
     ])
     ctx = context(mac)
@@ -229,7 +231,8 @@ class BenchmarkTest(unittest.TestCase):
         mac = Watching(recorded(GOOD, [
             command(["mkdir", "-p", "--", CACHE]), command(["df", "--output=avail", "-B1", "--", CACHE], "500000000000\n"),
             command(["pacman", "-Q", "fio"], "fio 3.38-1\n"), command(["findmnt", "--noheadings", "--output", "FSTYPE", "--target", CACHE], "btrfs\n"),
-            command(storage.fio_argv(PATH), FIO_OUT), command(["fio", "--version"], "fio-3.38\n"), command(["rm", "-f", "--", PATH]),
+            command(storage.make_temp_argv(CACHE), PRIVATE + "\n"),
+            command(storage.fio_argv(PATH), FIO_OUT), command(["fio", "--version"], "fio-3.38\n"), command(["rm", "-rf", "--", PRIVATE]),
         ]).recording)
         ctx = context(mac)
         registered_before_fio = []
@@ -243,16 +246,42 @@ class BenchmarkTest(unittest.TestCase):
         mac.run = spying
         storage.benchmark(ctx)
 
-        self.assertEqual(registered_before_fio, [[("rm", "-f", "--", PATH)]])
+        self.assertEqual(registered_before_fio, [[("rm", "-rf", "--", PRIVATE)]])
         ctx.changes.restore()
-        self.assertEqual(order[-1], ["rm", "-f", "--", PATH])
+        self.assertEqual(order[-1], ["rm", "-rf", "--", PRIVATE])
         self.assertEqual(ctx.changes.pending, [])
 
     def test_a_failed_run_still_removes_the_file(self):
         found, _, ctx = bench(command(storage.fio_argv(PATH), "", 1))
 
         self.assertEqual(found["status"], "fail")
-        self.assertEqual([r.argv for r in ctx.changes.pending], [("rm", "-f", "--", PATH)])
+        self.assertEqual([r.argv for r in ctx.changes.pending], [("rm", "-rf", "--", PRIVATE)])
+
+    def test_a_job_that_failed_fails_though_the_others_measured(self):
+        out = json.loads(FIO_OUT)
+        out["jobs"][3].update(error=5)
+
+        self.assertEqual(bench(command(storage.fio_argv(PATH), json.dumps(out)))[0]["status"], "fail")
+
+    def test_a_nonzero_exit_fails_though_there_are_numbers(self):
+        self.assertEqual(bench(command(storage.fio_argv(PATH), FIO_OUT, 1))[0]["status"], "fail")
+
+    def test_a_directory_mktemp_didnt_make_where_asked_is_refused(self):
+        mac = recorded(GOOD, [
+            command(["mkdir", "-p", "--", CACHE]), command(["df", "--output=avail", "-B1", "--", CACHE], "500000000000\n"),
+            command(["pacman", "-Q", "fio"], "fio 3.38-1\n"), command(["findmnt", "--noheadings", "--output", "FSTYPE", "--target", CACHE], "btrfs\n"),
+            command(storage.make_temp_argv(CACHE), "/dev/nvme0n1\n"),
+        ])
+        ctx = context(mac)
+
+        found = storage.benchmark(ctx)
+
+        self.assertEqual(found["status"], "skip")
+        self.assertFalse([argv for argv in mac.commands_run if argv[0] == "fio"])
+        self.assertEqual(ctx.changes.pending, [])
+
+    def test_the_file_is_always_in_the_fresh_directory(self):
+        self.assertIn(f"--filename={PATH}", storage.fio_argv(PATH))
 
     def test_garbage_from_fio_fails(self):
         self.assertEqual(bench(command(storage.fio_argv(PATH), "{not json"))[0]["status"], "fail")
