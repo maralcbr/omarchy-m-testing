@@ -2817,7 +2817,7 @@
       "chip": "a18-pro",
       "soc": "t8140",
       "lineup": "MacBook Neo (2026)",
-      "hardware": {"fans": null, "notch": false, "camera": true, "lid": true, "battery": true}
+      "hardware": {"fans": false, "notch": false, "camera": true, "lid": true, "battery": true}
     },
     "j873s": {
       "name": "Mac mini (M5 Pro, 2026)",
