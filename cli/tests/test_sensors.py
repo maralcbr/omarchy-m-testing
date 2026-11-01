@@ -118,6 +118,14 @@ class MotionTest(unittest.TestCase):
         self.assertIn("no accelerometer", found["evidence"][0])
         self.assertIn("no always-on processor", found["evidence"][0])
 
+    def test_a_gyroscope_with_some_channels_unreadable_fails(self):
+        partial = {**GYRO, "gyro": {"x": 0.0}, "gyro_unreadable": 2}
+
+        found = check(snapshot({**GOOD, "iio": [ACCEL, partial]}), sensors.MOTION)
+
+        self.assertEqual(found["status"], "fail")
+        self.assertTrue(any("2 of its channels don't read" in line for line in found["evidence"]))
+
     def test_a_missing_gyroscope_says_why_but_doesnt_fail(self):
         found = check(snapshot({**GOOD, "iio": [ACCEL]}), sensors.MOTION)
 
@@ -156,6 +164,9 @@ class LidAngleTest(unittest.TestCase):
 
         self.assertEqual(found["status"], "fail")
         self.assertIn("didn't follow the lid", found["evidence"][1])
+
+    def test_a_sensor_stuck_at_zero_didnt_follow_the_lid(self):
+        self.assertEqual(self.lid({"before": 0.0, "lowest": 0.0})["status"], "fail")
 
     def test_an_impossible_angle_fails(self):
         self.assertEqual(self.lid(found={**GOOD, "iio": [{**LAS, "angle": 400.0}]})["status"], "fail")
