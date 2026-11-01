@@ -1050,6 +1050,16 @@
       "stdout": "{\"observed\": false}",
       "stderr": "",
       "note": "The CPU frequency steps were not read in this historical run; explicitly unavailable, never a reconstructed reading."
+    },
+    {
+      "argv": [
+        "read:hardware",
+        "engines"
+      ],
+      "returncode": 0,
+      "stdout": "{\"observed\": false}",
+      "stderr": "",
+      "note": "The Neural Engine and the video encoder were not read in this historical run; explicitly unavailable, never a reconstructed reading."
     }
   ],
   "files": {

@@ -25,7 +25,7 @@ import os
 import sys
 import unittest
 
-from omarchy_m_test import benchmarks
+from omarchy_m_test import engines, benchmarks
 from omarchy_m_test.app import main
 from omarchy_m_test.sections import APPLE
 from tests.desktop import command, recording
@@ -207,12 +207,13 @@ class ScoresTest(unittest.TestCase):
     def test_each_benchmark_passes_with_its_score_in_the_report(self):
         report, checks = run(bench_mac())
 
-        self.assertEqual([check["id"] for check in report["checks"]], list(benchmarks.CHECK_IDS))
+        self.assertEqual([check["id"] for check in report["checks"]], [*benchmarks.CHECK_IDS, *engines.CHECK_IDS])
         self.assertEqual(checks["benchmark.opengl"]["score"], {"value": 2987, "unit": "points", "tool": "glmark2 2023.01", "suite": 1})
         self.assertEqual(checks["benchmark.vulkan"]["score"], {"value": 6124, "unit": "points", "tool": "vkmark 2025.01", "suite": 1})
         self.assertEqual(checks["benchmark.h264-decode"]["score"], {"value": round(FRAMES / 0.912), "unit": "fps", "tool": "ffmpeg n9.0.2", "suite": 1})
         self.assertEqual(checks["benchmark.hevc-decode"]["score"]["value"], round(FRAMES / 1.024))
-        for check_id, check in checks.items():
+        for check_id in benchmarks.CHECK_IDS:
+            check = checks[check_id]
             with self.subTest(check_id):
                 self.assertEqual((check["kind"], check["status"], check["classification"]["outcome"]), ("automatic", "pass", "works"))
         self.assertEqual(checks["benchmark.opengl"]["classification"]["feature"], "gpu")
