@@ -11,12 +11,14 @@ from __future__ import annotations
 import json
 import os
 import unittest
+from types import SimpleNamespace
 
 from omarchy_m_test import changes, human, packages, sleep
 from omarchy_m_test.app import main
 from omarchy_m_test.host import CommandResult
+from omarchy_m_test.presence import UNATTENDED_KEY
 from omarchy_m_test.recording import EOF, INTERRUPT
-from omarchy_m_test.session import Context, Section
+from omarchy_m_test.session import Changes, Context, Section
 from tests.desktop import CHECKPOINT, TERMINAL, at_the_seat, bare_desktop, omarchy_desktop, recording
 from tests.live_mac import CATALOGUE_PATH, NODE, UNLOAD, LiveMac, MacState, live_recording
 from tests.schema_validator import errors
@@ -385,6 +387,25 @@ class TemporaryPackagesTest(unittest.TestCase):
 
         self.assertNotIn(INSTALL, host.commands_run)
         self.assertIn("needs sudo", check(host, "test.benchmark")["evidence"][-1])
+
+    def test_an_unattended_run_never_waits_for_a_password(self):
+        asked = []
+        host = SimpleNamespace(run=lambda argv: CommandResult(1, "", ""), terminal=lambda: TERMINAL, run_tty=lambda argv: asked.append(argv))
+
+        self.assertFalse(packages.sudo_ready(SimpleNamespace(host=host, cache={UNATTENDED_KEY: True})))
+        self.assertEqual(asked, [])
+
+    def test_an_unattended_run_reports_a_restore_it_cant_do_instead_of_asking(self):
+        asked = []
+        host = SimpleNamespace(run=lambda argv: CommandResult(1, "", "a password is required"), terminal=lambda: TERMINAL, run_tty=lambda argv: asked.append(argv))
+        undo = Changes(host)
+        undo.may_ask_password = False
+        undo.register("the temporary packages", ["sudo", "-n", "pacman", "-R", "--noconfirm"], sudo=True)
+
+        undo.restore()
+
+        self.assertEqual(asked, [])
+        self.assertEqual([restorer.description for restorer, _ in undo.take_failures()], ["the temporary packages"])
 
     def test_at_a_terminal_sudo_asks_for_the_password_there(self):
         rec = bare_desktop(live_recording())

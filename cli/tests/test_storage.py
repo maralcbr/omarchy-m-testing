@@ -5,8 +5,10 @@ from __future__ import annotations
 import copy
 import json
 import unittest
+from types import SimpleNamespace
+from unittest.mock import patch
 
-from omarchy_m_test import bundled, catalogue, hwread, privacy, storage
+from omarchy_m_test import bundled, catalogue, hwread, packages, privacy, storage
 from omarchy_m_test.host import HARDWARE_SNAPSHOT, CommandResult
 from omarchy_m_test.machine import Machine
 from omarchy_m_test.recording import RecordedHost
@@ -307,6 +309,33 @@ class BenchmarkTest(unittest.TestCase):
 
         self.assertEqual(storage.directory(context(mac)), "/cache/omarchy-m-test")
 
+
+
+
+class HealthPackageTest(unittest.TestCase):
+    def test_why_smartmontools_couldnt_be_installed_is_said(self):
+        controller = {"model": "APPLE SSD", "firmware": "1", "state": "live", "namespaces": 1, "smart": None, "smart_missing": "not-installed"}
+        found = {"controllers": [controller], "other_controllers": 0}
+        host = SimpleNamespace(hardware_snapshot=lambda area: found)
+        ready = packages.Temporary(skipped="installing test packages needs sudo, and it wasn't given")
+        with patch.object(storage.packages, "temporary", return_value=ready):
+            result = storage._health(SimpleNamespace(host=host), found)
+
+        self.assertEqual(result["status"], "skip")
+        self.assertIn("installing test packages needs sudo, and it wasn't given", result["evidence"])
+
+
+class ScrubbedPathTest(unittest.TestCase):
+    def test_the_tools_own_cache_path_survives_for_replay_without_the_user(self):
+        found = privacy.Scrubber().scrub("--filename=/home/sam/.cache/omarchy-m-test/bench.AbCd1234/benchmark.tmp")
+
+        self.assertEqual(found, "--filename=<home>/.cache/omarchy-m-test/bench.AbCd1234/benchmark.tmp")
+
+    def test_anything_else_under_home_is_still_hidden(self):
+        for path in ("/home/sam/.cache/other/x", "/home/sam/.cache/omarchy-m-test/a$b", "/home/sam/.cache/omarchy-m-test/client-secret.txt",
+                     "/home/sam/.cache/omarchy-m-test/../../Documents/client-secret.txt", "/home/sam/.cache/omarchy-m-test/bench.AbCd1234/../../secret",
+                     "/home/sam/.cache/omarchy-m-test/bench.short", "/home/sam/.cache/omarchy-m-test/bench.AbCd1234/secret.tmp"):
+            self.assertEqual(privacy.Scrubber().scrub(path), "<home>", path)
 
 if __name__ == "__main__":
     unittest.main()

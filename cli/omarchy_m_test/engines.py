@@ -34,6 +34,7 @@ CHECK_IDS = (ANE, ANE_BENCHMARK, ENCODE)
 NOT_READ = "not read in this run (it predates this check)"
 SMOKE = ["omarchy-ane-smoke"]
 SUITE = 1
+ENOENT = -2
 ENCODE_ARGV = ["ffmpeg", "-nostdin", "-hide_banner", "-benchmark", "-f", "lavfi", "-i", CLIP_SOURCE, "-t", str(CLIP_SECONDS),
                "-c:v", "h264_v4l2m2m", "-f", "null", "-"]
 _NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9 ._+-]{0,47}")
@@ -47,11 +48,21 @@ def run(ctx: Context) -> list[dict]:
     return [_status(found, ctx.catalogue.knows_board(ctx.machine.board)), _benchmark(ctx, found), _encode(ctx, found)]
 
 
+def _probe_reason(probe: dict | None) -> list[str]:
+    if not probe:
+        return []
+    lines = [f"driver {probe['driver']} failed to probe, error {probe['error']}"] if probe.get("driver") else []
+    if probe.get("firmware"):
+        lines.append(f"its firmware isn't installed: {probe['firmware']}" if probe["firmware_error"] == ENOENT
+                     else f"its firmware couldn't be loaded, error {probe['firmware_error']}: {probe['firmware']}")
+    return lines
+
+
 def _status(found: dict, known_board: bool = True) -> dict:
     devices = found["ane"]
     if not devices:
         if found["ane_node"]:
-            return _result(ANE, "fail", ["the device tree has a Neural Engine node, but the kernel exposes no accelerator device for it (/sys/class/accel)"])
+            return _result(ANE, "fail", ["the device tree has a Neural Engine node, but the kernel exposes no accelerator device for it (/sys/class/accel)", *_probe_reason(found.get("ane_probe"))])
         words = "the device tree has no Neural Engine node"
         return _result(ANE, "fail", [f"{words}, though this Mac has a Neural Engine"]) if known_board else _result(ANE, "skip", [words])
     evidence, status = [], "pass"

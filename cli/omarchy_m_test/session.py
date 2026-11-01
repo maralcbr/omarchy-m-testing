@@ -76,6 +76,7 @@ class Changes:
         self.persist = persist
         self.pending: list[Restorer] = []
         self.failed: list[tuple[Restorer, str]] = []
+        self.may_ask_password = True  # not on an unattended run: nobody is there, so a restore sudo refuses is reported
 
     def make(self, description: str, change: Sequence[str], restore: Sequence[str], host: Host | None = None) -> CommandResult:
         """Register how to undo a change, then make it."""
@@ -135,7 +136,7 @@ class Changes:
 
     def _authorise(self) -> None:
         """Make sure `sudo -n` works: ask for the password at the terminal if sudo forgot it."""
-        if self.host.run(SUDO_CACHED).returncode != 0 and self.host.terminal() is not None:
+        if self.may_ask_password and self.host.run(SUDO_CACHED).returncode != 0 and self.host.terminal() is not None:
             self.host.run_tty(SUDO_ASK)
 
     def take_failures(self) -> list[tuple[Restorer, str]]:

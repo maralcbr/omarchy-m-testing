@@ -211,6 +211,8 @@ _MODE = re.compile(r"\d+x\d+@\d+(?:\.\d+)?(?:Hz)?")
 
 
 # Home-directory paths: the account name and everything under it.
+# A recording has to replay the storage benchmark's commands, so its exact generated paths stay; anything else there is hidden.
+_rule(r"(?<![\w.~-])(?:/home|/Users|/var/home)/[^\s/'\"`:;,()\[\]{}<>]+(/\.cache/omarchy-m-test(?:/bench\.[A-Za-z0-9]{8}(?:/benchmark\.tmp)?)?)(?![^\s'\"`:;,()\[\]{}<>])", r"<home>\1")
 _rule(r"(?<![\w.~-])(?:/home|/Users|/var/home)/[^\s'\"`:;,()\[\]{}<>]+", "<home>")
 _rule(r"(?<![\w.-])/root/[^\s'\"`:;,()\[\]{}<>]*", "<home>")
 _rule(r"(?<![\w/])~/[^\s'\"`:;,()\[\]{}<>]*", "<home>")
