@@ -1034,6 +1034,40 @@
       }
     },
     {
+      "id": "graphics.vulkan-spec",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "not read in this run (it predates this check)"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "gpu",
+        "layer": "asahi",
+        "expected": {
+          "asahi": "linux-asahi",
+          "aurora": "asahi"
+        }
+      }
+    },
+    {
+      "id": "graphics.gl-spec",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "not read in this run (it predates this check)"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "gpu",
+        "layer": "asahi",
+        "expected": {
+          "asahi": "linux-asahi",
+          "aurora": "asahi"
+        }
+      }
+    },
+    {
       "id": "video.h264-on-screen",
       "kind": "automatic",
       "status": "skip",

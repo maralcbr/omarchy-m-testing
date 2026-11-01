@@ -18,6 +18,7 @@ import json
 import math
 import re
 
+from . import gpu_spec
 from .host import Host
 
 HWMON = "/sys/class/hwmon"
@@ -265,5 +266,104 @@ def _storage(host: Host) -> dict:
     return {"controllers": found, "other_controllers": others, "any_nvme": bool(controllers) or others > 0}
 
 
-_AREAS = {"thermal": _thermal, "sensors": _sensors, "storage": _storage, "capacity": _capacity}
+# -- GPU spec checks: vulkaninfo's device profile and glprobe's limits, cut to what the checks compare. ------
+
+VULKAN_TEMP = "/tmp/omarchy-m-test-vulkan.XXXXXXXX"
+VULKAN_PROFILE = 'cd "$1" && exec vulkaninfo --json="$2"'
+MAX_VULKAN_DEVICES = 4
+VULKAN_CONFORMANCE = ("VkPhysicalDeviceVulkan12Properties", "VkPhysicalDeviceDriverProperties", "VkPhysicalDeviceDriverPropertiesKHR")
+_API_VERSION = re.compile(r"[0-9]{1,3}\.[0-9]{1,4}(\.[0-9]{1,6})?")
+_CONFORMANCE = re.compile(r"[0-9]{1,3}(\.[0-9]{1,4}){2,3}")
+_GL_VERSION = re.compile(r"[A-Za-z0-9 ._()-]{1,80}")
+_TEMP_DIR = re.compile(r"/tmp/omarchy-m-test-vulkan\.[A-Za-z0-9]+")
+
+
+def _api_version(value: object) -> str | None:
+    if isinstance(value, int) and not isinstance(value, bool):  # VK_MAKE_API_VERSION
+        return f"{(value >> 22) & 0x7f}.{(value >> 12) & 0x3ff}.{value & 0xfff}"
+    return value if isinstance(value, str) and _API_VERSION.fullmatch(value) else None
+
+
+def _conformance(value: object) -> str | None:
+    """"1.4.1 patch 2": four dotted numbers read as an IP address, and the privacy scrubber rightly takes them for one."""
+    if isinstance(value, dict):
+        value = ".".join(str(value.get(part)) for part in ("major", "minor", "subminor", "patch"))
+    if not (isinstance(value, str) and _CONFORMANCE.fullmatch(value)):
+        return None
+    parts = value.split(".")
+    return f"{'.'.join(parts[:3])} patch {parts[3]}" if len(parts) == 4 else value
+
+
+def _vulkan_device(profile: dict) -> dict | None:
+    """One GPU's facts from vulkaninfo's profile JSON, or None for a software device. Never the UUIDs or the driver's paths."""
+    capabilities = profile.get("capabilities", {}).get("device", {})
+    properties = capabilities.get("properties", {})
+    core = properties.get("VkPhysicalDeviceProperties", {})
+    device_type = core.get("deviceType")
+    if device_type == 4 or (isinstance(device_type, str) and "CPU" in device_type):
+        return None
+    api = _api_version(core.get("apiVersion"))
+    enabled: set[str] = set()
+    for struct in capabilities.get("features", {}).values():
+        if isinstance(struct, dict):
+            enabled |= {name for name, value in struct.items() if value is True}
+    wanted = gpu_spec.required_for(gpu_spec.version_of(api))
+    return {"name": label(core.get("deviceName") if isinstance(core.get("deviceName"), str) else None) or "unnamed", "api": api,
+            "conformance": _conformance(next((properties[name]["conformanceVersion"] for name in VULKAN_CONFORMANCE
+                                              if isinstance(properties.get(name), dict) and "conformanceVersion" in properties[name]), None)),
+            "checked": len(wanted), "missing": [name for name in wanted if name not in enabled]}
+
+
+def _vulkan(host: Host) -> dict:
+    made = host.run(["mktemp", "-d", VULKAN_TEMP])
+    directory = made.stdout.strip()
+    if made.returncode != 0 or not _TEMP_DIR.fullmatch(directory):
+        return {"missing": "couldn't make a temporary directory for vulkaninfo's profile"}
+    try:
+        devices: list[dict] = []
+        for index in range(MAX_VULKAN_DEVICES):
+            done = host.run(["sh", "-c", VULKAN_PROFILE, "sh", directory, str(index)])
+            if done.returncode == 127:
+                return {"missing": "vulkaninfo (vulkan-tools) isn't installed"}
+            if done.returncode != 0:
+                break
+            profiles = [name for name in names(host, directory) or [] if name.endswith(".json")]
+            for name in profiles:
+                try:
+                    device = _vulkan_device(json.loads(host.read_file(f"{directory}/{name}")))
+                except (OSError, ValueError, AttributeError):
+                    device = None
+                if device:
+                    devices.append(device)
+                host.run(["rm", "-f", "--", f"{directory}/{name}"])
+        return {"devices": devices}
+    finally:
+        host.run(["rm", "-rf", "--", directory])
+
+
+def _gl(host: Host) -> dict:
+    done = host.run_bundled("gl-spec")
+    try:
+        found = json.loads(done.stdout)
+    except ValueError:
+        return {"missing": f"the GL probe gave no answer (exit {done.returncode})"}
+    contexts = {}
+    for key in ("gl_core", "gl_compat", "gles"):
+        context = found.get(key)
+        if not isinstance(context, dict):
+            continue
+        version = context.get("version")
+        limits = context.get("limits", {})
+        contexts[key] = {"version": version if isinstance(version, str) and _GL_VERSION.fullmatch(version) else None,
+                         "renderer": label(context.get("renderer") if isinstance(context.get("renderer"), str) else None),
+                         "path": context.get("path") if context.get("path") in ("native", "zink", "llvmpipe") else "unknown",
+                         "limits": {name: value for name, value in limits.items() if name in gpu_spec.LIMIT_NAMES and isinstance(value, (int, float))}}
+    return {"contexts": contexts} if contexts else {"missing": "no GL context could be made through EGL"}
+
+
+def _gpu_spec(host: Host) -> dict:
+    return {"vulkan": _vulkan(host), "gl": _gl(host)}
+
+
+_AREAS = {"thermal": _thermal, "sensors": _sensors, "storage": _storage, "capacity": _capacity, "gpu-spec": _gpu_spec}
 AREAS = tuple(_AREAS)

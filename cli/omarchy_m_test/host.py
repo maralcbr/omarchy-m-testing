@@ -112,7 +112,7 @@ WATCH_TIMEOUT_SECONDS = 1800
 # compares the m1n1 image), so they get longer.
 BUNDLED_TIMEOUT_SECONDS = 300
 # The read-only omarchy-mac checks take seconds; a wedged audio or display server must not hold the run for minutes.
-BUNDLED_TIMEOUTS = {"apple-audio-check": 90, "apple-display-check": 90, "gpu-benchmark": 60}
+BUNDLED_TIMEOUTS = {"apple-audio-check": 90, "apple-display-check": 90, "gpu-benchmark": 60, "gl-spec": 30}
 # Inside a bundled script, the programs that get their own limit (the shim), and how long.
 SHIMMED_PROGRAMS = {**PROGRAM_TIMEOUT_SECONDS, "journalctl": 30, "pacman": 60}
 SHIM_MARKER = "TIMEOUT"  # "TIMEOUT pactl 15" (or "TIMEOUT pactl -": the script's own timeout stopped it): a line the shim added

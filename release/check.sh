@@ -32,7 +32,7 @@ while read -r f; do
   cmp -s "$repo/cli/omarchy_m_test/$f" "$pkg/$f" || fail "$f missing or different"
   if [[ -x $repo/cli/omarchy_m_test/$f && ! -x $pkg/$f ]]; then fail "$f lost its executable bit"; fi
   count=$((count + 1))
-done < <(cd "$repo/cli/omarchy_m_test" && find vendor testcard gpu_native -type f ! -name '*.pyc' ! -path '*/__pycache__/*' ! -path '*/bin/*' | sort)
+done < <(cd "$repo/cli/omarchy_m_test" && find vendor testcard gpu_native gl_spec -type f ! -name '*.pyc' ! -path '*/__pycache__/*' ! -path '*/bin/*' | sort)
 (( count > 0 )) || fail "no vendored files found in the source tree"
 
 # The unpacked CLI resolves its own data, not the repository's.

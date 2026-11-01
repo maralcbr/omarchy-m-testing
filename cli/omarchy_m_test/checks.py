@@ -9,7 +9,7 @@ only the hardware is compared with Omarchy.
 
 from __future__ import annotations
 
-from . import audio as live_audio, display as live_display, external_display, hardware, inputs, inventory, network as live_network, packages, scripts
+from . import audio as live_audio, display as live_display, external_display, gpu_spec, hardware, inputs, inventory, network as live_network, packages, scripts
 from .catalogue import Catalogue
 from .machine import Machine
 from .session import Context
@@ -29,7 +29,7 @@ ORDER = (
     "setup.first-boot-hardware", "setup.vendor-firmware",
     "system.failed-units", "system.snapshots",
     "hardware.drivers", "hardware.firmware", "hardware.probe-errors", "hardware.kernel-config",
-    "gpu.driver", "gpu.vulkan", "gpu.opengl",
+    "gpu.driver", "gpu.vulkan", "gpu.opengl", "graphics.vulkan-spec", "graphics.gl-spec",
     "video.h264-on-screen", "video.hevc-on-screen",
     "display.outputs", "display.external-native-mode", "display.controller", "display.backlight", "display.notch-strip",
     "display.notch-bar", "display.brightness-steps", "display.cursor",
@@ -120,7 +120,7 @@ def hardware_inventory(ctx: Context) -> list[dict]:
 
 def graphics(ctx: Context) -> list[dict]:
     system = _system(ctx)
-    return [hardware.gpu_driver(ctx.host), hardware.gpu_vulkan(ctx.host, system), opengl(ctx)]
+    return [hardware.gpu_driver(ctx.host), hardware.gpu_vulkan(ctx.host, system), opengl(ctx), *gpu_spec.run(ctx)]
 
 
 def opengl(ctx: Context) -> dict:
