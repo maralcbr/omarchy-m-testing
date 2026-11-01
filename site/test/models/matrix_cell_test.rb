@@ -6,6 +6,7 @@ class MatrixCellTest < ActiveSupport::TestCase
     def tester? = true
     def regressed_from(_feature) = nil
     def tester_login = nil
+    def board = "j700"
   end
 
   def check(id, status, outcome) = { "id" => id, "status" => status, "classification" => { "feature" => "thunderbolt", "outcome" => outcome } }
