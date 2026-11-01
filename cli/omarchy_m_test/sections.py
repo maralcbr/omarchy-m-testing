@@ -81,7 +81,7 @@ APPLE: tuple[Section, ...] = (
              ports.CHECK_IDS, ports.run, (ports.DEVICES_WORK, ports.PICTURE)),
     _section("power", "Power", "The battery, its charge limit (set, cleared, then put back as it was) and omarchy-mac's saved limit, and idle power over 30 s on battery; then, at the Mac and if you want, the battery drain over ten minutes asleep.",
              power.CHECK_IDS, power.run),
-    _section("cpu", "CPU", "CPU frequency scaling.", ("cpu.frequency-scaling",), checks.cpu),
+    _section("cpu", "CPU", "CPU frequency scaling, and the steps each cluster offers against macOS's.", ("cpu.frequency-scaling", "cpu.dvfs-ladder"), checks.cpu),
     _section("thermal", "Thermal", "Temperatures, thermal zones and fans, read only.", thermal.CHECK_IDS, thermal.run),
     _section("sensors", "Sensors", "The accelerometer, gyroscope, lid angle and light sensors, read at rest; you don't have to move the Mac.", sensors.CHECK_IDS, sensors.run),
     _section("storage", "Storage", "The SSD's health (never its serial) and a short benchmark on a temporary file, removed afterwards; about 20 s.", storage.CHECK_IDS, storage.run),

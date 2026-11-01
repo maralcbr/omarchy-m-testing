@@ -1,0 +1,297 @@
+#!/usr/bin/env python3
+"""Capture what macOS measures on this Mac, for omarchy-m-test to describe Linux against.
+
+Run it on macOS, on AC power, on a Mac left alone, from a checkout of this repository:
+
+    scripts/macos-reference --brightness "about 50%"
+
+It takes about five minutes and asks for sudo once (powermetrics). It reads the CPU's
+frequency steps, measures idle power, decodes the CLI's own H.264 and HEVC clips with
+VideoToolbox (ffmpeg), and runs the same fio job as benchmark.storage on a temporary
+file. Whatever it can't do it leaves out and says why. It prints what it will save, asks,
+and writes catalogue/macos-reference/<board>.json for review. It never uploads anything,
+and it records no serial, host name, user or volume name.
+
+    --skip power,decode,storage   leave a part out
+    --ane-json FILE               add a saved Neural Engine result
+    --output FILE                 write somewhere else
+    --yes                         don't ask before writing
+"""
+
+from __future__ import annotations
+
+import argparse
+import datetime
+import json
+import math
+import os
+import plistlib
+import re
+import subprocess
+import sys
+import tempfile
+
+SCHEMA, VERSION = "omarchy-m-test/macos-reference", 1
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+IDLE_SECONDS = 60
+SETTLE_SECONDS = 30
+# Keep these the same as the CLI's: omarchy_m_test/benchmarks.py and storage.py.
+CLIP_SOURCE, CLIP_SECONDS, CLIP_FRAMES, LOOPS = "testsrc2=size=1920x1080:rate=30", 5, 150, 3
+ENCODERS = (("h264", ("-c:v", "libx264", "-preset", "veryfast")),
+            ("hevc", ("-c:v", "libx265", "-preset", "ultrafast", "-x265-params", "log-level=error")))
+RANDOM_SECONDS = 5
+FREE_BYTES_NEEDED = 4 * 2**30
+TIERS = (("256GB", 256 * 10**9), ("512GB", 512 * 10**9), ("1TB", 10**12), ("2TB", 2 * 10**12), ("4TB", 4 * 10**12), ("8TB", 8 * 10**12))
+TIER_TOLERANCE = 0.15
+_FRAMES = re.compile(r"frame=\s*(\d+)")
+_RTIME = re.compile(r"\brtime=([\d.]+)s")
+
+
+def run(argv, timeout=600):
+    """(exit code, stdout as bytes, stderr as text); 127 when the program isn't there."""
+    try:
+        done = subprocess.run(argv, capture_output=True, timeout=timeout, check=False, stdin=subprocess.DEVNULL)
+    except FileNotFoundError:
+        return 127, b"", f"{argv[0]} isn't installed"
+    except subprocess.TimeoutExpired:
+        return 124, b"", f"{argv[0]} timed out"
+    return done.returncode, done.stdout, done.stderr.decode("utf-8", "replace")
+
+
+def text(argv, runner=run):
+    code, out, _ = runner(argv)
+    return out.decode("utf-8", "replace").strip() if code == 0 else ""
+
+
+def tier(size_bytes):
+    if size_bytes <= 0:
+        return None
+    name, wanted = min(TIERS, key=lambda t: abs(math.log(size_bytes / t[1])))
+    return name if abs(size_bytes - wanted) <= wanted * TIER_TOLERANCE else None
+
+
+def board(runner=run):
+    found = text(["sysctl", "-n", "hw.targettype"], runner).lower()
+    return found if re.fullmatch(r"j[0-9]{3}[a-z]{0,2}", found) else None
+
+
+def capacity(runner=run):
+    """The internal disk's tier, from its total size only."""
+    code, out, _ = runner(["diskutil", "info", "-plist", "disk0"])
+    try:
+        return tier(int(plistlib.loads(out).get("TotalSize", 0))) if code == 0 else None
+    except (ValueError, plistlib.InvalidFileException):
+        return None
+
+
+def conditions(brightness, runner=run):
+    power = "ac" if "AC Power" in text(["pmset", "-g", "batt"], runner) else "battery"
+    code, out, _ = runner(["system_profiler", "SPDisplaysDataType", "-json"])
+    displays = 0
+    if code == 0:
+        try:
+            displays = sum(len(gpu.get("spdisplays_ndrvs", [])) for gpu in json.loads(out).get("SPDisplaysDataType", []))
+        except ValueError:
+            pass
+    return {"power": power, "brightness": brightness or "not recorded", "displays": displays}
+
+
+def _samples(out):
+    """powermetrics -f plist prints one plist per sample, separated by NUL."""
+    found = []
+    for chunk in out.split(b"\0"):
+        if chunk.strip():
+            try:
+                found.append(plistlib.loads(chunk.strip()))
+            except (ValueError, plistlib.InvalidFileException):
+                continue
+    return found
+
+
+def _mhz(value):
+    return int(round(value / 1e6)) if value > 1e6 else int(round(value))
+
+
+def cpu_ladders(sample):
+    """{"e": ..., "p": ...} from one powermetrics sample's clusters."""
+    ladders = {}
+    for cluster in sample.get("processor", {}).get("clusters", []):
+        steps = sorted({_mhz(state["freq"]) for state in cluster.get("dvfm_states", []) if state.get("freq")})
+        kind = str(cluster.get("name", ""))[:1].lower()
+        if steps and kind in ("e", "p") and kind not in ladders:
+            ladders[kind] = {"states": len(steps), "min_mhz": steps[0], "max_mhz": steps[-1]}
+    return ladders
+
+
+def idle_power_w(samples):
+    """The mean of the CPU, GPU and Neural Engine power macOS reports, in watts; macOS doesn't report the system's here."""
+    readings = []
+    for sample in samples:
+        combined = sample.get("processor", {}).get("combined_power")
+        if isinstance(combined, (int, float)):
+            readings.append(combined / 1000)
+    return round(sum(readings) / len(readings), 2) if readings else None
+
+
+def power(say, runner=run, waiter=None):
+    say(f"Measuring idle power: leave the Mac alone for {SETTLE_SECONDS + IDLE_SECONDS} s.")
+    (waiter or _wait)(SETTLE_SECONDS)
+    code, out, error = runner(["sudo", "powermetrics", "-n", str(IDLE_SECONDS), "-i", "1000", "--samplers", "cpu_power", "-f", "plist"])
+    samples = _samples(out) if code == 0 else []
+    if not samples:
+        say(f"Idle power and CPU steps left out: powermetrics gave nothing ({error.strip()[:120] or f'exit {code}'}).")
+        return {}
+    found = {}
+    ladders = cpu_ladders(samples[0])
+    if ladders:
+        found["cpu_ladders"] = ladders
+    watts = idle_power_w(samples)
+    if watts is not None:
+        found["idle_power_w"] = watts
+    return found
+
+
+def _wait(seconds):
+    import time
+    time.sleep(seconds)
+
+
+def throughput(stderr):
+    """Frames per second from ffmpeg's -benchmark output, as omarchy_m_test/benchmarks.py reads it."""
+    frames, rtime = _FRAMES.findall(stderr), _RTIME.search(stderr)
+    if not frames or not rtime or float(rtime[1]) <= 0:
+        return None
+    return int(frames[-1]), round(int(frames[-1]) / float(rtime[1]))
+
+
+def decode(directory, say, runner=run):
+    found = {}
+    for codec, encoder in ENCODERS:
+        clip = os.path.join(directory, f"clip-{codec}.mp4")
+        code, _, error = runner(["ffmpeg", "-nostdin", "-hide_banner", "-loglevel", "error", "-y", "-f", "lavfi", "-i", CLIP_SOURCE,
+                                 "-t", str(CLIP_SECONDS), *encoder, "-pix_fmt", "yuv420p", clip])
+        if code != 0:
+            say(f"{codec} decode left out: couldn't make the clip ({error.strip()[:120] or f'exit {code}'}).")
+            continue
+        code, _, error = runner(["ffmpeg", "-nostdin", "-benchmark", "-stream_loop", str(LOOPS), "-hwaccel", "videotoolbox", "-i", clip, "-f", "null", "-"])
+        measured = throughput(error) if code == 0 else None
+        if measured is None or measured[0] < CLIP_FRAMES * (1 + LOOPS):
+            say(f"{codec} decode left out: VideoToolbox didn't finish the clip.")
+            continue
+        found[f"{codec}_decode_fps"] = measured[1]
+    return found
+
+
+def fio_argv(path):
+    """omarchy_m_test/storage.py's job, with macOS's asynchronous I/O engine."""
+    return ["fio", "--output-format=json", f"--filename={path}", "--size=1g", "--direct=1", "--ioengine=posixaio", "--stonewall",
+            "--name=write", "--rw=write", "--bs=1m", "--iodepth=8",
+            "--name=read", "--rw=read", "--bs=1m", "--iodepth=8",
+            "--name=random1", "--rw=randread", "--bs=4k", "--iodepth=1", f"--runtime={RANDOM_SECONDS}", "--time_based",
+            "--name=random32", "--rw=randread", "--bs=4k", "--iodepth=32", f"--runtime={RANDOM_SECONDS}", "--time_based"]
+
+
+def fio_numbers(out):
+    start = out.find(b"{")
+    try:
+        jobs = {job["jobname"]: job for job in json.loads(out[start:])["jobs"]}
+        if any(job.get("error") for job in jobs.values()):
+            return None
+        return {"write_mbps": round(jobs["write"]["write"]["bw_bytes"] / 10**6), "read_mbps": round(jobs["read"]["read"]["bw_bytes"] / 10**6),
+                "random1_iops": round(jobs["random1"]["read"]["iops"]), "random32_iops": round(jobs["random32"]["read"]["iops"])}
+    except (ValueError, KeyError, TypeError):
+        return None
+
+
+def on_internal_apfs(directory, runner=run):
+    """Whether a path is on the internal disk, formatted as APFS: capacity is read from disk0, so the benchmark has to run there."""
+    lines = text(["df", directory], runner).splitlines()
+    device = lines[-1].split()[0] if len(lines) > 1 else ""
+    code, out, _ = runner(["diskutil", "info", "-plist", device])
+    try:
+        info = plistlib.loads(out) if code == 0 else {}
+    except (ValueError, plistlib.InvalidFileException):
+        return False
+    return info.get("Internal") is True and info.get("FilesystemType") == "apfs"
+
+
+def storage(directory, say, runner=run, free_bytes=None):
+    found_tier = capacity(runner)
+    if found_tier is None:
+        say("Storage left out: couldn't tell the internal disk's capacity.")
+        return {}
+    free = free_bytes if free_bytes is not None else os.statvfs(directory).f_bavail * os.statvfs(directory).f_frsize
+    if free < FREE_BYTES_NEEDED:
+        say("Storage left out: 4 GiB free is needed.")
+        return {}
+    if not on_internal_apfs(directory, runner):
+        say("Storage left out: the temporary file wouldn't be on the Mac's own SSD, formatted as APFS.")
+        return {}
+    code, out, error = runner(fio_argv(os.path.join(directory, "benchmark.tmp")))
+    numbers = fio_numbers(out) if code == 0 else None
+    if numbers is None:
+        say(f"Storage left out: fio gave no result ({error.strip()[:120] or f'exit {code}'}).")
+        return {}
+    return {found_tier: numbers}
+
+
+def saved_ane(path, say):
+    try:
+        with open(path, encoding="utf-8") as f:
+            found = json.load(f)
+    except (OSError, ValueError) as error:
+        say(f"Neural Engine left out: {error}.")
+        return None
+    wanted = ("model", "precision", "batch", "per_second", "p50_ms")
+    return {key: found[key] for key in wanted if key in found} if isinstance(found, dict) and found.get("model") else None
+
+
+def capture(args, say, runner=run, tempdir=None):
+    """The reference document; everything in it is built from named facts, never copied from a tool's whole output."""
+    found_board = board(runner)
+    if found_board is None:
+        raise SystemExit("This isn't a Mac that names its board (sysctl hw.targettype).")
+    version, build = text(["sw_vers", "-productVersion"], runner), text(["sw_vers", "-buildVersion"], runner)
+    skip = {word for words in args.skip for word in words.split(",") if word}
+    metrics, sizes = {}, {}
+    if "power" not in skip:
+        metrics.update(power(say, runner))
+    # In the home directory, which TMPDIR could point away from: storage has to measure the Mac's own SSD.
+    with tempfile.TemporaryDirectory(prefix=".omarchy-m-test-macos.", dir=tempdir or os.path.expanduser("~")) as directory:
+        if "decode" not in skip:
+            metrics.update(decode(directory, say, runner))
+        if "storage" not in skip:
+            sizes = storage(directory, say, runner)
+    if args.ane_json and (ane := saved_ane(args.ane_json, say)):
+        metrics["ane"] = ane
+    return {"schema": SCHEMA, "version": VERSION, "board": found_board,
+            "source": f"scripts/macos-reference on macOS {version}, reviewed before it was committed",
+            "captured": datetime.date.today().isoformat(), "macos": {"version": version, "build": build},
+            "conditions": conditions(args.brightness, runner), "metrics": metrics, **({"storage": sizes} if sizes else {})}
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description="Capture this Mac's macOS reference numbers for omarchy-m-test.")
+    parser.add_argument("--brightness", default="", help='the display brightness, in your own words: "about 50%%"')
+    parser.add_argument("--skip", action="append", default=[], help="parts to leave out: power, decode, storage")
+    parser.add_argument("--ane-json", help="a saved Neural Engine result to add")
+    parser.add_argument("--output", help="where to write it (default: catalogue/macos-reference/<board>.json)")
+    parser.add_argument("--yes", action="store_true", help="don't ask before writing")
+    args = parser.parse_args(argv)
+    if sys.platform != "darwin":
+        raise SystemExit("Run this on macOS.")
+    document = capture(args, print)
+    rendered = json.dumps(document, indent=2) + "\n"
+    print("\nThis is what will be saved:\n\n" + rendered)
+    path = args.output or os.path.join(HERE, "catalogue", "macos-reference", f"{document['board']}.json")
+    if not args.yes and input(f"Write it to {path}? [y/N] ").strip().lower() != "y":
+        print("Nothing written.")
+        return 1
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(rendered)
+    print(f"Wrote {path}. Review it and commit it: nothing was uploaded.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

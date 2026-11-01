@@ -745,6 +745,16 @@
       "stdout": "{\"observed\": false}",
       "stderr": "",
       "note": "The Vulkan and GL spec checks were not read in this historical run; explicitly unavailable, never a reconstructed result."
+    },
+    {
+      "argv": [
+        "read:hardware",
+        "clocks"
+      ],
+      "returncode": 0,
+      "stdout": "{\"observed\": false}",
+      "stderr": "",
+      "note": "The CPU frequency steps were not read in this historical run; explicitly unavailable, never a reconstructed reading."
     }
   ],
   "files": {

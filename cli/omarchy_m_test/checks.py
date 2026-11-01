@@ -9,7 +9,7 @@ only the hardware is compared with Omarchy.
 
 from __future__ import annotations
 
-from . import audio as live_audio, display as live_display, external_display, gpu_spec, hardware, inputs, inventory, network as live_network, packages, scripts
+from . import audio as live_audio, display as live_display, cpu_ladder, external_display, gpu_spec, hardware, inputs, inventory, network as live_network, packages, scripts
 from .catalogue import Catalogue
 from .machine import Machine
 from .session import Context
@@ -44,7 +44,7 @@ ORDER = (
     "camera.isp", "camera.frames", "camera.image",
     "ports.usb-c", "ports.thunderbolt", "ports.external-displays", "ports.devices-work", "ports.external-display-picture",
     "power.battery", "power.charge-limit", "power.charge-limit-kept", "power.idle-draw", "power.sleep-drain",
-    "cpu.frequency-scaling",
+    "cpu.frequency-scaling", "cpu.dvfs-ladder",
     "thermal.sensors", "thermal.fans",
     "sensors.motion", "sensors.lid-angle", "sensors.light",
     "storage.health", "benchmark.storage",
@@ -158,7 +158,7 @@ def input_devices(ctx: Context) -> list[dict]:
 
 
 def cpu(ctx: Context) -> list[dict]:
-    return [hardware.cpu_scaling(ctx.host)]
+    return [hardware.cpu_scaling(ctx.host), cpu_ladder.check(ctx)]
 
 
 def only(check_ids: tuple[str, ...], results: list[dict], ctx: Context) -> list[dict]:

@@ -25,7 +25,7 @@ from __future__ import annotations
 import json
 import re
 
-from . import packages
+from . import macos_reference, packages
 from .host import CommandResult
 from .session import Context
 from .ui import Ui
@@ -55,7 +55,7 @@ def run(ctx: Context) -> list[dict]:
     found = ctx.host.hardware_snapshot("storage")
     if not found.get("observed"):
         return [_result(check_id, "skip", [NOT_READ]) for check_id in CHECK_IDS]
-    return [_health(ctx, found), benchmark(ctx)]
+    return [_health(ctx, found), benchmark(ctx, found.get("tier"))]
 
 
 # -- health ------------------------------------------------------------------------
@@ -124,7 +124,7 @@ def fio_argv(path: str) -> list[str]:
             "--name=random32", "--rw=randread", "--bs=4k", "--iodepth=32", f"--runtime={RANDOM_SECONDS}", "--time_based"]
 
 
-def benchmark(ctx: Context) -> dict:
+def benchmark(ctx: Context, tier: str | None = None) -> dict:
     where = directory(ctx)
     if where is None:
         return _skip("no home directory to put the temporary file in")
@@ -155,7 +155,8 @@ def benchmark(ctx: Context) -> dict:
     version = _FIO_VERSION.search(ctx.host.run(["fio", "--version"]).stdout)
     evidence += [f"sequential write: {measured['write']} MB/s", f"sequential read: {measured['read']} MB/s",
                  f"4K random read, queue depth 1: {measured['random1']} IOPS", f"4K random read, queue depth 32: {measured['random32']} IOPS",
-                 f"1 GiB file with direct I/O (suite {SUITE})"]
+                 f"1 GiB file with direct I/O (suite {SUITE})",
+                 *macos_reference.storage_lines(macos_reference.load(ctx.machine.board), tier, measured)]
     score = {"value": measured["read"], "unit": "MBps", "tool": f"fio {version[1]}" if version else "fio", "suite": SUITE}
     return {**_result(BENCHMARK, "pass", evidence), "score": score}
 

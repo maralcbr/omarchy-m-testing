@@ -65,7 +65,7 @@ import re
 from dataclasses import asdict, dataclass
 from typing import Any
 
-from . import hardware, human, packages, presence, sleep
+from . import macos_reference, hardware, human, packages, presence, sleep
 from .session import Context, Restorer
 from .ui import Ui
 
@@ -448,7 +448,16 @@ def idle_draw(ctx: Context, battery: str, plugged: str | None = None) -> dict:
     if status != "Discharging":
         return _result(IDLE_DRAW, "skip", [f"skipped: the Mac is on AC power (battery {status}), where the battery doesn't show what it draws"])
     _ui(ctx).text(MEASURING)
-    return judge_idle(parse_samples(ctx.host.run(idle_argv(directory)).stdout))
+    return _vs_macos(ctx, judge_idle(parse_samples(ctx.host.run(idle_argv(directory)).stdout)))
+
+
+def _vs_macos(ctx: Context, result: dict) -> dict:
+    """macOS's idle number beside ours, if this Mac has one. They're measured differently, so it's only a description."""
+    reference = macos_reference.load(ctx.machine.board)
+    there = (reference or {}).get("metrics", {}).get("idle_power_w")
+    if result["status"] != "pass" or there is None:
+        return result
+    return {**result, "evidence": [*result["evidence"], f"vs macOS: {there} W idle on macOS ({macos_reference.conditions(reference)}); measured differently from the battery draw here, so a description, not a comparison"]}
 
 
 def judge_idle(samples: list[Sample]) -> dict:

@@ -1,0 +1,17 @@
+{
+  "schema": "omarchy-m-test/macos-reference",
+  "version": 1,
+  "board": "j616s",
+  "source": "Imported from aurora-diag's macos_baseline.json (https://github.com/aurora-silicon/aurora-diag, MIT, Copyright (c) 2026 Aurora Silicon): macOS idle and Neural Engine measurements on the J616s. No decode or storage numbers.",
+  "captured": "2026-10-31",
+  "macos": {"version": "27.0", "build": "26A428"},
+  "conditions": {"power": "ac", "brightness": "about 382 nits", "displays": 3},
+  "metrics": {
+    "cpu_ladders": {
+      "e": {"states": 7, "min_mhz": 1020, "max_mhz": 2592},
+      "p": {"states": 19, "min_mhz": 1260, "max_mhz": 4512}
+    },
+    "idle_power_w": 14.63,
+    "ane": {"model": "mobilenetv1-1.0-224-random", "precision": "fp16", "batch": 1, "per_second": 3309, "p50_ms": 0.302}
+  }
+}

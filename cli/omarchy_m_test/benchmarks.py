@@ -40,7 +40,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from . import packages
+from . import macos_reference, packages
 from .host import CommandResult
 from .session import Context
 from .ui import Ui
@@ -264,6 +264,8 @@ def _decode(ctx: Context, directory: str, codec: str, label: str, check_id: str,
     if soft:
         lines.append(f"hardware decode is {fps / soft[2]:.2f}x software decode")
     lines.append(tool)
+    reference = macos_reference.load(ctx.machine.board)
+    lines += macos_reference.line(reference, f"{label} hardware decode", round(fps), "fps", (reference or {}).get("metrics", {}).get(f"{codec}_decode_fps"))
     return _result(check_id, "pass", lines, _score(round(fps), "fps", tool))
 
 
