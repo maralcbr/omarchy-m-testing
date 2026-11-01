@@ -122,7 +122,7 @@ class PagesTest < ActionDispatch::IntegrationTest
     assert_equal [ second["id"], first["id"] ].map { |id| "report-#{id}" }, css_select("tr.report-row").map { |row| row["id"] }
     assert_select "tr#report-#{second["id"]} td", "converged 4.0.0"
     # hardware.drivers and hardware.probe-errors fail where the catalogue expects it: not yet supported, not failures
-    assert_select "tr#report-#{second["id"]} td", /37 pass 2 fail 2 gap 37 skip/
+    assert_select "tr#report-#{second["id"]} td", /37 pass 2 fail 2 gap 39 skip/
     assert_select "tr#report-#{second["id"]} td.build-cell[data-build=?]", "99ace40.361571887310001"
     assert_select "tr#report-#{first["id"]} td.build-cell a[href=?]", "/reports?build=aae2586"
   end
@@ -134,7 +134,7 @@ class PagesTest < ActionDispatch::IntegrationTest
     assert_select ".terminal .terminal-bar", /omarchy-m-test/
     assert_select ".terminal .badge-community", "community report"
     # One title per check-id prefix, plus the hardware inventory.
-    assert_select "h2.section-title", %w[system boot packages setup hardware gpu video display audio network sleep input sep touch-id camera ports power cpu thermal sensors benchmark].size + 1
+    assert_select "h2.section-title", %w[system boot packages setup hardware gpu video display audio network sleep input sep touch-id camera ports power cpu thermal sensors storage benchmark].size + 1
     assert_select "li#check-sep\\.attach .status.status-skip", "SKIP"
     assert_select "li#check-touch-id\\.ready .status.status-skip", "SKIP"
     assert_select "li#check-touch-id\\.unlock .status.status-skip", "SKIP"

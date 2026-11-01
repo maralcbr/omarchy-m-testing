@@ -199,6 +199,7 @@ def _run(args: argparse.Namespace, host: Host, sections: Sequence[Section]) -> i
     # The Scrubber learns this Mac's hostname, accounts and networks: nothing
     # a check found reaches the checkpoint or the report unscrubbed.
     scrubber = privacy.Scrubber.for_host(host)
+    storage = host.hardware_snapshot("capacity").get("tier")  # in every report, whichever sections run
     key = run_key(machine, catalogue, TOOL_VERSION)
     cache: dict = {presence.UNATTENDED_KEY: True} if args.unattended else {}
     blocked = _blocked(host, sections, cache)
@@ -255,7 +256,7 @@ def _run(args: argparse.Namespace, host: Host, sections: Sequence[Section]) -> i
         else:
             results += skipped(section, blocked.get(section.id))
     built = report.build(machine, found.report(shared.get("boot_loader", "unknown")), results, catalogue, shared.get("inventory"),
-                         unattended=bool(shared.get(presence.UNATTENDED_KEY)))
+                         unattended=bool(shared.get(presence.UNATTENDED_KEY)), storage=storage)
 
     signed, unsigned_because = signing.sign(host, privacy.enforce(built, scrubber))
     text = report.to_text(signed)

@@ -35,6 +35,15 @@
     },
     {
       "argv": [
+        "read:hardware",
+        "capacity"
+      ],
+      "returncode": 0,
+      "stdout": "{\"observed\": false}",
+      "stderr": ""
+    },
+    {
+      "argv": [
         "loginctl",
         "show-session",
         "auto",
@@ -552,6 +561,15 @@
       "argv": [
         "read:hardware",
         "sensors"
+      ],
+      "returncode": 0,
+      "stdout": "{\"observed\": false}",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "read:hardware",
+        "storage"
       ],
       "returncode": 0,
       "stdout": "{\"observed\": false}",

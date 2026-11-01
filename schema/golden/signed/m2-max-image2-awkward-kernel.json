@@ -2078,6 +2078,40 @@
       }
     },
     {
+      "id": "storage.health",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "not read in this run (it predates this check)"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "nvme",
+        "layer": "asahi",
+        "expected": {
+          "asahi": "upstream",
+          "aurora": "asahi"
+        }
+      }
+    },
+    {
+      "id": "benchmark.storage",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "not read in this run (it predates this check)"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "nvme",
+        "layer": "asahi",
+        "expected": {
+          "asahi": "upstream",
+          "aurora": "asahi"
+        }
+      }
+    },
+    {
       "id": "benchmark.opengl",
       "kind": "automatic",
       "status": "skip",
@@ -2152,6 +2186,6 @@
   ],
   "signature": {
     "public_key": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHWZLEbyxAyRBj1yRyeHbRhQvVhcrUqpMaNH7ivMU1DW",
-    "signature": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgdZksRvLEDJEGPXJHJ4dtGFC9WF\nytSqkxo0fuK8xTUNYAAAAVb21hcmNoeS1tLXRlc3QtcmVwb3J0AAAAAAAAAAZzaGE1MTIA\nAABTAAAAC3NzaC1lZDI1NTE5AAAAQIobL3Nm6w/W4rNCWcHqadhzA6JkGtQNXPTOK6Zb2N\nvmyvBQwK2GX6mpgqjLVBL4FYowagPt+9HUHZUDkGtOAAw=\n-----END SSH SIGNATURE-----"
+    "signature": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgdZksRvLEDJEGPXJHJ4dtGFC9WF\nytSqkxo0fuK8xTUNYAAAAVb21hcmNoeS1tLXRlc3QtcmVwb3J0AAAAAAAAAAZzaGE1MTIA\nAABTAAAAC3NzaC1lZDI1NTE5AAAAQGwLUIfD7fREDlDsDkQmz7zn5UUhf0253XthhI/Ugy\n/x7wii9rd/t0w+1CD0w2flRUz1gaQ8JSkRItn0bCaRqg0=\n-----END SSH SIGNATURE-----"
   }
 }
