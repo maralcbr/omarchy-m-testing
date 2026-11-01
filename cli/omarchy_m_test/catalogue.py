@@ -76,6 +76,10 @@ class Catalogue:
         feature_id = self.data["checks"].get(check_id)
         return self._features.get(feature_id) if feature_id else None
 
+    def hardware_fact(self, board: str, fact: str) -> bool | None:
+        """Whether this board has it (HARDWARE_FACTS); None when the catalogue doesn't know the board or isn't sure."""
+        return self.data.get("boards", {}).get(board, {}).get("hardware", {}).get(fact)
+
     def chip_for_soc(self, soc: str) -> str | None:
         return next((chip for chip, info in self.data["chips"].items() if soc in info["socs"]), None)
 

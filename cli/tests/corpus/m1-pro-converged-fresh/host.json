@@ -990,6 +990,16 @@
       "stdout": "",
       "stderr": "sudo: a password is required\n",
       "note": "devices_deferred was not read in this historical run; answered as unavailable, never a reconstructed reason."
+    },
+    {
+      "argv": [
+        "read:hardware",
+        "thermal"
+      ],
+      "returncode": 0,
+      "stdout": "{\"observed\": false}",
+      "stderr": "",
+      "note": "Temperatures and fans were not read in this historical run; explicitly unavailable, never a reconstructed reading."
     }
   ],
   "files": {

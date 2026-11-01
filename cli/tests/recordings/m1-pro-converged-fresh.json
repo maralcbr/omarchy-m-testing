@@ -566,6 +566,15 @@
     },
     {
       "argv": [
+        "read:hardware",
+        "thermal"
+      ],
+      "returncode": 0,
+      "stdout": "{\"observed\": false}",
+      "stderr": ""
+    },
+    {
+      "argv": [
         "pacman",
         "-Q",
         "glmark2",

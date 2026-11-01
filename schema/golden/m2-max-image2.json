@@ -1996,6 +1996,40 @@
       }
     },
     {
+      "id": "thermal.sensors",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "not read in this run (it predates this check)"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "thermal-sensors",
+        "layer": "aurora",
+        "expected": {
+          "asahi": "upstream",
+          "aurora": "asahi"
+        }
+      }
+    },
+    {
+      "id": "thermal.fans",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "not read in this run (it predates this check)"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "fan-readings",
+        "layer": "aurora",
+        "expected": {
+          "asahi": "upstream",
+          "aurora": "asahi"
+        }
+      }
+    },
+    {
       "id": "benchmark.opengl",
       "kind": "automatic",
       "status": "skip",

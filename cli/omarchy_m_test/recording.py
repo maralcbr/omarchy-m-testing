@@ -92,7 +92,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Any, Callable, Sequence
 
-from .host import MONITOR_INTENT, TOUCHID_SNAPSHOT, CommandResult, Host, HttpResponse, MachineSignature, NetworkError, SigningError, Terminal, bundled_argv
+from .host import HARDWARE_SNAPSHOT, MONITOR_INTENT, TOUCHID_SNAPSHOT, CommandResult, Host, HttpResponse, MachineSignature, NetworkError, SigningError, Terminal, bundled_argv
 from .privacy import HOME_DIR, HOSTNAME_PATH, SERIAL_FILES, Scrubber
 
 RECORDING_VERSION = 1
@@ -222,6 +222,9 @@ class RecordedHost:
 
     def touchid_snapshot(self) -> dict:
         return json.loads(self.run(TOUCHID_SNAPSHOT).stdout)
+
+    def hardware_snapshot(self, area: str) -> dict:
+        return json.loads(self.run([HARDWARE_SNAPSHOT, area]).stdout)
 
     def read_file(self, path: str) -> bytes:
         if path in self.written:
@@ -399,6 +402,11 @@ class RecordingHost:
     def touchid_snapshot(self) -> dict:
         found = self.inner.touchid_snapshot()
         self._keep(TOUCHID_SNAPSHOT, CommandResult(0, json.dumps(found, sort_keys=True), ""))
+        return found
+
+    def hardware_snapshot(self, area: str) -> dict:
+        found = self.inner.hardware_snapshot(area)
+        self._keep([HARDWARE_SNAPSHOT, area], CommandResult(0, json.dumps(found, sort_keys=True), ""))
         return found
 
     def run_bundled(self, name: str, args: Sequence[str] = ()) -> CommandResult:
