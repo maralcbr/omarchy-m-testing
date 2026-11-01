@@ -43,8 +43,10 @@ with a sequence is version 2.
 
 What record mode keeps of the native-mode check's sources is an allowlisted
 projection (external_display.py): hyprctl monitors keeps output names, modes,
-transform, scale, the disabled/DPMS/mirror flags and ids, never make, model,
-description or serial; drm_info and debugfs DRM state keep numeric connector
+transform, scale, the disabled/DPMS/mirror flags, Hyprland's enumerated
+solitaryBlockedBy reasons and ids, never make, model, description or serial;
+hyprctl layers keeps only each surface's size and whether it's Omarchy's
+screensaver, for the video check; drm_info and debugfs DRM state keep numeric connector
 and CRTC ids only; apple-dcp kernel findings become fixed categories with
 validated numbers, in the native-mode check's kernel log and wherever else a
 kernel log is recorded.

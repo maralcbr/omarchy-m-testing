@@ -22,20 +22,56 @@ files, and only it reaches the evidence.
 It claims nothing about tearing, frame pacing or VRR: one paused frame is
 checked.
 
-Needs the human's desktop: a Wayland session (WAYLAND_DISPLAY), a local seat
-and no SSH (presence.py), Hyprland (the built-in screen is found with
-hyprctl) and mpv, grim and ffmpeg, installed for the run with consent if
-missing (packages.py). Otherwise both checks are skipped, with the reason.
+Needs a desktop at the Mac: a Wayland session (WAYLAND_DISPLAY), a local seat
+and no SSH (presence.py), an unlocked screen, Hyprland (the built-in screen is
+found with hyprctl) and mpv, grim and ffmpeg, installed for the run with
+consent if missing (packages.py). Otherwise both checks are skipped, with the
+reason.
+
+It needs a screen, not a person: the tool takes the screenshot and reads the
+colours itself. So an unattended run (--unattended) still runs it, where it
+really finds an active local seat by asking logind (presence.detect, since
+presence.of says nobody is at the Mac), and the test card briefly takes the
+screen of whatever session is active there. It never asks for a password: test
+packages it can't install with sudo's cached or passwordless credentials skip
+the checks.
+
+A locked screen shows the lock surface over the card, so whatever the
+screenshot holds says nothing about video: logind's Active stays yes, and
+Omarchy's lock doesn't set its LockedHint, so Hyprland is asked, the way Omarchy
+asks (omarchy-hyprland-session-locked: LOCK among a monitor's
+solitaryBlockedBy). Locked before the card: nothing is played or installed, and
+both checks are skipped. Wrong colours are asked about again, as the screen can
+lock during the check. Where Hyprland can't say, an attended run carries on, and
+an unattended one, where nobody would see why it failed, is skipped.
+
+A full-screen overlay is the same: Omarchy's screensaver is a layer-shell
+overlay above a full-screen window, and on an M3 Air it put wrong colours in the
+screenshot of a screen that was not locked. So the built-in screen's overlay
+layer is read too (`hyprctl -j layers`, level 3). Before the card, any surface
+there covering most of the screen counts, whoever drew it; a narrower one
+(notifications) or a lower layer (the bar) doesn't. That is broad on purpose:
+Omarchy's OSD and its menus' dismiss surfaces are transparent and full-screen
+too, and a false skip only loses a test.
+
+The second look must not hide a true failure, so it is narrower. Only wrong
+colours get one, not software decode or mpv's own failures, and only a lock or
+Omarchy's screensaver (by its namespace) turns them into a skip, with the failure
+kept in the evidence. So another screensaver starting during the card is a
+visible FAIL, which is better than a real one hidden, and one that comes and goes
+within one card can still reach a result.
+
 The test cards, screenshots and logs go in a private temporary directory
 that is removed when the section ends; none of it leaves the machine.
 """
 
 from __future__ import annotations
 
+import json
 import re
 from dataclasses import dataclass
 
-from . import packages, png, presence
+from . import external_display, human, packages, png, presence
 from .host import Host
 from .session import Context
 from .ui import Ui
@@ -73,6 +109,15 @@ TOLERANCE = 64
 CARD_FAILED, NO_BUILT_IN, NO_HYPRLAND, NO_SCREENSHOT, NEVER_SHOWN = 3, 4, 5, 6, 7
 NOT_INSTALLED = 127
 
+LOCKED = "the screen is locked: a screenshot would show the lock screen, not the test card"
+COVERED = "a full-screen overlay (a screensaver, say) covers the screen: a screenshot would show it, not the test card"
+HIDDEN_UNKNOWN = "Hyprland doesn't say whether the screen is locked or covered, and either in the screenshot would look like a failure"
+OVERLAY_LEVEL = "3"
+SCREENSAVER_NAMESPACE = external_display.SCREENSAVER_NAMESPACE
+# The part of the screen, each way, that makes an overlay surface full-screen: room for a reserved edge.
+COVERS = 0.9
+_BUILT_IN = re.compile(r"(eDP|LVDS|DSI)-")  # as testcard/video-card.sh finds it
+
 _HWDEC_USED = re.compile(r"Using hardware decoding \(([\w-]+)\)")
 _SOFTWARE = re.compile(r"Using software decoding|Falling back to software decoding")
 _VO = re.compile(r"\bVO: \[([\w-]+)\]")
@@ -93,7 +138,7 @@ def run(ctx: Context) -> list[dict]:
     why = _blocked(ctx)
     if why:
         return [_skip(check_id, why) for check_id in CHECK_IDS]
-    ready = packages.temporary(ctx, PACKAGES, "The on-screen video check")
+    ready = packages.temporary(ctx, PACKAGES, "The on-screen video check", ask=not human.unattended(ctx))
     if not ready.ready:
         return [_skip(check_id, ready.skipped or "", ready.evidence()) for check_id in CHECK_IDS]
     made = ctx.host.run(MAKE_TEMP)
@@ -107,17 +152,91 @@ def run(ctx: Context) -> list[dict]:
 
 
 def _blocked(ctx: Context) -> str | None:
-    over_ssh = "running over SSH: the test card is played on this Mac's own screen, for someone at it"
+    unattended = human.unattended(ctx)
+    over_ssh = "running over SSH: the test card is played on this Mac's own screen" + ("" if unattended else ", for someone at it")
     if any(ctx.host.env(name) for name in presence.SSH_VARIABLES):
         return over_ssh
     if not ctx.host.env("WAYLAND_DISPLAY"):
         return "no Wayland desktop session to show the test card in"
-    found = presence.of(ctx.host, ctx.cache)
+    # presence.of is "nobody's at the Mac" all through an unattended run; this asks logind, and doesn't change that.
+    found = presence.detect(ctx.host) if unattended else presence.of(ctx.host, ctx.cache)
     if found.ssh:
         return over_ssh
     if not found.seat:
         return f"no local desktop session ({found.why_no_seat})"
-    return None
+    hidden = _hidden(ctx.host)
+    return None if hidden == HIDDEN_UNKNOWN and not unattended else hidden
+
+
+def _hidden(host: Host) -> str | None:
+    """Why the card wouldn't be what a screenshot shows: LOCKED, COVERED, HIDDEN_UNKNOWN; None when it would (see the module docstring)."""
+    monitors = _ask(host, external_display.MONITORS)
+    locked = _locked(monitors)
+    if locked:
+        return LOCKED
+    if locked is None:
+        return HIDDEN_UNKNOWN
+    layers = _ask(host, external_display.LAYERS)
+    if not isinstance(layers, dict):
+        return HIDDEN_UNKNOWN
+    return COVERED if _covered(monitors, layers) else None
+
+
+def _ask(host: Host, argv: list[str]) -> object:
+    answer = host.run(argv)
+    try:
+        return json.loads(answer.stdout) if answer.returncode == 0 else None
+    except ValueError:
+        return None
+
+
+def _locked(monitors: object) -> bool | None:
+    """Whether Hyprland holds a session lock; None when it can't say.
+
+    Hyprland stops at the first reason on a monitor with no workspace yet, so
+    there a missing LOCK means nothing.
+    """
+    if not isinstance(monitors, list):
+        return None
+    reasons = [monitor.get("solitaryBlockedBy") for monitor in monitors if isinstance(monitor, dict)]
+    reasons = [reason for reason in reasons if isinstance(reason, list)]
+    if any("LOCK" in reason for reason in reasons):
+        return True
+    return False if any("WORKSPACE" not in reason for reason in reasons) else None
+
+
+def _overlays(monitors: object, layers: object) -> list[tuple[dict, float, float]]:
+    """The built-in screen's overlay surfaces, each with that screen's logical size (layer sizes are logical, monitors' physical)."""
+    found = []
+    try:
+        for monitor in monitors:
+            if not _BUILT_IN.match(monitor["name"]):
+                continue
+            width, height = monitor["width"] / monitor["scale"], monitor["height"] / monitor["scale"]
+            if monitor.get("transform", 0) % 2:
+                width, height = height, width
+            found += [(surface, width, height) for surface in layers.get(monitor["name"], {}).get("levels", {}).get(OVERLAY_LEVEL, [])]
+    except (AttributeError, KeyError, TypeError, ZeroDivisionError):
+        pass
+    return found
+
+
+def _covered(monitors: object, layers: object) -> bool:
+    """Whether an overlay surface covers most of the built-in screen."""
+    try:
+        return any(surface["w"] >= COVERS * width and surface["h"] >= COVERS * height for surface, width, height in _overlays(monitors, layers))
+    except (KeyError, TypeError):
+        return False
+
+
+def _since_taken(host: Host) -> str | None:
+    """The second look at wrong colours: why the screenshot wasn't of the card, only if that's certain (see the module docstring)."""
+    monitors = _ask(host, external_display.MONITORS)
+    locked = _locked(monitors)
+    if locked or locked is None:
+        return LOCKED if locked else None
+    layers = _ask(host, external_display.LAYERS)
+    return COVERED if any(surface.get("namespace") == SCREENSAVER_NAMESPACE for surface, _, _ in _overlays(monitors, layers) if isinstance(surface, dict)) else None
 
 
 def hwdec_request(host: Host) -> Request:
@@ -201,6 +320,10 @@ def _play(ctx: Context, directory: str, codec: str, label: str, check_id: str, r
         lines.append("on screen: every bar in its colour")
     if not hardware:
         lines.append("hardware decode: not used, mpv decoded the test card in software")
+    if wrong:
+        taken = _since_taken(ctx.host)
+        if taken:
+            return _skip(check_id, taken, lines)
     return _result(check_id, "fail" if wrong or not hardware else "pass", lines)
 
 

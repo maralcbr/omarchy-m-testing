@@ -18,6 +18,14 @@ from .session import Context
 
 CHECK_ID = "display.external-native-mode"
 MONITORS = ["hyprctl", "-j", "monitors", "all"]
+LAYERS = ["hyprctl", "-j", "layers"]
+# The one layer namespace a recording keeps, for the video check: Omarchy's screensaver.
+SCREENSAVER_NAMESPACE = "org.omarchy.screensaver"
+# Why Hyprland won't scan a monitor out directly (solitaryBlockedBy): a recording keeps these words and nothing else.
+SOLITARY_REASONS = frozenset({
+    "UNKNOWN", "NOTIFICATION", "LOCK", "WORKSPACE", "WINDOWED", "DND", "SPECIAL", "ALPHA", "OFFSET", "CANDIDATE",
+    "OPAQUE", "TRANSFORM", "OVERLAYS", "FLOAT", "WORKSPACES", "SURFACES", "ERRORBAR", "FADEOUT",
+})
 SETTLE_SECONDS = 2
 KERNEL_LOG = ["timeout", "3", "journalctl", "--dmesg", "--boot=0", "--output=cat", "--no-pager"]
 DRM = "/sys/class/drm"
@@ -336,6 +344,8 @@ def _monitor_projection(monitor) -> dict | None:
     for key in ("disabled", "dpmsStatus"):
         if isinstance(monitor.get(key), bool):
             kept[key] = monitor[key]
+    if isinstance(monitor.get("solitaryBlockedBy"), list):
+        kept["solitaryBlockedBy"] = [reason for reason in monitor["solitaryBlockedBy"] if isinstance(reason, str) and reason in SOLITARY_REASONS]
     mirror = monitor.get("mirrorOf")
     if isinstance(mirror, str) and (mirror in ("none", "") or OUTPUT_NAME.fullmatch(mirror) or re.fullmatch(r"-?\d{1,10}", mirror)):
         kept["mirrorOf"] = mirror
@@ -354,6 +364,22 @@ def _monitors_projection(text: str) -> str:
     if not isinstance(monitors, list):
         return ""
     return json.dumps([kept for kept in map(_monitor_projection, monitors) if kept is not None])
+
+
+def _layer_projection(surface: dict) -> dict:
+    kept = {"w": surface.get("w"), "h": surface.get("h")}
+    return {**kept, "namespace": SCREENSAVER_NAMESPACE} if surface.get("namespace") == SCREENSAVER_NAMESPACE else kept
+
+
+def _layers_projection(text: str) -> str:
+    """Only each layer surface's size and, for Omarchy's screensaver, its namespace: the video check's use for them (no other names, pids, addresses)."""
+    try:
+        outputs = json.loads(text)
+        return json.dumps({str(name): {"levels": {str(level): [_layer_projection(surface) for surface in surfaces]
+                                                  for level, surfaces in output["levels"].items()}}
+                           for name, output in outputs.items()})
+    except (ValueError, AttributeError, KeyError, TypeError):
+        return ""
 
 
 def _drm_info_projection(text: str) -> str:
@@ -405,6 +431,8 @@ def recorded_output(argv: list[str], stdout: str, stderr: str) -> tuple[str, str
     (then only its DCP findings are rewritten, by recorded_text)."""
     if argv[:3] == ["hyprctl", "-j", "monitors"]:
         return _monitors_projection(stdout), ""
+    if argv == LAYERS:
+        return _layers_projection(stdout), ""
     if len(argv) >= 4 and argv[2] == "drm_info" and argv[:2] == ["timeout", "3"]:
         return _drm_info_projection(stdout), ""
     if argv == KERNEL_LOG:

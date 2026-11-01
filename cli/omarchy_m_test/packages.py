@@ -18,7 +18,9 @@ What happens:
      packages. Nothing else is ever installed this way.
   4. sudo: its cached credentials, or at a terminal `sudo -v`, which asks
      for the password there (the human is at the Mac, running the tool).
-     Off a terminal without cached credentials the checks are skipped.
+     Off a terminal without cached credentials the checks are skipped,
+     and so they are for a caller that passes ask=False (nobody is at the
+     Mac to type it).
      If any of them is installed already (a dependency needs a newer
      version: an upgrade), nothing is installed.
   5. The restorer (`sudo -n pacman -R --noconfirm` exactly that list, those
@@ -83,7 +85,7 @@ def installed(ctx: Context, names: Sequence[str]) -> set[str]:
     return {line.split()[0] for line in answer.stdout.splitlines() if line.split() and line.split()[0] in names}
 
 
-def temporary(ctx: Context, names: Sequence[str], purpose: str) -> Temporary:
+def temporary(ctx: Context, names: Sequence[str], purpose: str, ask: bool = True) -> Temporary:
     """Make sure `names` are installed for this section, with consent; see the module docstring."""
     names = list(dict.fromkeys(names))
     if ctx.system is not None and not ctx.system.has_pacman:
@@ -119,8 +121,9 @@ def temporary(ctx: Context, names: Sequence[str], purpose: str) -> Temporary:
         "for this run only: exactly these are removed when the section ends."
     )
 
-    if not sudo_ready(ctx):
-        return Temporary(skipped="installing test packages needs sudo, and it wasn't given", already=kept)
+    if not sudo_ready(ctx, ask):
+        why = "it wasn't given" if ask else "this unattended run doesn't ask for a password"
+        return Temporary(skipped=f"installing test packages needs sudo, and {why}", already=kept)
 
     restorer = ctx.changes.register(f"the temporary packages {' '.join(plan)}", REMOVE, sudo=True, packages=plan)
     done = ctx.host.run(install_command(missing))
@@ -134,10 +137,10 @@ def temporary(ctx: Context, names: Sequence[str], purpose: str) -> Temporary:
     return Temporary(installed=actual, already=kept)
 
 
-def sudo_ready(ctx: Context) -> bool:
+def sudo_ready(ctx: Context, ask: bool = True) -> bool:
     """sudo works without a prompt now: cached, or the human just typed the password at the terminal (also changes.py)."""
     if ctx.host.run(SUDO_CACHED).returncode == 0:
         return True
-    if ctx.host.terminal() is None:
+    if not ask or ctx.host.terminal() is None:
         return False
     return ctx.host.run_tty(SUDO_ASK).returncode == 0
