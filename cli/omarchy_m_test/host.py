@@ -22,6 +22,7 @@ Operations:
                              never user configuration text or monitor description selectors
   touchid_snapshot()         passive SEP state and firmware provenance, with only
                              allowlisted facts and kernel event categories retained
+  hardware_snapshot(area)    allowlisted, validated facts about one hardware area (hwread.py)
   prompt(message)            ask the human; returns the typed line; EOFError on end of input
   show(text)                 show text to the human
   write_file(path, text, private=False)
@@ -131,6 +132,7 @@ READ_STUCK_LIMIT = 8
 BUNDLED_PREFIX = "bundled:"
 MONITOR_INTENT = ["read:monitor-intent"]  # the derived policy flags in a recording
 TOUCHID_SNAPSHOT = ["read:touch-id"]
+HARDWARE_SNAPSHOT = "read:hardware"
 
 
 def bundled_argv(name: str, args: Sequence[str] = ()) -> list[str]:
@@ -215,6 +217,8 @@ class Host(Protocol):
     def monitor_intent(self, outputs: list[dict]) -> dict[str, dict]: ...
 
     def touchid_snapshot(self) -> dict: ...
+
+    def hardware_snapshot(self, area: str) -> dict: ...
 
     def prompt(self, message: str) -> str: ...
 
@@ -318,6 +322,10 @@ class RealHost:
     def touchid_snapshot(self) -> dict:
         from . import touchid
         return touchid.collect(self)
+
+    def hardware_snapshot(self, area: str) -> dict:
+        from . import hwread
+        return hwread.collect(self, area)
 
     def __init__(self) -> None:
         self._shims: str | None = None
