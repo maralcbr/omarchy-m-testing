@@ -4,7 +4,8 @@
 # the tester machines agree on, partial when they disagree. Without tester
 # runs, the cell only takes a colour when two or more distinct machines agree;
 # until then it shows the community reports, labelled as unconfirmed.
-# Machines agreeing on different states make it partial.
+# Machines agreeing on different states make it partial. Across builds, a check
+# a newer run on the board found working retires older results that it didn't.
 class MatrixCell
   AGREEMENT = 2
 
@@ -49,6 +50,7 @@ class MatrixCell
       tested << report
       checks.each { |check| latest[keys.fetch(report)][check["id"]] = [ check.dig("classification", "outcome"), report ] }
     end
+    retire_superseded(latest)
     votes = latest.values.map do |checks|
       sources = checks.values.map(&:last).uniq.sort_by(&:upload_order).reverse
       state = ResultState.combine(checks.values.map(&:first))
@@ -61,6 +63,25 @@ class MatrixCell
     new(votes.map(&:first).tally, tested.reverse, tester_votes.map(&:first).tally, sources:)
   end
   private_class_method :from_checks
+
+  # A check that didn't work stops counting once a newer run on the same board found
+  # it working: that Mac has since been brought up. A community run can't retire a
+  # tester's result, and an older pass never retires a newer failure.
+  def self.retire_superseded(latest)
+    passes = Hash.new { |hash, key| hash[key] = [] }
+    latest.each_value do |checks|
+      checks.each { |id, (outcome, report)| passes[[ report.board, id ]] << report if outcome == "works" }
+    end
+    latest.each_value do |checks|
+      checks.reject! do |id, (outcome, report)|
+        !%w[works not-applicable].include?(outcome) && passes[[ report.board, id ]].any? do |pass|
+          (pass.upload_order <=> report.upload_order).positive? && (pass.tester? || !report.tester?)
+        end
+      end
+    end
+    latest.reject! { |_machine, checks| checks.empty? }
+  end
+  private_class_method :retire_superseded
 
   def initialize(tallies, reports, tester_tallies = {}, hidden: false, sources: nil)
     @tallies = tallies

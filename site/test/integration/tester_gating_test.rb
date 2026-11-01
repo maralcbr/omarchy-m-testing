@@ -47,7 +47,7 @@ class TesterGatingTest < ActionDispatch::IntegrationTest
     assert_equal "unconfirmed", cell(M2, "gpu")["data-state"]
   end
 
-  test "tester runs outweigh community runs; testers who disagree make it partial" do
+  test "tester runs outweigh community runs; a newer tester pass retires an older tester failure" do
     bind_machine "a", "tester-one"
     upload_report golden_with("m2-max-image2", GPU_FAILS), machine: "a"
     upload_report golden("m2-max-image2"), machine: "b"
@@ -60,7 +60,28 @@ class TesterGatingTest < ActionDispatch::IntegrationTest
     bind_machine "d", "tester-two"
     upload_report golden("m2-max-image2"), machine: "d"
     get "/matrix"
+    assert_equal "works", cell(M2, "gpu")["data-state"]
+  end
+
+  test "a newer tester failure stands: an older pass doesn't retire it, so testers disagree" do
+    bind_machine "a", "tester-one"
+    bind_machine "d", "tester-two"
+    upload_report golden("m2-max-image2"), machine: "a"
+    upload_report golden_with("m2-max-image2", GPU_FAILS), machine: "d"
+
+    get "/matrix"
     assert_equal "partial", cell(M2, "gpu")["data-state"]
+  end
+
+  test "a machine that fails after it passed can't retire another machine's failure" do
+    bind_machine "a", "tester-one"
+    bind_machine "d", "tester-two"
+    upload_report golden("m2-max-image2"), machine: "a"
+    upload_report golden_with("m2-max-image2", GPU_FAILS), machine: "d"
+    upload_report golden_with("m2-max-image2", GPU_FAILS), machine: "a"
+
+    get "/matrix"
+    assert_equal "regression", cell(M2, "gpu")["data-state"]
   end
 
   test "a machine's latest run decides: a community run after its tester run takes the tester colour away" do

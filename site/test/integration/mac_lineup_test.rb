@@ -45,6 +45,21 @@ class MacLineupTest < ActionDispatch::IntegrationTest
     assert_match "1 tester machine works", status("j416c", "gpu")["title"]
   end
 
+  test "a newer pass retires older failures on its own board, not on another" do
+    %w[tester-one tester-two tester-three].each { |login| Tester.create!(login:) }
+    older = golden_with("m2-max-image2", "gpu.driver" => "not-in-asahi", "gpu.vulkan" => "not-in-asahi")
+    other_board = older.deep_dup.tap { |report| report["machine"]["board"] = "j414c" }
+    upload_report older, machine: "a"
+    upload_report other_board, machine: "c", ip: "10.0.0.3"
+    upload_report golden("m2-max-image2"), machine: "b", ip: "10.0.0.2"
+    Report.order(:id).zip(%w[tester-one tester-two tester-three]).each { |report, login| report.update_columns(tester_login: login) }
+
+    get "/models"
+    assert_equal "works", status("j416c", "gpu").css(%(.lineup-tested[data-board="j416c"])).sole["data-state"]
+    assert_equal "missing", status("j416c", "gpu").css(%(.lineup-tested[data-board="j414c"])).sole["data-state"]
+    assert_equal "partial", status("j416c", "gpu")["data-state"]
+  end
+
   test "one community machine is unconfirmed; two that agree confirm it" do
     upload_report golden("m2-max-image2"), machine: "a"
     get "/models"
