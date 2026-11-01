@@ -9,7 +9,7 @@ A recording made before an area existed answers {"observed": false}: not read,
 which a check skips, never a reconstructed reading.
 
 The areas' discovery follows aurora-diag's kernel-class walkers
-(https://github.com/aurora-silicon/aurora-diag, MIT, Copyright (c) 2026 Ryan Murray).
+(https://github.com/aurora-silicon/aurora-diag, MIT, Copyright (c) 2026 Aurora Silicon).
 """
 
 from __future__ import annotations
