@@ -27,6 +27,9 @@ done
 for f in "$repo"/cli/omarchy_m_test/*.py; do
   cmp -s "$f" "$pkg/$(basename "$f")" || fail "module $(basename "$f") missing or different"
 done
+for f in "$repo"/catalogue/macos-reference/*.json; do
+  cmp -s "$f" "$pkg/macos-reference/$(basename "$f")" || fail "macos-reference/$(basename "$f") missing or different"
+done
 count=0
 while read -r f; do
   cmp -s "$repo/cli/omarchy_m_test/$f" "$pkg/$f" || fail "$f missing or different"

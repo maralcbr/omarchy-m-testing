@@ -122,7 +122,7 @@ class PagesTest < ActionDispatch::IntegrationTest
     assert_equal [ second["id"], first["id"] ].map { |id| "report-#{id}" }, css_select("tr.report-row").map { |row| row["id"] }
     assert_select "tr#report-#{second["id"]} td", "converged 4.0.0"
     # hardware.drivers and hardware.probe-errors fail where the catalogue expects it: not yet supported, not failures
-    assert_select "tr#report-#{second["id"]} td", /37 pass 2 fail 2 gap 41 skip/
+    assert_select "tr#report-#{second["id"]} td", /37 pass 2 fail 2 gap 42 skip/
     assert_select "tr#report-#{second["id"]} td.build-cell[data-build=?]", "99ace40.361571887310001"
     assert_select "tr#report-#{first["id"]} td.build-cell a[href=?]", "/reports?build=aae2586"
   end

@@ -8,9 +8,10 @@
 
 Parent spec: maralcbr/omarchy-m-testing#63
 
-- [ ] `scripts/macos-reference` captures, on AC with brightness recorded: CPU DVFS ladders, H.264/HEVC decode fps on the CLI's clip (VideoToolbox), idle power (sudo), the ANE MobileNet result when available, and the `benchmark.storage` fio job on APFS
-- [ ] Writes `catalogue/macos-reference/<board>.json` (schema, version, macOS version and build, date, conditions, per-board metrics, storage keyed by capacity) after printing what it will save; no serial, hostname, user or volume names
-- [ ] Unit tests over recorded macOS output; CI validates every committed reference file
-- [ ] References committed for the lab M1 Pro and M2 Max, and J616s imported from aurora-diag (credited)
-- [ ] `cpu.dvfs-ladder` compares cpufreq/OPP ladders with the reference; skips without one
-- [ ] Each compared check gets a descriptive "vs macOS" evidence line, never a verdict; storage only at a matching capacity
+- [x] `scripts/macos-reference` captures, on AC with brightness recorded: CPU DVFS ladders, H.264/HEVC decode fps on the CLI's clip (VideoToolbox), idle power (sudo), the ANE MobileNet result when available, and the `benchmark.storage` fio job on APFS
+- [x] Writes `catalogue/macos-reference/<board>.json` (schema, version, macOS version and build, date, conditions, per-board metrics, storage keyed by capacity) after printing what it will save; no serial, hostname, user or volume names
+- [x] Unit tests over recorded macOS output; CI validates every committed reference file
+- [x] J616s imported from aurora-diag (credited)
+- [ ] References committed for the lab M1 Pro and M2 Max (needs those Macs booted into macOS; they were offline, and the M1 Pro's macOS side is personal)
+- [x] `cpu.dvfs-ladder` compares cpufreq/OPP ladders with the reference; skips without one
+- [x] Each compared check gets a descriptive "vs macOS" evidence line, never a verdict; storage only at a matching capacity

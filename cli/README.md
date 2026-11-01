@@ -10,7 +10,7 @@ It refuses non-Apple machines, shows the disclaimer (Enter accepts), runs the ch
 
 ## Automatic checks
 
-A run checks the boot chain and encryption, packages and first-boot hardware setup, GPU driver and Vulkan/OpenGL, displays, audio routing and speaker protection, Wi-Fi and Bluetooth, snapshots, the battery, its charge limit and idle power, and CPU frequency scaling, plus the look-and-listen checks below (`ORDER` in `omarchy_m_test/checks.py`; every id is in the catalogue's `checks`).
+A run checks the boot chain and encryption, packages and first-boot hardware setup, GPU driver and Vulkan/OpenGL, displays, audio routing and speaker protection, Wi-Fi and Bluetooth, snapshots, the battery, its charge limit and idle power, and CPU frequency scaling and its steps against macOS's, plus the look-and-listen checks below (`ORDER` in `omarchy_m_test/checks.py`; every id is in the catalogue's `checks`).
 
 Most come from omarchy-mac's own check scripts, wrapped rather than duplicated (`omarchy_m_test/scripts.py`): `mac-check` on every stack, and `apple-audio-check.sh --no-sound` and `apple-display-check.sh --read-only` on the converged image they were written for. Their PASS/FAIL/SKIP lines become results with the lines as evidence. mac-check runs its root-only checks through `sudo -n`, so without passwordless sudo they are skipped, never failed. The CLI only ever asks for a password (sudo, once at the terminal) to install temporary test packages, which the disclaimer covers (below), and for the charge limit. The rest (`omarchy_m_test/hardware.py`) read sysfs, the journal and pacman.
 
@@ -137,6 +137,12 @@ Its four results are `hardware.drivers`, `hardware.firmware`, `hardware.probe-er
 ## GPU spec checks
 
 The Graphics section also spot-checks the drivers against the specs they claim (`omarchy_m_test/gpu_spec.py`), which doesn't replace the Khronos conformance suites. `graphics.vulkan-spec` reads `vulkaninfo --json`: the conformance version the driver reports, and the features the spec's Feature Requirements chapter makes mandatory for the API version the device claims; a mandatory feature missing fails. `graphics.gl-spec` runs a small bundled probe (`omarchy_m_test/gl_spec/`, through EGL with no surface, in its own process, drawing nothing) and compares the limits GL 4.6 core and compatibility and GLES 3.2 contexts report with their state tables' minimums; a limit under its minimum fails, another version isn't checked, and a software rasteriser skips. Both tables and the probe come from [aurora-diag](https://github.com/aurora-silicon/aurora-diag) (MIT; `gl_spec/LICENSE-aurora-diag`).
+
+## macOS reference numbers
+
+`catalogue/macos-reference/<board>.json` holds what macOS measures on that Mac: the CPU's frequency steps, H.264 and HEVC decode, idle power, the Neural Engine result where there is one, and storage keyed by capacity, with the macOS version and the conditions they were taken under. `scripts/macos-reference` writes one, run on macOS with the Python standard library; it prints what it will save, never uploads anything, and a maintainer reviews the file before committing it. A release ships them as `omarchy_m_test/macos-reference/`, and CI checks every committed file (`macos_reference.problems`).
+
+A compared check gets a `vs macOS:` evidence line, a description and never a verdict. `cpu.dvfs-ladder` (the CPU section) reads each cluster's advertised steps from cpufreq and passes once they can be read, whether or not they match macOS's; with no reference for the board it skips. Storage compares only at the same capacity.
 
 ## Thermal
 

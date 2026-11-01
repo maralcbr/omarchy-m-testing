@@ -585,6 +585,15 @@
     {
       "argv": [
         "read:hardware",
+        "clocks"
+      ],
+      "returncode": 0,
+      "stdout": "{\"observed\": false}",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "read:hardware",
         "thermal"
       ],
       "returncode": 0,

@@ -25,6 +25,7 @@ HWMON = "/sys/class/hwmon"
 THERMAL = "/sys/class/thermal"
 IIO = "/sys/bus/iio/devices"
 DEVICE_TREE = "/sys/firmware/devicetree/base"
+CPUFREQ = "/sys/devices/system/cpu/cpufreq"
 NVME = "/sys/class/nvme"
 BLOCK = "/sys/block"
 
@@ -263,7 +264,7 @@ def _storage(host: Host) -> dict:
         found.append({"model": model, "firmware": firmware if firmware and _FIRMWARE.fullmatch(firmware) else None,
                       "state": label(text(host, f"{path}/state")), "namespaces": _largest_namespace(host, controller)[0],
                       "smart": smart, "smart_missing": missing})
-    return {"controllers": found, "other_controllers": others, "any_nvme": bool(controllers) or others > 0}
+    return {"controllers": found, "other_controllers": others, "any_nvme": bool(controllers) or others > 0, **_capacity(host)}
 
 
 # -- GPU spec checks: vulkaninfo's device profile and glprobe's limits, cut to what the checks compare. ------
@@ -355,9 +356,25 @@ def _gl(host: Host) -> dict:
     return {"contexts": contexts} if contexts else {"missing": "no GL context could be made through EGL"}
 
 
+def _clocks(host: Host) -> dict:
+    """Each CPU cluster's advertised frequency steps, in MHz, lowest first: what the kernel offers, not what it reaches."""
+    found = []
+    for policy in names(host, CPUFREQ) or []:
+        if not re.fullmatch(r"policy[0-9]{1,3}", policy):
+            continue
+        path = f"{CPUFREQ}/{policy}"
+        steps = set()
+        for name in ("scaling_available_frequencies", "scaling_boost_frequencies"):
+            steps |= {int(word) // 1000 for word in (text(host, f"{path}/{name}") or "").split() if word.isdigit()}
+        low, high = whole(text(host, f"{path}/cpuinfo_min_freq")), whole(text(host, f"{path}/cpuinfo_max_freq"))
+        found.append({"driver": label(text(host, f"{path}/scaling_driver")), "mhz": sorted(steps),
+                      "min_mhz": None if low is None else low // 1000, "max_mhz": None if high is None else high // 1000})
+    return {"policies": found}
+
+
 def _gpu_spec(host: Host) -> dict:
     return {"vulkan": _vulkan(host), "gl": _gl(host)}
 
 
-_AREAS = {"thermal": _thermal, "sensors": _sensors, "storage": _storage, "capacity": _capacity, "gpu-spec": _gpu_spec}
+_AREAS = {"thermal": _thermal, "sensors": _sensors, "storage": _storage, "capacity": _capacity, "gpu-spec": _gpu_spec, "clocks": _clocks}
 AREAS = tuple(_AREAS)

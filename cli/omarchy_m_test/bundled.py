@@ -24,6 +24,10 @@ ASAHI_KERNEL_DIRS = (
     os.path.join(os.path.dirname(os.path.dirname(_PACKAGE)), "catalogue", "asahi-kernel"),
 )
 ASAHI_KERNEL_FILES = ("source.json", "config")
+MACOS_REFERENCE_DIRS = (
+    os.path.join(_PACKAGE, "macos-reference"),
+    os.path.join(os.path.dirname(os.path.dirname(_PACKAGE)), "catalogue", "macos-reference"),
+)
 
 
 VENDOR = os.path.join(_PACKAGE, "vendor", "omarchy-mac")
@@ -54,6 +58,16 @@ def catalogue_text() -> bytes:
             with open(path, "rb") as f:
                 return f.read()
     raise FileNotFoundError("the feature catalogue isn't installed next to omarchy-m-test")
+
+
+def macos_reference_text(board: str) -> bytes:
+    """A board's macOS reference file; FileNotFoundError if there's none. `board` is a validated board id."""
+    for base in MACOS_REFERENCE_DIRS:
+        path = os.path.join(base, f"{board}.json")
+        if os.path.isfile(path):
+            with open(path, "rb") as f:
+                return f.read()
+    raise FileNotFoundError(f"no macOS reference for {board}")
 
 
 def gpu_document_schema() -> bytes:

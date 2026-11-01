@@ -1916,6 +1916,23 @@
       }
     },
     {
+      "id": "cpu.dvfs-ladder",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "not read in this run (it predates this check)"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "cpufreq",
+        "layer": "asahi",
+        "expected": {
+          "asahi": "upstream",
+          "aurora": "asahi"
+        }
+      }
+    },
+    {
       "id": "thermal.sensors",
       "kind": "automatic",
       "status": "skip",
