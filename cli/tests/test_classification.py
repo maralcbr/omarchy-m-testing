@@ -173,6 +173,11 @@ class FailureClassificationTest(unittest.TestCase):
 
         self.assertEqual(written(mac)["machine"]["chip"], "M5")
 
+    def test_missing_temperatures_on_a_mac_asahi_supports_are_a_failure_that_can_regress(self):
+        found = Catalogue(CATALOGUE).classify({"id": "thermal.sensors", "status": "fail"}, "t6021", "j416c")
+
+        self.assertEqual(found["outcome"], "fails")
+
     def test_an_unknown_chip_is_explained_without_expected_states(self):
         _, mac = run(recording(soc="t9999"))
 
