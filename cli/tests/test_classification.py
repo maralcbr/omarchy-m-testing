@@ -168,6 +168,11 @@ class FailureClassificationTest(unittest.TestCase):
             "expected": {"asahi": "linux-asahi", "aurora": "asahi", "omarchy": "supported"},
         })
 
+    def test_an_m5_names_its_chip(self):
+        _, mac = run(recording(soc="t8142"))
+
+        self.assertEqual(written(mac)["machine"]["chip"], "M5")
+
     def test_an_unknown_chip_is_explained_without_expected_states(self):
         _, mac = run(recording(soc="t9999"))
 
