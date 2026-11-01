@@ -203,6 +203,18 @@ def fio_numbers(out):
         return None
 
 
+def on_internal_apfs(directory, runner=run):
+    """Whether a path is on the internal disk, formatted as APFS: capacity is read from disk0, so the benchmark has to run there."""
+    lines = text(["df", directory], runner).splitlines()
+    device = lines[-1].split()[0] if len(lines) > 1 else ""
+    code, out, _ = runner(["diskutil", "info", "-plist", device])
+    try:
+        info = plistlib.loads(out) if code == 0 else {}
+    except (ValueError, plistlib.InvalidFileException):
+        return False
+    return info.get("Internal") is True and info.get("FilesystemType") == "apfs"
+
+
 def storage(directory, say, runner=run, free_bytes=None):
     found_tier = capacity(runner)
     if found_tier is None:
@@ -211,6 +223,9 @@ def storage(directory, say, runner=run, free_bytes=None):
     free = free_bytes if free_bytes is not None else os.statvfs(directory).f_bavail * os.statvfs(directory).f_frsize
     if free < FREE_BYTES_NEEDED:
         say("Storage left out: 4 GiB free is needed.")
+        return {}
+    if not on_internal_apfs(directory, runner):
+        say("Storage left out: the temporary file wouldn't be on the Mac's own SSD, formatted as APFS.")
         return {}
     code, out, error = runner(fio_argv(os.path.join(directory, "benchmark.tmp")))
     numbers = fio_numbers(out) if code == 0 else None
@@ -241,7 +256,8 @@ def capture(args, say, runner=run, tempdir=None):
     metrics, sizes = {}, {}
     if "power" not in skip:
         metrics.update(power(say, runner))
-    with tempfile.TemporaryDirectory(prefix="omarchy-m-test-macos.", dir=tempdir) as directory:
+    # In the home directory, which TMPDIR could point away from: storage has to measure the Mac's own SSD.
+    with tempfile.TemporaryDirectory(prefix=".omarchy-m-test-macos.", dir=tempdir or os.path.expanduser("~")) as directory:
         if "decode" not in skip:
             metrics.update(decode(directory, say, runner))
         if "storage" not in skip:

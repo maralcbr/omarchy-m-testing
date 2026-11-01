@@ -76,7 +76,7 @@ def check(found: dict, check_id: str) -> dict:
     return results(report)[check_id]
 
 
-DEVICE = {"name": "Apple M2 Max (G14C B1)", "api": "1.4.311", "conformance": "1.4.1.2", "checked": 53, "missing": []}
+DEVICE = {"name": "Apple M2 Max (G14C B1)", "api": "1.4.311", "conformance": "1.4.1 patch 2", "checked": 53, "missing": []}
 CONTEXT = {"version": "4.6 (Core Profile) Mesa 25.1", "renderer": "Apple M2 Max (G14C B1)", "path": "native", "limits": GOOD_LIMITS}
 ES_CONTEXT = {"version": "OpenGL ES 3.2 Mesa 25.1", "renderer": "Apple M2 Max (G14C B1)", "path": "native", "limits": {**gpu_spec.GLES32_MIN}}
 GOOD = {"observed": True, "vulkan": {"devices": [DEVICE]}, "gl": {"contexts": {"gl_core": CONTEXT, "gl_compat": CONTEXT, "gles": ES_CONTEXT}}}
@@ -91,9 +91,21 @@ class VulkanCollectTest(unittest.TestCase):
 
         self.assertEqual(device["name"], "Apple M2 Max (G14C B1)")
         self.assertEqual(device["api"], "1.4.311")
-        self.assertEqual(device["conformance"], "1.4.1.2")
+        self.assertEqual(device["conformance"], "1.4.1 patch 2")
         self.assertEqual(device["checked"], len(gpu_spec.required_for((1, 4))))
         self.assertEqual(device["missing"], [])
+
+    def test_a_vulkan_1_1_driver_reports_conformance_through_its_driver_properties(self):
+        older = profile()
+        properties = older["capabilities"]["device"]["properties"]
+        properties["VkPhysicalDeviceDriverPropertiesKHR"] = properties.pop("VkPhysicalDeviceVulkan12Properties")
+
+        self.assertEqual(self.vulkan(older)["devices"][0]["conformance"], "1.4.1 patch 2")
+
+    def test_the_conformance_version_survives_the_recording_scrubber(self):
+        from omarchy_m_test.privacy import Scrubber
+
+        self.assertNotIn("<ip>", Scrubber().scrub(json.dumps(self.vulkan(profile()))))
 
     def test_a_missing_feature_is_named(self):
         features = {**ALL_14, "maintenance5": False}
@@ -185,7 +197,7 @@ class VerdictTest(unittest.TestCase):
         self.assertIn("missing: maintenance5", found["evidence"])
 
     def test_no_conformant_submission_is_said_but_doesnt_fail(self):
-        found = check({**GOOD, "vulkan": {"devices": [{**DEVICE, "conformance": "0.0.0.0"}]}}, gpu_spec.VULKAN)
+        found = check({**GOOD, "vulkan": {"devices": [{**DEVICE, "conformance": "0.0.0 patch 0"}]}}, gpu_spec.VULKAN)
 
         self.assertEqual(found["status"], "pass")
         self.assertIn("no conformant submission claimed", found["evidence"][0])
