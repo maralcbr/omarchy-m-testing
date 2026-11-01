@@ -169,6 +169,7 @@ def _run(args: argparse.Namespace, host: Host, sections: Sequence[Section]) -> i
     checkpoint = Checkpoint.for_host(host, enabled=not args.record)
     saved = checkpoint.load()
     changes = Changes(host)
+    changes.may_ask_password = not args.unattended
     if saved and saved.restorers:
         # A run was killed before it could put things back: do that before anything else.
         host.show(f"An earlier {TOOL_NAME} run was stopped before it could undo its changes. Putting them back:")

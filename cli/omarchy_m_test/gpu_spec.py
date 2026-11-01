@@ -95,7 +95,7 @@ def run(ctx: Context) -> list[dict]:
     extra: list[str] = []
     if found["vulkan"].get("not_installed"):
         ready = packages.temporary(ctx, [VULKAN_TOOLS], "The Vulkan spec check")
-        extra = ready.evidence()
+        extra = [*ready.evidence(), *([ready.skipped] if ready.skipped else [])]
         if ready.ready:
             found = ctx.host.hardware_snapshot("gpu-spec")
     return [_vulkan(found["vulkan"], extra), _gl(found["gl"])]

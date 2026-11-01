@@ -68,7 +68,7 @@ def _health(ctx: Context, found: dict) -> dict:
     extra: list[str] = []
     if any(controller["smart_missing"] == "not-installed" for controller in found["controllers"]):
         ready = packages.temporary(ctx, [SMARTMONTOOLS], "The SSD health check")
-        extra = ready.evidence()
+        extra = [*ready.evidence(), *([ready.skipped] if ready.skipped else [])]
         if ready.ready:
             found = ctx.host.hardware_snapshot("storage")
     return _judge(found["controllers"][0], found["other_controllers"], extra)

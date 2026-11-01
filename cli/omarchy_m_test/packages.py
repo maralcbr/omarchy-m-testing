@@ -39,6 +39,7 @@ from dataclasses import dataclass, field
 from typing import Sequence
 
 from . import safety
+from .presence import UNATTENDED_KEY
 from .session import SUDO_ASK, SUDO_CACHED, Context, Restorer
 from .ui import Ui
 
@@ -138,6 +139,8 @@ def sudo_ready(ctx: Context) -> bool:
     """sudo works without a prompt now: cached, or the human just typed the password at the terminal (also changes.py)."""
     if ctx.host.run(SUDO_CACHED).returncode == 0:
         return True
+    if ctx.cache.get(UNATTENDED_KEY):
+        return False  # nobody is there to type a password
     if ctx.host.terminal() is None:
         return False
     return ctx.host.run_tty(SUDO_ASK).returncode == 0

@@ -401,7 +401,7 @@ def _driver_of(host: Host, device: str) -> str | None:
 
 ANE_KERNEL_LOG = ["journalctl", "--dmesg", "--boot=0", "--no-pager"]
 _ANE_PROBE = re.compile(r"probe with driver (ane[a-z0-9_]{0,32}) failed with error (-[0-9]{1,4})\b")
-_ANE_FIRMWARE = re.compile(r"Direct firmware load for (apple/ane/[A-Za-z0-9._-]{1,96}) failed")
+_ANE_FIRMWARE = re.compile(r"\b(ane[a-z0-9_]{0,32}) [^\s:]+: Direct firmware load for (apple/ane/[A-Za-z0-9._-]{1,96}) failed with error (-[0-9]{1,4})\b")
 
 
 def _ane_generation(explicit: str | None, compatibles: list[str]) -> str | None:
@@ -459,8 +459,14 @@ def _engines(host: Host) -> dict:
 def _ane_probe(host: Host) -> dict:
     """Why the Neural Engine's driver gave up this boot: only its name, errno and firmware file cross the boundary."""
     log = host.run(ANE_KERNEL_LOG).stdout
-    probe, firmware = _ANE_PROBE.search(log), _ANE_FIRMWARE.search(log)
-    return {"driver": probe[1] if probe else None, "error": int(probe[2]) if probe else None, "missing_firmware": firmware[1] if firmware else None}
+    probes = list(_ANE_PROBE.finditer(log))
+    if not probes:
+        return {"driver": None, "error": None, "firmware": None, "firmware_error": None}
+    last = probes[-1]
+    # Only this attempt's firmware line: between the previous probe failure and this one.
+    attempt = probes[-2].end() if len(probes) > 1 else 0
+    firmware = [match for match in _ANE_FIRMWARE.finditer(log, attempt, last.start()) if match[1] == last[1]]
+    return {"driver": last[1], "error": int(last[2]), "firmware": firmware[-1][2] if firmware else None, "firmware_error": int(firmware[-1][3]) if firmware else None}
 
 
 def _gpu_spec(host: Host) -> dict:

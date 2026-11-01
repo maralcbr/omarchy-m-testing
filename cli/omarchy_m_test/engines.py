@@ -34,6 +34,7 @@ CHECK_IDS = (ANE, ANE_BENCHMARK, ENCODE)
 NOT_READ = "not read in this run (it predates this check)"
 SMOKE = ["omarchy-ane-smoke"]
 SUITE = 1
+ENOENT = -2
 ENCODE_ARGV = ["ffmpeg", "-nostdin", "-hide_banner", "-benchmark", "-f", "lavfi", "-i", CLIP_SOURCE, "-t", str(CLIP_SECONDS),
                "-c:v", "h264_v4l2m2m", "-f", "null", "-"]
 _NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9 ._+-]{0,47}")
@@ -51,8 +52,9 @@ def _probe_reason(probe: dict | None) -> list[str]:
     if not probe:
         return []
     lines = [f"driver {probe['driver']} failed to probe, error {probe['error']}"] if probe.get("driver") else []
-    if probe.get("missing_firmware"):
-        lines.append(f"its firmware isn't installed: {probe['missing_firmware']}")
+    if probe.get("firmware"):
+        lines.append(f"its firmware isn't installed: {probe['firmware']}" if probe["firmware_error"] == ENOENT
+                     else f"its firmware couldn't be loaded, error {probe['firmware_error']}: {probe['firmware']}")
     return lines
 
 

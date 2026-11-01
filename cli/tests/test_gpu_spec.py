@@ -10,7 +10,7 @@ import unittest
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from omarchy_m_test import bundled, gpu_spec, hwread
+from omarchy_m_test import bundled, gpu_spec, hwread, packages
 from omarchy_m_test.host import HARDWARE_SNAPSHOT, CommandResult
 from tests.schema_validator import errors
 from tests.test_core_checks import M2_MAX, answer, results, run
@@ -189,7 +189,7 @@ class VerdictTest(unittest.TestCase):
         missing = {**GOOD, "vulkan": {"missing": "vulkaninfo (vulkan-tools) isn't installed", "not_installed": True}}
         answers = [missing, GOOD]
         ctx = SimpleNamespace(host=SimpleNamespace(hardware_snapshot=lambda area: answers.pop(0)))
-        ready = SimpleNamespace(ready=True, evidence=lambda: ["installed for this run, removed at its end: vulkan-tools"])
+        ready = packages.Temporary(installed=("vulkan-tools",))
         with patch.object(gpu_spec.packages, "temporary", return_value=ready) as temporary:
             found = gpu_spec.run(ctx)[0]
 
@@ -200,12 +200,12 @@ class VerdictTest(unittest.TestCase):
     def test_when_vulkan_tools_cant_be_installed_it_skips_and_says_so(self):
         missing = {**GOOD, "vulkan": {"missing": "vulkaninfo (vulkan-tools) isn't installed", "not_installed": True}}
         ctx = SimpleNamespace(host=SimpleNamespace(hardware_snapshot=lambda area: missing))
-        ready = SimpleNamespace(ready=False, evidence=lambda: ["no sudo, so nothing was installed"])
+        ready = packages.Temporary(skipped="installing test packages needs sudo, and it wasn't given")
         with patch.object(gpu_spec.packages, "temporary", return_value=ready):
             found = gpu_spec.run(ctx)[0]
 
         self.assertEqual(found["status"], "skip")
-        self.assertEqual(found["evidence"], ["no sudo, so nothing was installed", "vulkaninfo (vulkan-tools) isn't installed"])
+        self.assertEqual(found["evidence"], ["installing test packages needs sudo, and it wasn't given", "vulkaninfo (vulkan-tools) isn't installed"])
 
     def test_a_complete_driver_passes_and_says_its_a_spot_check(self):
         found = check(GOOD, gpu_spec.VULKAN)
