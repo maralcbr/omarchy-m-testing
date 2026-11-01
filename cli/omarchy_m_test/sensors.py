@@ -80,9 +80,9 @@ def _motion(found: dict, has_lid: bool | None) -> dict:
     gyroscopes = _devices(found, "gyro")
     if not gyroscopes:
         evidence.append(_why_absent(found, "gyroscope"))
-    elif not gyroscopes[0]["gyro"]:
+    elif not gyroscopes[0]["gyro"] or gyroscopes[0]["gyro_unreadable"]:
         status = "fail"
-        evidence.append(f"gyroscope {gyroscopes[0]['name']} is registered but its channels don't read")
+        evidence.append(f"gyroscope {gyroscopes[0]['name']} is registered but {gyroscopes[0]['gyro_unreadable']} of its channels don't read")
     else:
         evidence.append(f"gyroscope {gyroscopes[0]['name']}: {_axes(gyroscopes[0]['gyro'])} rad/s")
         if any(abs(value) > STILL_RAD_S for value in gyroscopes[0]["gyro"].values()):
@@ -104,7 +104,7 @@ def _lid(found: dict, has_lid: bool | None, closing: dict | None) -> dict:
     if not closing:
         return _result(LID, "pass", [*evidence, "the lid wasn't closed in this run, so whether it follows the lid wasn't seen"])
     words = f"while the lid closed its raw reading went from {closing['before']} to a lowest {closing['lowest']}"
-    if closing["lowest"] <= closing["before"] * FELL:
+    if closing["before"] > 0 and closing["lowest"] <= closing["before"] * FELL:
         return _result(LID, "pass", [*evidence, f"it followed the lid: {words}"])
     return _result(LID, "fail", [*evidence, f"it didn't follow the lid: {words}"])
 
