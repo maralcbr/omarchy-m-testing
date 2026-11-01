@@ -140,7 +140,9 @@ class FailureClassificationTest(unittest.TestCase):
         ("this board has no such hardware", recording(kernel_fails=True),
          draft(lambda c: feature(c, "devicetree").setdefault("models", {}).update({"j416c": {"asahi": {"status": "absent", "cell": "-"}}})),
          "not-applicable", "this Mac doesn't have this hardware"),
-        ("a chip the catalogue doesn't know", recording(soc="t8142"), None,
+        ("an M5, which no Asahi table covers yet", recording(kernel_fails=True, soc="t8142"), None,
+         "not-in-asahi", "not yet supported by Asahi"),
+        ("a chip the catalogue doesn't know", recording(soc="t9999"), None,
          "unknown-hardware", "unknown hardware"),
     ]
 
@@ -167,7 +169,7 @@ class FailureClassificationTest(unittest.TestCase):
         })
 
     def test_an_unknown_chip_is_explained_without_expected_states(self):
-        _, mac = run(recording(soc="t8142"))
+        _, mac = run(recording(soc="t9999"))
 
         self.assertEqual(written(mac)["checks"][0]["classification"]["expected"], {})
 
@@ -266,6 +268,10 @@ class BrokenCatalogueTest(unittest.TestCase):
             draft(lambda c: c["checks"].update({"system.identity": "no-such-feature"})),
             draft(lambda c: feature(c, "devicetree")["chips"]["m1"].update(asahi={"status": "works-great"})),
             draft(lambda c: c.pop("catalogue_version")),
+            draft(lambda c: c["boards"]["j416c"].update(soc="t8103")),
+            draft(lambda c: c["boards"]["j416c"]["hardware"].update(fans="yes")),
+            draft(lambda c: c["boards"]["j416c"]["hardware"].pop("lid")),
+            draft(lambda c: c["boards"]["j416c"].update(lineup=c["boards"]["j274"]["lineup"])),
         ]
         for catalogue in broken:
             with self.subTest(catalogue=catalogue.get("checks")):

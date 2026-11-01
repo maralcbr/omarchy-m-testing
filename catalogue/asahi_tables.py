@@ -38,6 +38,12 @@ CATALOGUE = os.path.join(HERE, "catalogue.json")
 SNAPSHOT = os.path.join(HERE, "asahi-snapshot")
 PAGES = ("m1", "m2", "m3", "m4")
 LIVE_URL = "https://raw.githubusercontent.com/AsahiLinux/docs/main/docs/platform/feature-support/{page}.md"
+DEVICES = "device-list"
+DEVICES_URL = "https://raw.githubusercontent.com/AsahiLinux/docs/main/docs/hw/devices/device-list.md"
+# Asahi's device list prints the MacBook Neo's SoC as T8040; its feature table,
+# its device tree and the catalogue say t8140.
+SOC_FIXES = {"j700": "t8140"}
+NOT_IN_TABLES = {"status": "no", "cell": "not in Asahi's tables"}
 
 # Asahi column header (as printed, <br> -> space) -> the chip generations it covers
 # and, for model columns, the device-tree boards it stands for. A generation's
@@ -76,17 +82,15 @@ MODEL_COLUMNS = {
     ("m3", "MacBook Pro (14-inch, late 2023)"): {"m3": ["j504"]},
     ("m3", "MacBook Air (13/15-inch 2024)"): {"m3": ["j613", "j615"]},
     ("m3", "MacBook Pro (14/16-inch, late 2023)"): {"m3-pro": ["j514s", "j516s"], "m3-max": ["j514c", "j516c", "j514m", "j516m"]},
-    ("m3", "Mac Studio (2025)"): {"m3-ultra": []},
+    ("m3", "Mac Studio (2025)"): {"m3-ultra": ["j575d"]},
     ("m4", "Macbook Neo (2026)"): {"a18-pro": ["j700"]},
-    # M4 boards aren't admitted by any Omarchy image yet; their columns count
-    # toward the generation only.
-    ("m4", "iMac (2024)"): {"m4": []},
-    ("m4", "Mac mini (2024)", 0): {"m4": []},
-    ("m4", "MacBook Pro (14-inch, Nov 2024)"): {"m4": []},
-    ("m4", "MacBook Air (13\" and 15\", 2025)"): {"m4": []},
-    ("m4", "Mac mini (2024)", 1): {"m4-pro-max": []},
-    ("m4", "Mac Studio (2025)"): {"m4-pro-max": []},
-    ("m4", "MacBook Pro (14\" and 16\", 2024)"): {"m4-pro-max": []},
+    ("m4", "iMac (2024)"): {"m4": ["j623", "j624"]},
+    ("m4", "Mac mini (2024)", 0): {"m4": ["j773g"]},
+    ("m4", "MacBook Pro (14-inch, Nov 2024)"): {"m4": ["j604"]},
+    ("m4", "MacBook Air (13\" and 15\", 2025)"): {"m4": ["j713", "j715"]},
+    ("m4", "Mac mini (2024)", 1): {"m4-pro-max": ["j773s"]},
+    ("m4", "Mac Studio (2025)"): {"m4-pro-max": ["j575c"]},
+    ("m4", "MacBook Pro (14\" and 16\", 2024)"): {"m4-pro-max": ["j614s", "j616s", "j614c", "j616c"]},
 }
 
 # Asahi row label (lower-cased, markup stripped) -> catalogue feature id and name.
@@ -275,6 +279,31 @@ def asahi_layer(pages: dict[str, str]) -> dict[str, dict]:
     return features
 
 
+def parse_devices(text: str, chips: dict) -> dict[str, dict]:
+    """Asahi's device list -> {board: {"name", "chip", "soc"}}. Raises Drift on a SoC no chip lists."""
+    boards = {}
+    for line in text.splitlines():
+        cells = _cells(line) if line.startswith("|") else []
+        if len(cells) < 4 or not re.fullmatch(r"J\w+AP", cells[2]):
+            continue
+        board = cells[2][0].lower() + cells[2][1:-2]
+        soc = SOC_FIXES.get(board, cells[3].lower())
+        chip = next((key for key, info in chips.items() if soc in info["socs"]), None)
+        if chip is None:
+            raise Drift(f"{DEVICES}.md: {board} has SoC {soc}, which no catalogue chip lists (a new chip?)")
+        if board in boards:
+            raise Drift(f"{DEVICES}.md: {board} listed twice")
+        boards[board] = {"name": _clean(cells[0]), "chip": chip, "soc": soc}
+    if not boards:
+        raise Drift(f"{DEVICES}.md: no devices found")
+    return boards
+
+
+def table_chips(catalogue: dict) -> list[str]:
+    """Chips Asahi's feature tables cover; the rest are marked "asahi_tables": false."""
+    return [chip for chip, info in catalogue["chips"].items() if info.get("asahi_tables", True)]
+
+
 # -- the catalogue ---------------------------------------------------------
 
 
@@ -298,15 +327,26 @@ def from_tables(feature: dict) -> bool:
 def projection(catalogue: dict) -> dict[str, dict]:
     """The Asahi layer as it stands in the catalogue, in asahi_layer()'s shape."""
     found = {}
+    covered = table_chips(catalogue)
     for feature in catalogue["features"]:
         if feature["layer"] != "asahi" or not from_tables(feature):
             continue
         found[feature["id"]] = {
             "name": feature["name"],
-            "chips": {c: s["asahi"] for c, s in feature["chips"].items() if "asahi" in s},
+            "chips": {c: s["asahi"] for c, s in feature["chips"].items() if "asahi" in s and c in covered},
             "models": {b: s["asahi"] for b, s in feature.get("models", {}).items() if "asahi" in s},
         }
     return found
+
+
+def board_drift(catalogue: dict, devices: dict[str, dict]) -> list[str]:
+    have = {b: {k: info.get(k) for k in ("name", "chip", "soc")} for b, info in catalogue.get("boards", {}).items()}
+    problems = [f"board {b}: in Asahi's device list, missing from the catalogue" for b in sorted(set(devices) - set(have))]
+    problems += [f"board {b}: in the catalogue, no longer in Asahi's device list" for b in sorted(set(have) - set(devices))]
+    for board in sorted(set(have) & set(devices)):
+        if have[board] != devices[board]:
+            problems.append(f"board {board}: catalogue says {have[board]}, Asahi says {devices[board]}")
+    return problems
 
 
 def drift(catalogue: dict, layer: dict[str, dict]) -> list[str]:
@@ -327,7 +367,8 @@ def drift(catalogue: dict, layer: dict[str, dict]) -> list[str]:
     return problems
 
 
-def update(catalogue: dict, layer: dict[str, dict]) -> dict:
+def update(catalogue: dict, layer: dict[str, dict], devices: dict[str, dict]) -> dict:
+    covered = table_chips(catalogue)
     by_id = {f["id"]: f for f in catalogue["features"]}
     features = [f for f in catalogue["features"] if f["layer"] != "asahi" or f["id"] in layer or not from_tables(f)]
     for fid, found in layer.items():
@@ -336,7 +377,7 @@ def update(catalogue: dict, layer: dict[str, dict]) -> dict:
             feature = {"id": fid, "name": found["name"], "layer": "asahi", "chips": {}}
             features.append(feature)
         for chip in list(feature["chips"]):
-            if chip not in found["chips"]:  # Asahi no longer lists it for this chip
+            if chip in covered and chip not in found["chips"]:  # Asahi no longer lists it for this chip
                 del feature["chips"][chip]
         for chip, state in found["chips"].items():
             entry = feature["chips"].setdefault(chip, {})
@@ -352,18 +393,36 @@ def update(catalogue: dict, layer: dict[str, dict]) -> dict:
             models[board] = {"asahi": state, **models.get(board, {})}
         if not models:
             del feature["models"]
-        order = [c for c in catalogue["chips"]]
+    order = list(catalogue["chips"])
+    for feature in features:
+        # A chip no Asahi table covers isn't supported anywhere yet; kept states win.
+        for chip in order:
+            if chip in covered:
+                continue
+            entry = feature["chips"].setdefault(chip, {})
+            if feature["layer"] == "asahi":
+                entry.setdefault("asahi", dict(NOT_IN_TABLES))
+            entry.setdefault("aurora", {"status": "unsupported"})
+            if feature["layer"] == "omarchy":
+                entry.setdefault("omarchy", {"status": "unsupported"})
         feature["chips"] = {c: feature["chips"][c] for c in order if c in feature["chips"]}
     layers = {"asahi": 0, "aurora": 1, "omarchy": 2}
     catalogue["features"] = sorted(features, key=lambda f: layers[f["layer"]])
+    kept = catalogue.get("boards", {})
+    # Name, chip and SoC come from Asahi; the lineup and hardware facts are kept by hand.
+    catalogue["boards"] = {
+        board: {**info, **{k: v for k, v in kept.get(board, {}).items() if k not in info}}
+        for board, info in devices.items()
+    }
     return catalogue
 
 
 def read_pages(source: str | None, live: bool) -> dict[str, str]:
     pages = {}
-    for page in PAGES:
+    for page in (*PAGES, DEVICES):
         if live:
-            with urllib.request.urlopen(LIVE_URL.format(page=page), timeout=30) as response:
+            url = DEVICES_URL if page == DEVICES else LIVE_URL.format(page=page)
+            with urllib.request.urlopen(url, timeout=30) as response:
                 pages[page] = response.read().decode("utf-8")
         else:
             with open(os.path.join(source or SNAPSHOT, f"{page}.md"), encoding="utf-8") as f:
@@ -384,13 +443,15 @@ def main(argv: list[str]) -> int:
     with open(args.catalogue, encoding="utf-8") as f:
         catalogue = json.load(f)
     try:
-        layer = asahi_layer(read_pages(args.source, args.live))
+        pages = read_pages(args.source, args.live)
+        layer = asahi_layer(pages)
+        devices = parse_devices(pages[DEVICES], catalogue["chips"])
     except Drift as problem:
         print(f"Asahi's tables changed in a way this parser doesn't know ({origin}):\n  {problem}")
         return 1
 
     if args.command == "check":
-        problems = drift(catalogue, layer)
+        problems = drift(catalogue, layer) + board_drift(catalogue, devices)
         if problems:
             print(f"The catalogue's Asahi layer has drifted from {origin} ({len(problems)} differences):")
             print("  " + "\n  ".join(problems))
@@ -400,7 +461,7 @@ def main(argv: list[str]) -> int:
         return 0
 
     with open(args.catalogue, "w", encoding="utf-8") as f:
-        f.write(dump(update(catalogue, layer)) + "\n")
+        f.write(dump(update(catalogue, layer, devices)) + "\n")
     print(f"Asahi layer rewritten from {origin} ({len(layer)} features). Review the diff and bump catalogue_version.")
     return 0
 

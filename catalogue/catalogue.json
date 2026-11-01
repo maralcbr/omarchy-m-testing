@@ -1,5 +1,5 @@
 {
-  "catalogue_version": 16,
+  "catalogue_version": 17,
   "description": "What omarchy-m-test expects of each feature, per chip generation, in three layers: Asahi hardware features, Aurora additions and Omarchy integration. Results are classified against Aurora's expected state first, then Asahi's. Edited by pull request; bump catalogue_version on every change.",
   "sources": {
     "asahi": {
@@ -27,7 +27,11 @@
     "m3-ultra": {"name": "M3 Ultra", "socs": ["t6032"]},
     "m4": {"name": "M4", "socs": ["t8132"]},
     "m4-pro-max": {"name": "M4 Pro/Max", "socs": ["t6040", "t6041"]},
-    "a18-pro": {"name": "A18 Pro", "socs": ["t8140"]}
+    "a18-pro": {"name": "A18 Pro", "socs": ["t8140"]},
+    "m5": {"name": "M5", "socs": ["t8142"], "asahi_tables": false},
+    "m5-pro-max": {"name": "M5 Pro/Max", "socs": ["t6050", "t6051"], "asahi_tables": false},
+    "m5-ultra": {"name": "M5 Ultra", "socs": ["t6052"], "asahi_tables": false},
+    "m6": {"name": "M6", "socs": ["t8152"], "asahi_tables": false}
   },
   "outcomes": {
     "works": "works",
@@ -191,7 +195,11 @@
         "m3-ultra": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -209,7 +217,11 @@
         "m3-ultra": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -227,7 +239,11 @@
         "m3-ultra": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -257,7 +273,11 @@
         "m3-ultra": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       },
       "note": "Partial in Aurora. thunderbolt-apple-acio and thunderbolt-apple-nhi bring the USB4/Thunderbolt host up once the Type-C PHY is in USB4/Thunderbolt mode, so a domain only exists while a USB4 or Thunderbolt partner is attached (ports.thunderbolt skips an idle Mac). On M2 that host works: domains, links to devices and to other computers over thunderbolt-net, which is what ports.thunderbolt checks. PCIe tunnels (docks' PCIe devices, eGPUs) aren't there on M1 or M2: every cold boot logs 'thunderbolt-apple-acio 701ac0000.cio: PCIe-C tunnel disabled: m1n1 handoff is not initialized' (drivers/thunderbolt/apple.c in omacom/linux), a known limit until m1n1 hands the tunnels over. On M1 the host hasn't been seen working yet (see the aurora evidence), so a failure there is an expected gap. The MacBook Neo (J700) has no Thunderbolt: one USB 3 (10 Gb/s) and one USB 2 USB-C port.",
       "models": {"j700": {"aurora": {"status": "absent"}}}
@@ -277,7 +297,11 @@
         "m3-ultra": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       },
       "note": "Aurora adds DP alt mode on M1 and M2; see usb4-displays."
     },
@@ -296,7 +320,11 @@
         "m3-ultra": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -314,7 +342,11 @@
         "m3-ultra": {"asahi": {"status": "linux-asahi", "cell": "linux-asahi"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "wip", "cell": "WIP"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "wip", "cell": "WIP"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -332,7 +364,11 @@
         "m3-ultra": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "wip", "cell": "WIP"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "wip", "cell": "WIP"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -353,7 +389,11 @@
         "m3-ultra": {"asahi": {"status": "linux-asahi", "cell": "linux-asahi"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -367,7 +407,11 @@
         "m2-pro-max-ultra": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "asahi"}},
         "m4": {"asahi": {"status": "absent", "cell": "-"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "absent", "cell": "-"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "absent", "cell": "-"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "absent", "cell": "-"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -385,7 +429,11 @@
         "m3-ultra": {"asahi": {"status": "linux-asahi", "cell": "linux-asahi"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -415,7 +463,11 @@
         "m3-ultra": {"asahi": {"status": "linux-asahi", "cell": "linux-asahi"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -433,7 +485,11 @@
         "m3-ultra": {"asahi": {"status": "linux-asahi", "cell": "linux-asahi"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -451,7 +507,11 @@
         "m3-ultra": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -469,7 +529,11 @@
         "m3-ultra": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -505,7 +569,11 @@
         "a18-pro": {
           "asahi": {"status": "linux-asahi", "version": "7.4", "cell": "linux-asahi (7.4)"},
           "aurora": {"status": "unknown"}
-        }
+        },
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -523,7 +591,11 @@
         "m3-ultra": {"asahi": {"status": "linux-asahi", "cell": "linux-asahi"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -541,7 +613,11 @@
         "m3-ultra": {"asahi": {"status": "wip", "cell": "WIP"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -571,7 +647,11 @@
         },
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -607,7 +687,11 @@
         "a18-pro": {
           "asahi": {"status": "linux-asahi", "version": "7.4", "cell": "linux-asahi (7.4)"},
           "aurora": {"status": "unknown"}
-        }
+        },
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -643,7 +727,11 @@
         "a18-pro": {
           "asahi": {"status": "linux-asahi", "version": "7.4", "cell": "linux-asahi (7.4)"},
           "aurora": {"status": "unknown"}
-        }
+        },
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -679,7 +767,11 @@
         "a18-pro": {
           "asahi": {"status": "linux-asahi", "version": "7.4", "cell": "linux-asahi (7.4)"},
           "aurora": {"status": "unknown"}
-        }
+        },
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -697,7 +789,11 @@
         "m3-ultra": {"asahi": {"status": "linux-asahi", "cell": "linux-asahi"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -718,7 +814,11 @@
         "m3-ultra": {"asahi": {"status": "linux-asahi", "cell": "linux-asahi"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -736,7 +836,11 @@
         "m3-ultra": {"asahi": {"status": "linux-asahi", "cell": "linux-asahi"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -754,7 +858,11 @@
         "m3-ultra": {"asahi": {"status": "linux-asahi", "cell": "linux-asahi"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -772,7 +880,11 @@
         "m3-ultra": {"asahi": {"status": "linux-asahi", "cell": "linux-asahi"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -790,7 +902,11 @@
         "m3-ultra": {"asahi": {"status": "linux-asahi", "cell": "linux-asahi"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -808,7 +924,11 @@
         "m3-ultra": {"asahi": {"status": "linux-asahi", "cell": "linux-asahi"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -826,7 +946,11 @@
         "m3-ultra": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -856,7 +980,11 @@
         "m3-ultra": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -874,7 +1002,11 @@
         "m3-ultra": {"asahi": {"status": "no", "cell": "no"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "no", "cell": "no"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "no", "cell": "no"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "no", "cell": "no"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "no", "cell": "no"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       },
       "models": {"j180d": {"asahi": {"status": "wip", "cell": "WIP"}}}
     },
@@ -908,7 +1040,11 @@
         "a18-pro": {
           "asahi": {"status": "linux-asahi", "version": "7.4", "cell": "linux-asahi (7.4)"},
           "aurora": {"status": "unknown"}
-        }
+        },
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       },
       "models": {
         "j274": {"asahi": {"status": "upstream", "version": "5.13", "cell": "5.13"}},
@@ -965,14 +1101,21 @@
             "note": "boot framebuffer: linux-asahi"
           },
           "aurora": {"status": "unknown"}
-        }
+        },
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       },
       "models": {
         "j473": {"asahi": {"status": "absent", "cell": "-"}},
         "j474s": {"asahi": {"status": "absent", "cell": "-"}},
         "j475c": {"asahi": {"status": "absent", "cell": "-"}},
         "j475d": {"asahi": {"status": "absent", "cell": "-"}},
-        "j180d": {"asahi": {"status": "absent", "cell": "-"}}
+        "j180d": {"asahi": {"status": "absent", "cell": "-"}},
+        "j773g": {"asahi": {"status": "absent", "cell": "-"}},
+        "j773s": {"asahi": {"status": "absent", "cell": "-"}},
+        "j575c": {"asahi": {"status": "absent", "cell": "-"}}
       }
     },
     {
@@ -990,7 +1133,11 @@
         "m3-ultra": {"asahi": {"status": "absent", "cell": "-"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       },
       "models": {
         "j274": {"asahi": {"status": "absent", "cell": "-"}},
@@ -1000,7 +1147,10 @@
         "j474s": {"asahi": {"status": "absent", "cell": "-"}},
         "j475c": {"asahi": {"status": "absent", "cell": "-"}},
         "j475d": {"asahi": {"status": "absent", "cell": "-"}},
-        "j180d": {"asahi": {"status": "absent", "cell": "-"}}
+        "j180d": {"asahi": {"status": "absent", "cell": "-"}},
+        "j773g": {"asahi": {"status": "absent", "cell": "-"}},
+        "j773s": {"asahi": {"status": "absent", "cell": "-"}},
+        "j575c": {"asahi": {"status": "absent", "cell": "-"}}
       }
     },
     {
@@ -1021,7 +1171,11 @@
         "m3-ultra": {"asahi": {"status": "wip", "cell": "WIP"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "absent", "cell": "-"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "absent", "cell": "-"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       },
       "models": {
         "j293": {"asahi": {"status": "absent", "cell": "-"}},
@@ -1036,7 +1190,11 @@
         "j433": {"asahi": {"status": "absent", "cell": "-"}},
         "j434": {"asahi": {"status": "absent", "cell": "-"}},
         "j613": {"asahi": {"status": "absent", "cell": "-"}},
-        "j615": {"asahi": {"status": "absent", "cell": "-"}}
+        "j615": {"asahi": {"status": "absent", "cell": "-"}},
+        "j623": {"asahi": {"status": "absent", "cell": "-"}},
+        "j624": {"asahi": {"status": "absent", "cell": "-"}},
+        "j713": {"asahi": {"status": "absent", "cell": "-"}},
+        "j715": {"asahi": {"status": "absent", "cell": "-"}}
       }
     },
     {
@@ -1059,7 +1217,11 @@
         "m2-pro-max-ultra": {
           "asahi": {"status": "linux-asahi", "note": "see Asahi's notes", "cell": "linux-asahi (notes)"},
           "aurora": {"status": "asahi"}
-        }
+        },
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       },
       "models": {
         "j293": {"asahi": {"status": "absent", "cell": "-"}},
@@ -1087,7 +1249,11 @@
         "m3-ultra": {"asahi": {"status": "absent", "cell": "-"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       },
       "models": {
         "j274": {"asahi": {"status": "absent", "cell": "-"}},
@@ -1101,7 +1267,12 @@
         "j475d": {"asahi": {"status": "absent", "cell": "-"}},
         "j180d": {"asahi": {"status": "absent", "cell": "-"}},
         "j433": {"asahi": {"status": "absent", "cell": "-"}},
-        "j434": {"asahi": {"status": "absent", "cell": "-"}}
+        "j434": {"asahi": {"status": "absent", "cell": "-"}},
+        "j623": {"asahi": {"status": "absent", "cell": "-"}},
+        "j624": {"asahi": {"status": "absent", "cell": "-"}},
+        "j773g": {"asahi": {"status": "absent", "cell": "-"}},
+        "j773s": {"asahi": {"status": "absent", "cell": "-"}},
+        "j575c": {"asahi": {"status": "absent", "cell": "-"}}
       }
     },
     {
@@ -1128,7 +1299,11 @@
           "aurora": {"status": "unknown"}
         },
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "absent", "cell": "-"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "absent", "cell": "-"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       },
       "models": {
         "j274": {"asahi": {"status": "absent", "cell": "-"}},
@@ -1142,7 +1317,12 @@
         "j475d": {"asahi": {"status": "absent", "cell": "-"}},
         "j180d": {"asahi": {"status": "absent", "cell": "-"}},
         "j433": {"asahi": {"status": "absent", "cell": "-"}},
-        "j434": {"asahi": {"status": "absent", "cell": "-"}}
+        "j434": {"asahi": {"status": "absent", "cell": "-"}},
+        "j623": {"asahi": {"status": "absent", "cell": "-"}},
+        "j624": {"asahi": {"status": "absent", "cell": "-"}},
+        "j773g": {"asahi": {"status": "absent", "cell": "-"}},
+        "j773s": {"asahi": {"status": "absent", "cell": "-"}},
+        "j575c": {"asahi": {"status": "absent", "cell": "-"}}
       }
     },
     {
@@ -1160,7 +1340,11 @@
         "m3-ultra": {"asahi": {"status": "absent", "cell": "-"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       },
       "models": {
         "j274": {"asahi": {"status": "absent", "cell": "-"}},
@@ -1174,7 +1358,12 @@
         "j475d": {"asahi": {"status": "absent", "cell": "-"}},
         "j180d": {"asahi": {"status": "absent", "cell": "-"}},
         "j433": {"asahi": {"status": "absent", "cell": "-"}},
-        "j434": {"asahi": {"status": "absent", "cell": "-"}}
+        "j434": {"asahi": {"status": "absent", "cell": "-"}},
+        "j623": {"asahi": {"status": "absent", "cell": "-"}},
+        "j624": {"asahi": {"status": "absent", "cell": "-"}},
+        "j773g": {"asahi": {"status": "absent", "cell": "-"}},
+        "j773s": {"asahi": {"status": "absent", "cell": "-"}},
+        "j575c": {"asahi": {"status": "absent", "cell": "-"}}
       }
     },
     {
@@ -1192,7 +1381,11 @@
         "m3-ultra": {"asahi": {"status": "absent", "cell": "-"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       },
       "models": {
         "j274": {"asahi": {"status": "absent", "cell": "-"}},
@@ -1206,7 +1399,12 @@
         "j475d": {"asahi": {"status": "absent", "cell": "-"}},
         "j180d": {"asahi": {"status": "absent", "cell": "-"}},
         "j433": {"asahi": {"status": "absent", "cell": "-"}},
-        "j434": {"asahi": {"status": "absent", "cell": "-"}}
+        "j434": {"asahi": {"status": "absent", "cell": "-"}},
+        "j623": {"asahi": {"status": "absent", "cell": "-"}},
+        "j624": {"asahi": {"status": "absent", "cell": "-"}},
+        "j773g": {"asahi": {"status": "absent", "cell": "-"}},
+        "j773s": {"asahi": {"status": "absent", "cell": "-"}},
+        "j575c": {"asahi": {"status": "absent", "cell": "-"}}
       }
     },
     {
@@ -1215,7 +1413,11 @@
       "layer": "asahi",
       "chips": {
         "m1": {"asahi": {"status": "upstream", "version": "5.16", "cell": "5.16"}, "aurora": {"status": "asahi"}},
-        "m1-pro-max-ultra": {"asahi": {"status": "upstream", "version": "6.2", "cell": "6.2"}, "aurora": {"status": "asahi"}}
+        "m1-pro-max-ultra": {"asahi": {"status": "upstream", "version": "6.2", "cell": "6.2"}, "aurora": {"status": "asahi"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       },
       "models": {
         "j293": {"asahi": {"status": "absent", "cell": "-"}},
@@ -1243,7 +1445,11 @@
         "m3-ultra": {"asahi": {"status": "wip", "cell": "WIP"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       },
       "models": {"j473": {"asahi": {"status": "linux-asahi", "cell": "linux-asahi"}}}
     },
@@ -1262,7 +1468,11 @@
         "m3-ultra": {"asahi": {"status": "wip", "cell": "WIP"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       },
       "models": {"j473": {"asahi": {"status": "linux-asahi", "cell": "linux-asahi"}}}
     },
@@ -1281,7 +1491,11 @@
         "m3-ultra": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -1305,7 +1519,11 @@
         "m3-ultra": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       },
       "models": {
         "j456": {"asahi": {"status": "tba", "cell": "TBA"}},
@@ -1330,14 +1548,24 @@
         "m3-ultra": {"asahi": {"status": "wip", "cell": "WIP"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "absent", "cell": "-"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "absent", "cell": "-"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       },
       "models": {
         "j474s": {"asahi": {"status": "absent", "cell": "-"}},
         "j433": {"asahi": {"status": "absent", "cell": "-"}},
         "j434": {"asahi": {"status": "absent", "cell": "-"}},
         "j613": {"asahi": {"status": "absent", "cell": "-"}},
-        "j615": {"asahi": {"status": "absent", "cell": "-"}}
+        "j615": {"asahi": {"status": "absent", "cell": "-"}},
+        "j623": {"asahi": {"status": "absent", "cell": "-"}},
+        "j624": {"asahi": {"status": "absent", "cell": "-"}},
+        "j773g": {"asahi": {"status": "absent", "cell": "-"}},
+        "j713": {"asahi": {"status": "absent", "cell": "-"}},
+        "j715": {"asahi": {"status": "absent", "cell": "-"}},
+        "j773s": {"asahi": {"status": "absent", "cell": "-"}}
       }
     },
     {
@@ -1352,7 +1580,11 @@
         "m3": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "absent", "cell": "-"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "absent", "cell": "-"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       },
       "models": {
         "j293": {"asahi": {"status": "absent", "cell": "-"}},
@@ -1371,7 +1603,15 @@
         "j180d": {"asahi": {"status": "absent", "cell": "-"}},
         "j504": {"asahi": {"status": "absent", "cell": "-"}},
         "j613": {"asahi": {"status": "absent", "cell": "-"}},
-        "j615": {"asahi": {"status": "absent", "cell": "-"}}
+        "j615": {"asahi": {"status": "absent", "cell": "-"}},
+        "j604": {"asahi": {"status": "absent", "cell": "-"}},
+        "j713": {"asahi": {"status": "absent", "cell": "-"}},
+        "j715": {"asahi": {"status": "absent", "cell": "-"}},
+        "j575c": {"asahi": {"status": "absent", "cell": "-"}},
+        "j614s": {"asahi": {"status": "absent", "cell": "-"}},
+        "j616s": {"asahi": {"status": "absent", "cell": "-"}},
+        "j614c": {"asahi": {"status": "absent", "cell": "-"}},
+        "j616c": {"asahi": {"status": "absent", "cell": "-"}}
       }
     },
     {
@@ -1388,7 +1628,11 @@
         "m3-ultra": {"asahi": {"status": "wip", "cell": "WIP"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "absent", "cell": "-"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "absent", "cell": "-"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       },
       "models": {
         "j293": {"asahi": {"status": "absent", "cell": "-"}},
@@ -1406,7 +1650,16 @@
         "j414c": {"asahi": {"status": "absent", "cell": "-"}},
         "j416s": {"asahi": {"status": "absent", "cell": "-"}},
         "j416c": {"asahi": {"status": "absent", "cell": "-"}},
-        "j180d": {"asahi": {"status": "linux-asahi", "cell": "linux-asahi"}}
+        "j180d": {"asahi": {"status": "linux-asahi", "cell": "linux-asahi"}},
+        "j623": {"asahi": {"status": "absent", "cell": "-"}},
+        "j624": {"asahi": {"status": "absent", "cell": "-"}},
+        "j604": {"asahi": {"status": "absent", "cell": "-"}},
+        "j713": {"asahi": {"status": "absent", "cell": "-"}},
+        "j715": {"asahi": {"status": "absent", "cell": "-"}},
+        "j614s": {"asahi": {"status": "absent", "cell": "-"}},
+        "j616s": {"asahi": {"status": "absent", "cell": "-"}},
+        "j614c": {"asahi": {"status": "absent", "cell": "-"}},
+        "j616c": {"asahi": {"status": "absent", "cell": "-"}}
       }
     },
     {
@@ -1424,7 +1677,11 @@
         "m3-ultra": {"asahi": {"status": "absent", "cell": "-"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       },
       "models": {
         "j274": {"asahi": {"status": "absent", "cell": "-"}},
@@ -1438,7 +1695,10 @@
         "j475d": {"asahi": {"status": "absent", "cell": "-"}},
         "j180d": {"asahi": {"status": "absent", "cell": "-"}},
         "j433": {"asahi": {"status": "tba", "cell": "TBA"}},
-        "j434": {"asahi": {"status": "tba", "cell": "TBA"}}
+        "j434": {"asahi": {"status": "tba", "cell": "TBA"}},
+        "j773g": {"asahi": {"status": "absent", "cell": "-"}},
+        "j773s": {"asahi": {"status": "absent", "cell": "-"}},
+        "j575c": {"asahi": {"status": "absent", "cell": "-"}}
       }
     },
     {
@@ -1456,7 +1716,11 @@
         "m3-ultra": {"asahi": {"status": "absent", "cell": "-"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       },
       "models": {
         "j274": {"asahi": {"status": "absent", "cell": "-"}},
@@ -1466,7 +1730,10 @@
         "j474s": {"asahi": {"status": "absent", "cell": "-"}},
         "j475c": {"asahi": {"status": "absent", "cell": "-"}},
         "j475d": {"asahi": {"status": "absent", "cell": "-"}},
-        "j180d": {"asahi": {"status": "absent", "cell": "-"}}
+        "j180d": {"asahi": {"status": "absent", "cell": "-"}},
+        "j773g": {"asahi": {"status": "absent", "cell": "-"}},
+        "j773s": {"asahi": {"status": "absent", "cell": "-"}},
+        "j575c": {"asahi": {"status": "absent", "cell": "-"}}
       }
     },
     {
@@ -1477,7 +1744,11 @@
         "m1": {"asahi": {"status": "upstream", "version": "6.15", "cell": "6.15"}, "aurora": {"status": "asahi"}},
         "m1-pro-max-ultra": {"asahi": {"status": "absent", "cell": "-"}, "aurora": {"status": "asahi"}},
         "m2": {"asahi": {"status": "upstream", "version": "6.15", "cell": "6.15"}, "aurora": {"status": "asahi"}},
-        "m2-pro-max-ultra": {"asahi": {"status": "absent", "cell": "-"}, "aurora": {"status": "asahi"}}
+        "m2-pro-max-ultra": {"asahi": {"status": "absent", "cell": "-"}, "aurora": {"status": "asahi"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       },
       "models": {
         "j274": {"asahi": {"status": "absent", "cell": "-"}},
@@ -1504,13 +1775,22 @@
         "m3-ultra": {"asahi": {"status": "absent", "cell": "-"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "tba", "cell": "TBA"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       },
       "models": {
         "j473": {"asahi": {"status": "absent", "cell": "-"}},
         "j474s": {"asahi": {"status": "absent", "cell": "-"}},
         "j433": {"asahi": {"status": "absent", "cell": "-"}},
-        "j434": {"asahi": {"status": "absent", "cell": "-"}}
+        "j434": {"asahi": {"status": "absent", "cell": "-"}},
+        "j623": {"asahi": {"status": "absent", "cell": "-"}},
+        "j624": {"asahi": {"status": "absent", "cell": "-"}},
+        "j773g": {"asahi": {"status": "absent", "cell": "-"}},
+        "j773s": {"asahi": {"status": "absent", "cell": "-"}},
+        "j575c": {"asahi": {"status": "absent", "cell": "-"}}
       }
     },
     {
@@ -1530,7 +1810,11 @@
         "m3-ultra": {"asahi": {"status": "no"}, "aurora": {"status": "unknown"}},
         "m4": {"asahi": {"status": "no"}, "aurora": {"status": "unknown"}},
         "m4-pro-max": {"asahi": {"status": "no"}, "aurora": {"status": "unknown"}},
-        "a18-pro": {"asahi": {"status": "no"}, "aurora": {"status": "unknown"}}
+        "a18-pro": {"asahi": {"status": "no"}, "aurora": {"status": "unknown"}},
+        "m5": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m5-ultra": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}},
+        "m6": {"asahi": {"status": "no", "cell": "not in Asahi's tables"}, "aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -1550,7 +1834,11 @@
         "m3-ultra": {"aurora": {"status": "unknown"}},
         "m4": {"aurora": {"status": "unknown"}},
         "m4-pro-max": {"aurora": {"status": "unknown"}},
-        "a18-pro": {"aurora": {"status": "unknown"}}
+        "a18-pro": {"aurora": {"status": "unknown"}},
+        "m5": {"aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"aurora": {"status": "unsupported"}},
+        "m5-ultra": {"aurora": {"status": "unsupported"}},
+        "m6": {"aurora": {"status": "unsupported"}}
       },
       "models": {"j180d": {"aurora": {"status": "unknown"}}}
     },
@@ -1570,7 +1858,11 @@
         "m3-ultra": {"aurora": {"status": "unknown"}},
         "m4": {"aurora": {"status": "unknown"}},
         "m4-pro-max": {"aurora": {"status": "unknown"}},
-        "a18-pro": {"aurora": {"status": "unknown"}}
+        "a18-pro": {"aurora": {"status": "unknown"}},
+        "m5": {"aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"aurora": {"status": "unsupported"}},
+        "m5-ultra": {"aurora": {"status": "unsupported"}},
+        "m6": {"aurora": {"status": "unsupported"}}
       },
       "models": {
         "j375c": {"aurora": {"status": "absent"}},
@@ -1598,7 +1890,11 @@
         "m3-ultra": {"aurora": {"status": "unknown"}},
         "m4": {"aurora": {"status": "unknown"}},
         "m4-pro-max": {"aurora": {"status": "unknown"}},
-        "a18-pro": {"aurora": {"status": "unknown"}}
+        "a18-pro": {"aurora": {"status": "unknown"}},
+        "m5": {"aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"aurora": {"status": "unsupported"}},
+        "m5-ultra": {"aurora": {"status": "unsupported"}},
+        "m6": {"aurora": {"status": "unsupported"}}
       }
     },
     {
@@ -1616,7 +1912,11 @@
         "m3-ultra": {"aurora": {"status": "unknown"}},
         "m4": {"aurora": {"status": "unknown"}},
         "m4-pro-max": {"aurora": {"status": "unknown"}},
-        "a18-pro": {"aurora": {"status": "unknown"}}
+        "a18-pro": {"aurora": {"status": "unknown"}},
+        "m5": {"aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"aurora": {"status": "unsupported"}},
+        "m5-ultra": {"aurora": {"status": "unsupported"}},
+        "m6": {"aurora": {"status": "unsupported"}}
       },
       "note": "Not confirmed on the base M1 (t8103)."
     },
@@ -1635,7 +1935,11 @@
         "m3-ultra": {"aurora": {"status": "unknown"}},
         "m4": {"aurora": {"status": "unknown"}},
         "m4-pro-max": {"aurora": {"status": "unknown"}},
-        "a18-pro": {"aurora": {"status": "unknown"}}
+        "a18-pro": {"aurora": {"status": "unknown"}},
+        "m5": {"aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"aurora": {"status": "unsupported"}},
+        "m5-ultra": {"aurora": {"status": "unsupported"}},
+        "m6": {"aurora": {"status": "unsupported"}}
       },
       "note": "From the hardware inventory: every enabled device-tree node with a device of its own should have a driver bound, and none should fail its probe. Aurora doesn't claim that on any chip yet; each report lists what's unclaimed."
     },
@@ -1654,7 +1958,11 @@
         "m3-ultra": {"aurora": {"status": "unknown"}},
         "m4": {"aurora": {"status": "unknown"}},
         "m4-pro-max": {"aurora": {"status": "unknown"}},
-        "a18-pro": {"aurora": {"status": "unknown"}}
+        "a18-pro": {"aurora": {"status": "unknown"}},
+        "m5": {"aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"aurora": {"status": "unsupported"}},
+        "m5-ultra": {"aurora": {"status": "unsupported"}},
+        "m6": {"aurora": {"status": "unsupported"}}
       },
       "note": "The running kernel's /proc/config.gz compared with Asahi's reference configuration (catalogue/asahi-kernel/). Differences are reported, not judged: Aurora builds more than Asahi on purpose."
     },
@@ -1675,7 +1983,11 @@
         "m3-ultra": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4-pro-max": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
-        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}}
+        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
+        "m5": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-pro-max": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-ultra": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m6": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}}
       },
       "models": {
         "j493": {"omarchy": {"status": "absent"}},
@@ -1708,7 +2020,11 @@
         "m3-ultra": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4-pro-max": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
-        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}}
+        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
+        "m5": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-pro-max": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-ultra": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m6": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}}
       },
       "models": {
         "j274": {"omarchy": {"status": "absent"}},
@@ -1742,7 +2058,11 @@
         "m3-ultra": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4-pro-max": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
-        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}}
+        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
+        "m5": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-pro-max": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-ultra": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m6": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}}
       },
       "models": {
         "j274": {"omarchy": {"status": "absent"}},
@@ -1776,7 +2096,11 @@
         "m3-ultra": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4-pro-max": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
-        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}}
+        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
+        "m5": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-pro-max": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-ultra": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m6": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}}
       }
     },
     {
@@ -1796,7 +2120,11 @@
         "m3-ultra": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4-pro-max": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
-        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}}
+        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
+        "m5": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-pro-max": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-ultra": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m6": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}}
       }
     },
     {
@@ -1815,7 +2143,11 @@
         "m3-ultra": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4-pro-max": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
-        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}}
+        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
+        "m5": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-pro-max": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-ultra": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m6": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}}
       }
     },
     {
@@ -1834,7 +2166,11 @@
         "m3-ultra": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4-pro-max": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
-        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}}
+        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
+        "m5": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-pro-max": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-ultra": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m6": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}}
       }
     },
     {
@@ -1853,7 +2189,11 @@
         "m3-ultra": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4-pro-max": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
-        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}}
+        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
+        "m5": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-pro-max": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-ultra": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m6": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}}
       }
     },
     {
@@ -1872,7 +2212,11 @@
         "m3-ultra": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4-pro-max": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
-        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}}
+        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
+        "m5": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-pro-max": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-ultra": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m6": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}}
       }
     },
     {
@@ -1891,7 +2235,11 @@
         "m3-ultra": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4-pro-max": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
-        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}}
+        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
+        "m5": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-pro-max": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-ultra": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m6": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}}
       }
     },
     {
@@ -1910,7 +2258,11 @@
         "m3-ultra": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4-pro-max": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
-        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}}
+        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
+        "m5": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-pro-max": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-ultra": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m6": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}}
       }
     },
     {
@@ -1929,7 +2281,11 @@
         "m3-ultra": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4-pro-max": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
-        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}}
+        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
+        "m5": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-pro-max": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-ultra": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m6": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}}
       }
     },
     {
@@ -1949,7 +2305,11 @@
         "m3-ultra": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4-pro-max": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
-        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}}
+        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
+        "m5": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-pro-max": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-ultra": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m6": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}}
       }
     },
     {
@@ -1969,7 +2329,11 @@
         "m3-ultra": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4-pro-max": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
-        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}}
+        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
+        "m5": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-pro-max": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-ultra": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m6": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}}
       }
     },
     {
@@ -1987,7 +2351,11 @@
         "m3-ultra": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4-pro-max": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
-        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}}
+        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
+        "m5": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-pro-max": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-ultra": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m6": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}}
       },
       "note": "No firmware-load failure in this boot's kernel log: the firmware drivers ask for is installed (vendor firmware from macOS, linux-firmware and Asahi's firmware packages such as avd-fw)."
     },
@@ -2008,7 +2376,11 @@
         "m3-ultra": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
         "m4-pro-max": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
-        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}}
+        "a18-pro": {"aurora": {"status": "unknown"}, "omarchy": {"status": "unsupported"}},
+        "m5": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-pro-max": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m5-ultra": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}},
+        "m6": {"aurora": {"status": "unsupported"}, "omarchy": {"status": "unsupported"}}
       },
       "models": {
         "j274": {"omarchy": {"status": "absent"}},
@@ -2025,5 +2397,420 @@
         "j434": {"omarchy": {"status": "absent"}}
       }
     }
-  ]
+  ],
+  "boards": {
+    "j274": {
+      "name": "Mac mini (M1, 2020)",
+      "chip": "m1",
+      "soc": "t8103",
+      "lineup": "Mac mini (2020)",
+      "hardware": {"fans": true, "notch": false, "camera": false, "lid": false, "battery": false}
+    },
+    "j293": {
+      "name": "MacBook Pro (13-inch, M1, 2020)",
+      "chip": "m1",
+      "soc": "t8103",
+      "lineup": "MacBook Pro 13\" (2020)",
+      "hardware": {"fans": true, "notch": false, "camera": true, "lid": true, "battery": true}
+    },
+    "j313": {
+      "name": "MacBook Air (M1, 2020)",
+      "chip": "m1",
+      "soc": "t8103",
+      "lineup": "MacBook Air (2020)",
+      "hardware": {"fans": false, "notch": false, "camera": true, "lid": true, "battery": true}
+    },
+    "j456": {
+      "name": "iMac (24-inch (4-port), M1, 2021)",
+      "chip": "m1",
+      "soc": "t8103",
+      "lineup": "iMac (2021)",
+      "hardware": {"fans": true, "notch": false, "camera": true, "lid": false, "battery": false}
+    },
+    "j457": {
+      "name": "iMac (24-inch (2-port), M1, 2021)",
+      "chip": "m1",
+      "soc": "t8103",
+      "lineup": "iMac (2021)",
+      "hardware": {"fans": true, "notch": false, "camera": true, "lid": false, "battery": false}
+    },
+    "j316s": {
+      "name": "MacBook Pro (16-inch, M1 Pro, 2021)",
+      "chip": "m1-pro-max-ultra",
+      "soc": "t6000",
+      "lineup": "MacBook Pro 14\"/16\" M1 Pro",
+      "hardware": {"fans": true, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j316c": {
+      "name": "MacBook Pro (16-inch, M1 Max, 2021)",
+      "chip": "m1-pro-max-ultra",
+      "soc": "t6001",
+      "lineup": "MacBook Pro 14\"/16\" M1 Max",
+      "hardware": {"fans": true, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j314s": {
+      "name": "MacBook Pro (14-inch, M1 Pro, 2021)",
+      "chip": "m1-pro-max-ultra",
+      "soc": "t6000",
+      "lineup": "MacBook Pro 14\"/16\" M1 Pro",
+      "hardware": {"fans": true, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j314c": {
+      "name": "MacBook Pro (14-inch, M1 Max, 2021)",
+      "chip": "m1-pro-max-ultra",
+      "soc": "t6001",
+      "lineup": "MacBook Pro 14\"/16\" M1 Max",
+      "hardware": {"fans": true, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j375c": {
+      "name": "Mac Studio (M1 Max, 2022)",
+      "chip": "m1-pro-max-ultra",
+      "soc": "t6001",
+      "lineup": "Mac Studio (2022)",
+      "hardware": {"fans": true, "notch": false, "camera": false, "lid": false, "battery": false}
+    },
+    "j375d": {
+      "name": "Mac Studio (M1 Ultra, 2022)",
+      "chip": "m1-pro-max-ultra",
+      "soc": "t6002",
+      "lineup": "Mac Studio (2022)",
+      "hardware": {"fans": true, "notch": false, "camera": false, "lid": false, "battery": false}
+    },
+    "j493": {
+      "name": "MacBook Pro (13-inch, M2, 2022)",
+      "chip": "m2",
+      "soc": "t8112",
+      "lineup": "MacBook Pro 13\" (2022)",
+      "hardware": {"fans": true, "notch": false, "camera": true, "lid": true, "battery": true}
+    },
+    "j413": {
+      "name": "MacBook Air (13-inch, M2, 2022)",
+      "chip": "m2",
+      "soc": "t8112",
+      "lineup": "MacBook Air 13\" (2022)",
+      "hardware": {"fans": false, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j473": {
+      "name": "Mac mini (M2, 2023)",
+      "chip": "m2",
+      "soc": "t8112",
+      "lineup": "Mac mini (2023)",
+      "hardware": {"fans": true, "notch": false, "camera": false, "lid": false, "battery": false}
+    },
+    "j474s": {
+      "name": "Mac mini (M2 Pro, 2023)",
+      "chip": "m2-pro-max-ultra",
+      "soc": "t6020",
+      "lineup": "Mac mini M2 Pro (2023)",
+      "hardware": {"fans": true, "notch": false, "camera": false, "lid": false, "battery": false}
+    },
+    "j414s": {
+      "name": "MacBook Pro (14-inch, M2 Pro, 2023)",
+      "chip": "m2-pro-max-ultra",
+      "soc": "t6020",
+      "lineup": "MacBook Pro 14\"/16\" M2 Pro",
+      "hardware": {"fans": true, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j416s": {
+      "name": "MacBook Pro (16-inch, M2 Pro, 2023)",
+      "chip": "m2-pro-max-ultra",
+      "soc": "t6020",
+      "lineup": "MacBook Pro 14\"/16\" M2 Pro",
+      "hardware": {"fans": true, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j414c": {
+      "name": "MacBook Pro (14-inch, M2 Max, 2023)",
+      "chip": "m2-pro-max-ultra",
+      "soc": "t6021",
+      "lineup": "MacBook Pro 14\"/16\" M2 Max",
+      "hardware": {"fans": true, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j416c": {
+      "name": "MacBook Pro (16-inch, M2 Max, 2023)",
+      "chip": "m2-pro-max-ultra",
+      "soc": "t6021",
+      "lineup": "MacBook Pro 14\"/16\" M2 Max",
+      "hardware": {"fans": true, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j415": {
+      "name": "MacBook Air (15-inch, M2, 2023)",
+      "chip": "m2",
+      "soc": "t8112",
+      "lineup": "MacBook Air 15\" (2023)",
+      "hardware": {"fans": false, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j475c": {
+      "name": "Mac Studio (M2 Max, 2023)",
+      "chip": "m2-pro-max-ultra",
+      "soc": "t6021",
+      "lineup": "Mac Studio (2023)",
+      "hardware": {"fans": true, "notch": false, "camera": false, "lid": false, "battery": false}
+    },
+    "j475d": {
+      "name": "Mac Studio (M2 Ultra, 2023)",
+      "chip": "m2-pro-max-ultra",
+      "soc": "t6022",
+      "lineup": "Mac Studio (2023)",
+      "hardware": {"fans": true, "notch": false, "camera": false, "lid": false, "battery": false}
+    },
+    "j180d": {
+      "name": "Mac Pro (2023)",
+      "chip": "m2-pro-max-ultra",
+      "soc": "t6022",
+      "lineup": "Mac Pro (2023)",
+      "hardware": {"fans": true, "notch": false, "camera": false, "lid": false, "battery": false}
+    },
+    "j433": {
+      "name": "iMac (24-inch (2-port), M3, 2023)",
+      "chip": "m3",
+      "soc": "t8122",
+      "lineup": "iMac (2023)",
+      "hardware": {"fans": true, "notch": false, "camera": true, "lid": false, "battery": false}
+    },
+    "j434": {
+      "name": "iMac (24-inch (4-port), M3, 2023)",
+      "chip": "m3",
+      "soc": "t8122",
+      "lineup": "iMac (2023)",
+      "hardware": {"fans": true, "notch": false, "camera": true, "lid": false, "battery": false}
+    },
+    "j504": {
+      "name": "MacBook Pro (14-inch, M3, Nov 2023)",
+      "chip": "m3",
+      "soc": "t8122",
+      "lineup": "MacBook Pro 14\" M3",
+      "hardware": {"fans": true, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j514s": {
+      "name": "MacBook Pro (14-inch, M3 Pro, Nov 2023)",
+      "chip": "m3-pro",
+      "soc": "t6030",
+      "lineup": "MacBook Pro 14\"/16\" M3 Pro",
+      "hardware": {"fans": true, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j516s": {
+      "name": "MacBook Pro (16-inch, M3 Pro, Nov 2023)",
+      "chip": "m3-pro",
+      "soc": "t6030",
+      "lineup": "MacBook Pro 14\"/16\" M3 Pro",
+      "hardware": {"fans": true, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j514c": {
+      "name": "MacBook Pro (14-inch, M3 Max, Nov 2023)",
+      "chip": "m3-max",
+      "soc": "t6031",
+      "lineup": "MacBook Pro 14\" M3 Max",
+      "hardware": {"fans": true, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j516c": {
+      "name": "MacBook Pro (16-inch, M3 Max, Nov 2023)",
+      "chip": "m3-max",
+      "soc": "t6031",
+      "lineup": "MacBook Pro 16\" M3 Max",
+      "hardware": {"fans": true, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j514m": {
+      "name": "MacBook Pro (14-inch, M3 Max, Nov 2023)",
+      "chip": "m3-max",
+      "soc": "t6034",
+      "lineup": "MacBook Pro 14\"/16\" 30-core M3 Max (T6034)",
+      "hardware": {"fans": true, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j516m": {
+      "name": "MacBook Pro (16-inch, M3 Max, Nov 2023)",
+      "chip": "m3-max",
+      "soc": "t6034",
+      "lineup": "MacBook Pro 14\"/16\" 30-core M3 Max (T6034)",
+      "hardware": {"fans": true, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j613": {
+      "name": "MacBook Air (13-inch, M3, 2024)",
+      "chip": "m3",
+      "soc": "t8122",
+      "lineup": "MacBook Air 13\"/15\" M3",
+      "hardware": {"fans": false, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j615": {
+      "name": "MacBook Air (15-inch, M3, 2024)",
+      "chip": "m3",
+      "soc": "t8122",
+      "lineup": "MacBook Air 13\"/15\" M3",
+      "hardware": {"fans": false, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j575d": {
+      "name": "Mac Studio (M3 Ultra, 2025)",
+      "chip": "m3-ultra",
+      "soc": "t6032",
+      "lineup": "Mac Studio M3 Ultra (2025)",
+      "hardware": {"fans": true, "notch": false, "camera": false, "lid": false, "battery": false}
+    },
+    "j623": {
+      "name": "iMac (24-inch (2-port), M4, 2024)",
+      "chip": "m4",
+      "soc": "t8132",
+      "lineup": "iMac (2024)",
+      "hardware": {"fans": true, "notch": false, "camera": true, "lid": false, "battery": false}
+    },
+    "j624": {
+      "name": "iMac (24-inch (4-port), M4, 2024)",
+      "chip": "m4",
+      "soc": "t8132",
+      "lineup": "iMac (2024)",
+      "hardware": {"fans": true, "notch": false, "camera": true, "lid": false, "battery": false}
+    },
+    "j773g": {
+      "name": "Mac mini (M4, 2024)",
+      "chip": "m4",
+      "soc": "t8132",
+      "lineup": "Mac mini (2024)",
+      "hardware": {"fans": true, "notch": false, "camera": false, "lid": false, "battery": false}
+    },
+    "j773s": {
+      "name": "Mac mini (M4 Pro, 2024)",
+      "chip": "m4-pro-max",
+      "soc": "t6040",
+      "lineup": "Mac mini M4 Pro (2024)",
+      "hardware": {"fans": true, "notch": false, "camera": false, "lid": false, "battery": false}
+    },
+    "j604": {
+      "name": "MacBook Pro (14-inch, M4, Nov 2024)",
+      "chip": "m4",
+      "soc": "t8132",
+      "lineup": "MacBook Pro 14\" M4",
+      "hardware": {"fans": true, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j614s": {
+      "name": "MacBook Pro (14-inch, M4 Pro, Nov 2024)",
+      "chip": "m4-pro-max",
+      "soc": "t6040",
+      "lineup": "MacBook Pro 14\"/16\" M4 Pro",
+      "hardware": {"fans": true, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j616s": {
+      "name": "MacBook Pro (16-inch, M4 Pro, Nov 2024)",
+      "chip": "m4-pro-max",
+      "soc": "t6040",
+      "lineup": "MacBook Pro 14\"/16\" M4 Pro",
+      "hardware": {"fans": true, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j614c": {
+      "name": "MacBook Pro (14-inch, M4 Max, Nov 2024)",
+      "chip": "m4-pro-max",
+      "soc": "t6041",
+      "lineup": "MacBook Pro 14\"/16\" M4 Max",
+      "hardware": {"fans": true, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j616c": {
+      "name": "MacBook Pro (16-inch, M4 Max, Nov 2024)",
+      "chip": "m4-pro-max",
+      "soc": "t6041",
+      "lineup": "MacBook Pro 14\"/16\" M4 Max",
+      "hardware": {"fans": true, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j713": {
+      "name": "MacBook Air (13-inch, M4, 2025)",
+      "chip": "m4",
+      "soc": "t8132",
+      "lineup": "MacBook Air 13\"/15\" M4",
+      "hardware": {"fans": false, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j715": {
+      "name": "MacBook Air (15-inch, M4, 2025)",
+      "chip": "m4",
+      "soc": "t8132",
+      "lineup": "MacBook Air 13\"/15\" M4",
+      "hardware": {"fans": false, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j575c": {
+      "name": "Mac Studio (M4 Max, 2025)",
+      "chip": "m4-pro-max",
+      "soc": "t6041",
+      "lineup": "Mac Studio M4 Max (2025)",
+      "hardware": {"fans": true, "notch": false, "camera": false, "lid": false, "battery": false}
+    },
+    "j700": {
+      "name": "MacBook Neo (A18 Pro, 2026)",
+      "chip": "a18-pro",
+      "soc": "t8140",
+      "lineup": "MacBook Neo (2026)",
+      "hardware": {"fans": null, "notch": false, "camera": true, "lid": true, "battery": true}
+    },
+    "j873s": {
+      "name": "Mac mini (M5 Pro, 2026)",
+      "chip": "m5-pro-max",
+      "soc": "t6050",
+      "lineup": "Mac mini M5 Pro (2026)",
+      "hardware": {"fans": true, "notch": false, "camera": false, "lid": false, "battery": false}
+    },
+    "j704": {
+      "name": "MacBook Pro (14-inch, M5, 2025)",
+      "chip": "m5",
+      "soc": "t8142",
+      "lineup": "MacBook Pro 14\" M5",
+      "hardware": {"fans": true, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j714s": {
+      "name": "MacBook Pro (14-inch, M5 Pro, 2026)",
+      "chip": "m5-pro-max",
+      "soc": "t6050",
+      "lineup": "MacBook Pro 14\"/16\" M5 Pro",
+      "hardware": {"fans": true, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j716s": {
+      "name": "MacBook Pro (16-inch, M5 Pro, 2026)",
+      "chip": "m5-pro-max",
+      "soc": "t6050",
+      "lineup": "MacBook Pro 14\"/16\" M5 Pro",
+      "hardware": {"fans": true, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j714c": {
+      "name": "MacBook Pro (14-inch, M5 Max, 2026)",
+      "chip": "m5-pro-max",
+      "soc": "t6051",
+      "lineup": "MacBook Pro 14\"/16\" M5 Max",
+      "hardware": {"fans": true, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j716c": {
+      "name": "MacBook Pro (16-inch, M5 Max, 2026)",
+      "chip": "m5-pro-max",
+      "soc": "t6051",
+      "lineup": "MacBook Pro 14\"/16\" M5 Max",
+      "hardware": {"fans": true, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j813": {
+      "name": "MacBook Air (13-inch, M5, 2026)",
+      "chip": "m5",
+      "soc": "t8142",
+      "lineup": "MacBook Air 13\"/15\" M5",
+      "hardware": {"fans": false, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j815": {
+      "name": "MacBook Air (15-inch, M5, 2026)",
+      "chip": "m5",
+      "soc": "t8142",
+      "lineup": "MacBook Air 13\"/15\" M5",
+      "hardware": {"fans": false, "notch": true, "camera": true, "lid": true, "battery": true}
+    },
+    "j775c": {
+      "name": "Mac Studio (M5 Max, 2026)",
+      "chip": "m5-pro-max",
+      "soc": "t6051",
+      "lineup": "Mac Studio M5 Max (2026)",
+      "hardware": {"fans": true, "notch": false, "camera": false, "lid": false, "battery": false}
+    },
+    "j775d": {
+      "name": "Mac Studio (M5 Ultra, 2026)",
+      "chip": "m5-ultra",
+      "soc": "t6052",
+      "lineup": "Mac Studio M5 Ultra (2026)",
+      "hardware": {"fans": true, "notch": false, "camera": false, "lid": false, "battery": false}
+    },
+    "j873g": {
+      "name": "Mac mini (M6, 2026)",
+      "chip": "m6",
+      "soc": "t8152",
+      "lineup": "Mac mini (2026)",
+      "hardware": {"fans": true, "notch": false, "camera": false, "lid": false, "battery": false}
+    }
+  }
 }

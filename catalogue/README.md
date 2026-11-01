@@ -14,6 +14,8 @@ A chip generation's state can be overridden per board under `models` (e.g. the M
 
 Aurora states: `supported` (with the Aurora kernel version), `asahi` (expected to match linux-asahi, not verified on its own), `unsupported`, `unknown`, `absent`. A state that was corrected from what a real Mac showed cites it in `evidence` (the kernel line and the corpus machine). Omarchy states: `supported`, `unsupported`, `absent`.
 
+`boards` lists every Apple Silicon Mac in Asahi's [device list](https://github.com/AsahiLinux/docs/blob/main/docs/hw/devices/device-list.md) (`asahi-snapshot/device-list.md`): its name, chip and SoC from that list, and, kept by hand, the `lineup` it's sold in (one chip per lineup; the site's `/models` rows) and its `hardware` facts (`fans`, `notch`, `camera`, `lid`, `battery`: true, false, or null where not confirmed). A chip Asahi's feature tables don't cover yet (M5, M6) is marked `"asahi_tables": false`, and every feature carries Asahi `no` ("not in Asahi's tables") and Aurora `unsupported` for it, so a run on one is explained as not yet supported rather than unknown hardware.
+
 `checks` maps each check id to the feature it tests. `hardware` maps device-tree compatible strings (shell-style patterns such as `apple,t*-avd`) to the feature that hardware is: an enabled node no driver claimed counts as that feature failing, and a compatible the map doesn't know is unknown hardware.
 
 ## Asahi's reference kernel config
@@ -38,7 +40,7 @@ The Asahi layer is generated; don't edit it by hand:
     python3 catalogue/asahi_tables.py check --live    # against Asahi's main branch (CI, weekly)
     python3 catalogue/asahi_tables.py update --live   # rewrite the Asahi layer, keeping Aurora and Omarchy fields
 
-After `update --live`, refresh `asahi-snapshot/` from the same Asahi commit and set `sources.asahi.commit`. A new Mac model or table row stops the parser until it's added to `COLUMNS`, `MODEL_COLUMNS` or `ROWS` in `asahi_tables.py`. Try a draft with `omarchy-m-test --catalogue catalogue.json` or `--explain REPORT`.
+After `update --live`, refresh `asahi-snapshot/` (the four tables and `device-list.md`) from the same Asahi commit and set `sources.asahi.commit`. A new Mac model or table row stops the parser until it's added to `COLUMNS`, `MODEL_COLUMNS` or `ROWS` in `asahi_tables.py`; a device on a SoC no chip lists stops it until the chip is added to `chips`. A new board gets no `lineup` or `hardware` from `update`: add them by hand. Try a draft with `omarchy-m-test --catalogue catalogue.json` or `--explain REPORT`.
 
 ## Credit
 
