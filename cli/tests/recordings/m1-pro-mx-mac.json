@@ -398,6 +398,15 @@
     },
     {
       "argv": [
+        "read:hardware",
+        "sensors"
+      ],
+      "returncode": 0,
+      "stdout": "{\"observed\": false}",
+      "stderr": ""
+    },
+    {
+      "argv": [
         "pacman",
         "-Q",
         "vkmark",

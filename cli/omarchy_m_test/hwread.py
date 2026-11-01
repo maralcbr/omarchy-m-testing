@@ -14,12 +14,15 @@ The areas' discovery follows aurora-diag's kernel-class walkers
 
 from __future__ import annotations
 
+import math
 import re
 
 from .host import Host
 
 HWMON = "/sys/class/hwmon"
 THERMAL = "/sys/class/thermal"
+IIO = "/sys/bus/iio/devices"
+DEVICE_TREE = "/sys/firmware/devicetree/base"
 
 MAX_READINGS = 400
 _LABEL = re.compile(r"[A-Za-z0-9][A-Za-z0-9 ._+/()-]{0,47}")
@@ -127,5 +130,53 @@ def _cooling(host: Host) -> list[dict]:
     return found
 
 
-_AREAS = {"thermal": _thermal}
+def _sensors(host: Host) -> dict:
+    return {"iio": [_iio_device(host, device) for device in names(host, IIO) or [] if re.fullmatch(r"iio:device[0-9]{1,3}", device)],
+            "aop_node": any(entry.startswith("aop@") for entry in (names(host, f"{DEVICE_TREE}/soc") or []) + (names(host, DEVICE_TREE) or []))}
+
+
+def _iio_device(host: Host, device: str) -> dict:
+    path = f"{IIO}/{device}"
+    entries = set(names(host, path) or [])
+    found: dict = {"name": label(text(host, f"{path}/name")) or "unnamed"}
+    for key, channel in (("accel", "accel"), ("gyro", "anglvel")):
+        axes, unreadable = {}, 0
+        for axis in "xyz":
+            stem = f"in_{channel}_{axis}"
+            if not {f"{stem}_raw", f"{stem}_input"} & entries:
+                continue
+            value = _channel(host, path, entries, stem, f"in_{channel}")
+            if value is None:
+                unreadable += 1
+            else:
+                axes[axis] = round(value, 4)
+        if axes or unreadable:
+            found[key] = axes
+            found[f"{key}_unreadable"] = unreadable
+    for entry in sorted(entries):
+        if match := re.fullmatch(r"(in_angl[0-9]?)_(raw|input)", entry):
+            value = _channel(host, path, entries, match[1], "in_angl")
+            # IIO angles are radians once scaled.
+            scaled = match[2] == "raw" and {f"{match[1]}_scale", "in_angl_scale"} & entries
+            found["angle"] = None if value is None else round(math.degrees(value) if scaled else value, 1)
+            break
+    for key, channel in (("lux", "in_illuminance"), ("colour_temperature", "in_colortemp")):
+        if {f"{channel}_input", f"{channel}_raw"} & entries:
+            value = _channel(host, path, entries, channel, channel)
+            found[key] = None if value is None else round(value, 1)
+    return found
+
+
+def _channel(host: Host, path: str, entries: set[str], stem: str, kind: str) -> float | None:
+    """A channel's value: its _input, or _raw times its scale when there is one."""
+    if f"{stem}_input" in entries:
+        return number(text(host, f"{path}/{stem}_input"))
+    raw = number(text(host, f"{path}/{stem}_raw"))
+    if raw is None:
+        return None
+    scale = next((number(text(host, f"{path}/{name}_scale")) for name in (stem, kind) if f"{name}_scale" in entries), None)
+    return raw * scale if scale is not None else raw
+
+
+_AREAS = {"thermal": _thermal, "sensors": _sensors}
 AREAS = tuple(_AREAS)

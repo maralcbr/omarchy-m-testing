@@ -46,6 +46,7 @@ ORDER = (
     "power.battery", "power.charge-limit", "power.charge-limit-kept", "power.idle-draw", "power.sleep-drain",
     "cpu.frequency-scaling",
     "thermal.sensors", "thermal.fans",
+    "sensors.motion", "sensors.lid-angle", "sensors.light",
 )
 
 

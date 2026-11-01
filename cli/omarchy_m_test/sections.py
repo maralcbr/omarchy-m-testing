@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from typing import Callable
 
-from . import benchmarks, camera, checks, ports, power, sleep, thermal, touchid, video
+from . import benchmarks, camera, checks, ports, power, sensors, sleep, thermal, touchid, video
 from .host import TimedOut
 from .session import Context, Section
 
@@ -83,6 +83,7 @@ APPLE: tuple[Section, ...] = (
              power.CHECK_IDS, power.run),
     _section("cpu", "CPU", "CPU frequency scaling.", ("cpu.frequency-scaling",), checks.cpu),
     _section("thermal", "Thermal", "Temperatures, thermal zones and fans, read only.", thermal.CHECK_IDS, thermal.run),
+    _section("sensors", "Sensors", "The accelerometer, gyroscope, lid angle and light sensors, read at rest; you don't have to move the Mac.", sensors.CHECK_IDS, sensors.run),
     _section("benchmarks", "Benchmarks", "About a minute of short benchmarks for comparing Macs: OpenGL (glmark2, off-screen), Vulkan (vkmark, headless) and H.264 and HEVC hardware decode (ffmpeg). Leave the Mac alone while they run.",
              benchmarks.CHECK_IDS, benchmarks.run),
 )

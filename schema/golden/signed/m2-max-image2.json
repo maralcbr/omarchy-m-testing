@@ -2030,6 +2030,54 @@
       }
     },
     {
+      "id": "sensors.motion",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "not read in this run (it predates this check)"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "motion-sensors",
+        "layer": "aurora",
+        "expected": {
+          "aurora": "unknown"
+        }
+      }
+    },
+    {
+      "id": "sensors.lid-angle",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "not read in this run (it predates this check)"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "aop",
+        "layer": "aurora",
+        "expected": {
+          "aurora": "supported"
+        }
+      }
+    },
+    {
+      "id": "sensors.light",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "not read in this run (it predates this check)"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "aop",
+        "layer": "aurora",
+        "expected": {
+          "aurora": "supported"
+        }
+      }
+    },
+    {
       "id": "benchmark.opengl",
       "kind": "automatic",
       "status": "skip",
@@ -2104,6 +2152,6 @@
   ],
   "signature": {
     "public_key": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHWZLEbyxAyRBj1yRyeHbRhQvVhcrUqpMaNH7ivMU1DW",
-    "signature": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgdZksRvLEDJEGPXJHJ4dtGFC9WF\nytSqkxo0fuK8xTUNYAAAAVb21hcmNoeS1tLXRlc3QtcmVwb3J0AAAAAAAAAAZzaGE1MTIA\nAABTAAAAC3NzaC1lZDI1NTE5AAAAQP+mQaKr9Mp7SfFvm3y6Dj7t5/K6fDTULJBG2dbPxo\noz0mfA+b63K4IJ1uQThz2Un5wM8mb+zNq6r0bHuA75oA0=\n-----END SSH SIGNATURE-----"
+    "signature": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgdZksRvLEDJEGPXJHJ4dtGFC9WF\nytSqkxo0fuK8xTUNYAAAAVb21hcmNoeS1tLXRlc3QtcmVwb3J0AAAAAAAAAAZzaGE1MTIA\nAABTAAAAC3NzaC1lZDI1NTE5AAAAQCtbsGMqV9CWfbGfWf106WXz+Fa88muy1vB2GfhKrU\nx6P6CfT+Vb4hXjUbs9zeGYpW9DNF6MTaZsyQsXIHrhbgc=\n-----END SSH SIGNATURE-----"
   }
 }
