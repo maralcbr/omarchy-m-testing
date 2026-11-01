@@ -10,14 +10,19 @@ class BenchmarkScores
     "benchmark.opengl" => [ "OpenGL", "glmark2, off-screen at 1920x1080" ],
     "benchmark.vulkan" => [ "Vulkan", "vkmark, headless at 1920x1080" ],
     "benchmark.h264-decode" => [ "H.264 decode", "ffmpeg, VA-API hardware decode of a 1080p clip" ],
-    "benchmark.hevc-decode" => [ "HEVC decode", "ffmpeg, VA-API hardware decode of a 1080p clip" ]
+    "benchmark.hevc-decode" => [ "HEVC decode", "ffmpeg, VA-API hardware decode of a 1080p clip" ],
+    "benchmark.h264-encode" => [ "H.264 encode", "ffmpeg, hardware encode of a 1080p test source" ],
+    "benchmark.storage" => [ "Storage", "fio, sequential read of a 1 GiB file with direct I/O; compared within one SSD capacity" ],
+    "benchmark.ane" => [ "Neural Engine", "omarchy-ane-smoke, runs of its small test program" ]
   }.freeze
-  UNITS = { "points" => "points", "fps" => "frames/s" }.freeze
+  UNITS = { "points" => "points", "fps" => "frames/s", "MBps" => "MB/s", "ops" => "runs/s" }.freeze
+  # Storage speed depends on the SSD's size, so its rows also split by capacity.
+  BY_CAPACITY = "benchmark.storage".freeze
 
   # One measured run: a report's score for one benchmark.
   Score = Data.define(:report, :check_id, :value, :unit, :tool, :suite)
 
-  Row = Data.define(:configuration, :model_name, :chip, :soc, :scores) do
+  Row = Data.define(:configuration, :model_name, :chip, :soc, :capacity, :scores) do
     # Each machine's latest score, newest first.
     def latest_per_machine
       keys = Report.machine_keys(scores.map(&:report).uniq)
@@ -31,6 +36,14 @@ class BenchmarkScores
     def latest = latest_per_machine.first
     def tools = latest_per_machine.map(&:tool).uniq
     def tester? = latest_per_machine.any? { |score| score.report.tester? }
+    def macos(check_id) = MacosReference.for(configuration.board)&.value(check_id, capacity:)
+
+    # Why this row has no macOS number, when the Mac has a reference but not at this capacity.
+    def macos_gap(check_id)
+      "no macOS reference at this capacity" if check_id == BY_CAPACITY && macos(check_id).nil? && MacosReference.for(configuration.board)&.storage?
+    end
+
+    def macos_conditions = MacosReference.for(configuration.board)&.conditions
 
     def median
       middle = values.size / 2
@@ -45,6 +58,8 @@ class BenchmarkScores
     def unit_words = UNITS.fetch(unit, unit)
     def best = rows.map(&:median).max
     def rows_for_board(board) = rows.select { |row| row.configuration.board == board }
+    def macos? = MacosReference.compared?(check_id)
+    def by_capacity? = check_id == BY_CAPACITY
   end
 
   def self.visible = new(Report.visible.to_a)
@@ -56,9 +71,9 @@ class BenchmarkScores
   # Every benchmark with scores: in catalogue order, newest suite first; rows best first.
   def benchmarks
     @benchmarks ||= scores.group_by { |score| [ score.check_id, score.suite, score.unit ] }.map do |(check_id, suite, unit), group|
-      rows = group.group_by { |score| score.report.configuration }.map do |configuration, row_scores|
+      rows = group.group_by { |score| [ score.report.configuration, (score.report.storage if check_id == BY_CAPACITY) ] }.map do |(configuration, capacity), row_scores|
         latest = row_scores.max_by { |score| [ score.report.created_at, score.report.id ] }.report
-        Row.new(configuration:, model_name: latest.short_model_name, chip: latest.chip, soc: latest.soc, scores: row_scores)
+        Row.new(configuration:, model_name: latest.short_model_name, chip: latest.chip, soc: latest.soc, capacity:, scores: row_scores)
       end
       Benchmark.new(check_id:, suite:, unit:, rows: rows.sort_by { |row| [ -row.median, row.model_name ] })
     end.sort_by { |benchmark| [ Catalogue.check_ids.index(benchmark.check_id) || Catalogue.check_ids.size, -benchmark.suite ] }
@@ -79,7 +94,8 @@ class BenchmarkScores
             {
               model: row.model_name, board: row.configuration.board, soc: row.soc, chip: row.chip,
               stack: row.configuration.stack, version: row.configuration.version, build: row.latest.report.build&.as_json,
-              score: row.median, low: row.low, high: row.high, machines: row.machines, runs: row.runs, tools: row.tools
+              capacity: row.capacity, score: row.median, low: row.low, high: row.high, machines: row.machines, runs: row.runs, tools: row.tools,
+              macos: row.macos(benchmark.check_id), macos_conditions: (row.macos_conditions if row.macos(benchmark.check_id))
             }
           end
         }

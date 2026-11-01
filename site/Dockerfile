@@ -27,6 +27,7 @@ COPY --from=build "$BUNDLE_PATH" "$BUNDLE_PATH"
 COPY --from=build /app/site /app/site
 COPY schema/ /app/schema/
 COPY catalogue/catalogue.json /app/catalogue/catalogue.json
+COPY catalogue/macos-reference/ /app/catalogue/macos-reference/
 COPY installer/install.sh /app/installer/install.sh
 RUN groupadd --system --gid 1000 rails && \
     useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash && \

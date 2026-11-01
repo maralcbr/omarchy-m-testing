@@ -53,6 +53,9 @@ class Report < ApplicationRecord
   def board = machine.fetch("board")
   def soc = machine.fetch("soc")
   def chip = machine.fetch("chip")
+
+  # The SSD's capacity as Apple sells it; nil on reports from before the CLI recorded it.
+  def storage = machine["storage"]
   def kernel = machine.fetch("kernel")
   def stack = system.fetch("stack")
   def stack_words = STACK_WORDS.fetch(stack, stack)
