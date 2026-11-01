@@ -35,6 +35,11 @@ CHIPS = {
     "t6040": "M4 Pro",
     "t6041": "M4 Max",
     "t8140": "A18 Pro",
+    "t8142": "M5",
+    "t6050": "M5 Pro",
+    "t6051": "M5 Max",
+    "t6052": "M5 Ultra",
+    "t8152": "M6",
 }
 
 _BOARD = re.compile(r"^apple,(j[0-9]{3}[a-z]{0,2})$")

@@ -21,6 +21,8 @@ module Catalogue
   def self.asahi_credit = data.dig("sources", "asahi", "credit")
   def self.features = data.fetch("features")
   def self.chips = data.fetch("chips")
+  # Every Apple Silicon Mac board: its name, chip, SoC, lineup and hardware facts.
+  def self.boards = data.fetch("boards")
 
   def self.feature(id)
     @features ||= features.index_by { |f| f.fetch("id") }

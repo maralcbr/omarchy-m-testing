@@ -36,6 +36,8 @@ STATUSES = {
     "omarchy": {"supported", "unsupported", "absent"},
 }
 ASAHI_SUPPORTED = {"upstream", "linux-asahi", "yes"}
+# Per-board hardware facts; null is "not confirmed", which checks treat as unknown.
+HARDWARE_FACTS = ("fans", "notch", "camera", "lid", "battery")
 OUTCOMES = (
     "works", "fails", "not-in-aurora", "not-in-asahi", "not-in-omarchy",
     "not-applicable", "unknown-hardware", "not-tested",
@@ -228,3 +230,18 @@ def _check(data: object) -> None:
     _require(isinstance(hardware, dict), "hardware must be an object")
     for pattern, feature_id in hardware.items():
         _require(feature_id in ids, f"hardware {pattern}: unknown feature {feature_id!r}")
+    boards = data.get("boards", {})
+    _require(isinstance(boards, dict), "boards must be an object")
+    lineup_chips: dict[str, str] = {}
+    for board, info in boards.items():
+        where = f"boards.{board}"
+        _require(isinstance(info, dict) and all(isinstance(info.get(k), str) for k in ("name", "chip", "soc", "lineup")),
+                 f"{where}: needs a name, chip, soc and lineup")
+        _require(info["chip"] in chips and info["soc"] in chips[info["chip"]]["socs"],
+                 f"{where}: soc {info['soc']!r} isn't one of chip {info['chip']!r}'s")
+        facts = info.get("hardware")
+        _require(isinstance(facts, dict) and set(facts) == set(HARDWARE_FACTS)
+                 and all(v is None or isinstance(v, bool) for v in facts.values()),
+                 f"{where}.hardware: needs {list(HARDWARE_FACTS)}, each true, false or null")
+        _require(lineup_chips.setdefault(info["lineup"], info["chip"]) == info["chip"],
+                 f"{where}: lineup {info['lineup']!r} mixes chips")

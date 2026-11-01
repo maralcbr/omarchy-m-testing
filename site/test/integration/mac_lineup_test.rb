@@ -14,6 +14,13 @@ class MacLineupTest < ActionDispatch::IntegrationTest
     assert_match "needs testing", lineup_row("j504").css(%(td.lineup-testing div[data-board="j504"])).text
   end
 
+  test "every Mac in the catalogue shows, M4 and M5 included" do
+    get "/models"
+    assert_equal Catalogue.boards.keys.sort, css_select("tr.lineup-row").flat_map { |row| row["data-boards"].split }.sort
+    assert_equal [ "missing", "catalogue" ], state_and_source("j616s", "gpu")
+    assert_match "Asahi: not in Asahi's tables", status("j704", "gpu")["title"].to_s + status("j704", "gpu").text
+  end
+
   test "an untested Mac shows what the catalogue expects" do
     get "/models"
     assert_equal [ "works", "catalogue" ], state_and_source("j416c", "gpu")

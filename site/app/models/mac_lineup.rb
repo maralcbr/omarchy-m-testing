@@ -1,4 +1,4 @@
-# The bring-up table on /models: every Mac in config/mac_models.yml, with or
+# The bring-up table on /models: every Mac in the catalogue's boards, with or
 # without reports, so the Macs that still need testing or bringing online show.
 # Each row is a group of boards bought as one Mac (the M3 Air's J613 and J615)
 # with its GPU and built-in display state, taken from the visible reports on
@@ -34,8 +34,12 @@ class MacLineup
     def untested_boards = boards.reject(&:tested?)
   end
 
-  def self.path = Rails.root.join("config", "mac_models.yml")
-  def self.models = @models ||= YAML.safe_load_file(path)
+  # The catalogue's boards grouped by lineup, in the catalogue's order.
+  def self.models
+    @models ||= Catalogue.boards.group_by { |_board, info| info.fetch("lineup") }.map do |name, boards|
+      { "name" => name, "chip" => boards.first.last.fetch("chip"), "boards" => boards.map(&:first) }
+    end
+  end
 
   def self.visible = new(Report.visible.to_a)
 
