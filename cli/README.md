@@ -136,7 +136,7 @@ Its four results are `hardware.drivers`, `hardware.firmware`, `hardware.probe-er
 
 ## Thermal
 
-The Thermal section (`omarchy_m_test/thermal.py`) asks whether Linux can see the Mac's temperatures and fans, read-only: `thermal.sensors` (hwmon temperature channels, thermal zones with trip points and governors, cooling devices) fails only when no temperature can be read, and `thermal.fans` (each fan's speed, target and limits) fails on a Mac the catalogue's `boards` say has fans and shows none, and skips on a fanless one. Readings are evidence and never decide a result. Only allowlisted, validated facts cross the host boundary (`Host.hardware_snapshot`, `omarchy_m_test/hwread.py`, recorded as `["read:hardware", "thermal"]`); a run recorded before an area existed answers `{"observed": false}` and its checks skip.
+The Thermal section (`omarchy_m_test/thermal.py`) asks whether Linux can see the Mac's temperatures and fans, read-only: `thermal.sensors` (hwmon temperature channels, thermal zones with trip points and governors, cooling devices) fails when no die or SMC temperature can be read, and `thermal.fans` (the speed, target and limits of the SMC's fans, not a USB controller's) fails on a Mac the catalogue's `boards` say has fans and shows none, and skips on a fanless one. Readings are evidence and never decide a result. Only allowlisted, validated facts cross the host boundary (`Host.hardware_snapshot`, `omarchy_m_test/hwread.py`, recorded as `["read:hardware", "thermal"]`); a run recorded before an area existed answers `{"observed": false}` and its checks skip.
 
 ## Sensors
 

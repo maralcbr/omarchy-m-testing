@@ -2008,7 +2008,7 @@
         "layer": "aurora",
         "expected": {
           "asahi": "upstream",
-          "aurora": "unknown"
+          "aurora": "asahi"
         }
       }
     },
@@ -2025,7 +2025,7 @@
         "layer": "aurora",
         "expected": {
           "asahi": "upstream",
-          "aurora": "unknown"
+          "aurora": "asahi"
         }
       }
     },
