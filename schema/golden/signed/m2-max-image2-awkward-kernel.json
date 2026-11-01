@@ -5,7 +5,7 @@
     "version": "0.1.15"
   },
   "consent_version": 6,
-  "catalogue_version": 17,
+  "catalogue_version": 18,
   "machine": {
     "model": "Apple MacBook Pro (16-inch, M2 Max, 2023)",
     "board": "j416c",
@@ -902,7 +902,8 @@
       "evidence": [
         "424 hardware nodes: 366 claimed by a driver, 27 with no device of their own, 5 bus or register containers with no driver of their own, 23 disabled, 3 unclaimed",
         "unclaimed: apple,t6020-avd (1 node): doesn't work, but should on this Mac (Video decoder)",
-        "unclaimed: apple,t6020-dpaudio (2 nodes): not yet supported by Asahi (DisplayPort audio)"
+        "unclaimed: apple,t6020-dpaudio (2 nodes): not yet supported by Asahi (DisplayPort audio)",
+        "why they're waiting needs root without a password (debugfs devices_deferred): not read"
       ],
       "classification": {
         "outcome": "not-in-aurora",
@@ -2069,6 +2070,6 @@
   ],
   "signature": {
     "public_key": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHWZLEbyxAyRBj1yRyeHbRhQvVhcrUqpMaNH7ivMU1DW",
-    "signature": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgdZksRvLEDJEGPXJHJ4dtGFC9WF\nytSqkxo0fuK8xTUNYAAAAVb21hcmNoeS1tLXRlc3QtcmVwb3J0AAAAAAAAAAZzaGE1MTIA\nAABTAAAAC3NzaC1lZDI1NTE5AAAAQGMqrZoVPl7+NE3lNzPUVeiLtOMxluWRuuCfzIa68U\n80EksLx8qa+ao93sRxMl7ANo7Yi1B5kmrdYfqB/Hy/ZAI=\n-----END SSH SIGNATURE-----"
+    "signature": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgdZksRvLEDJEGPXJHJ4dtGFC9WF\nytSqkxo0fuK8xTUNYAAAAVb21hcmNoeS1tLXRlc3QtcmVwb3J0AAAAAAAAAAZzaGE1MTIA\nAABTAAAAC3NzaC1lZDI1NTE5AAAAQMZha1BtHokXzNIfjIg0sD88tzfGG0FCGyFkmSxtoi\nT8n9c6BzkawBa5icy5cgbhoDLzP1oAVo7SHi0iA8CltQM=\n-----END SSH SIGNATURE-----"
   }
 }

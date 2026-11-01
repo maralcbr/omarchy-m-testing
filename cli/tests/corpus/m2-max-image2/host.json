@@ -696,6 +696,18 @@
       "stdout": "",
       "stderr": "",
       "note": "stand-in: this corpus predates the native-mode probe and has no Hyprland monitor JSON for it. Leave the session unavailable instead of inventing a native-mode pass; the next dogfood run records it."
+    },
+    {
+      "argv": [
+        "sudo",
+        "-n",
+        "cat",
+        "/sys/kernel/debug/devices_deferred"
+      ],
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "sudo: a password is required\n",
+      "note": "devices_deferred was not read in this historical run; answered as unavailable, never a reconstructed reason."
     }
   ],
   "files": {

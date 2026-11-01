@@ -244,8 +244,9 @@ class RootChecksTest(unittest.TestCase):
             self.assertEqual(found[check_id]["classification"]["outcome"], "not-tested")
             self.assertIn("passwordless sudo", found[check_id]["evidence"][0])
         # Nothing ran as root: sudo was only asked whether it has cached credentials (the OpenGL check's and the
-        # benchmarks' temporary packages, then the charge limit's probe).
-        self.assertEqual([argv for argv in mac.commands_run if argv[0] == "sudo"], [["sudo", "-n", "true"]] * 3)
+        # benchmarks' temporary packages, then the charge limit's probe), and for the inventory's one read-only file.
+        self.assertEqual([argv for argv in mac.commands_run if argv[0] == "sudo"],
+                         [["sudo", "-n", "cat", "/sys/kernel/debug/devices_deferred"], *[["sudo", "-n", "true"]] * 3])
         asked = [e[1] for e in mac.transcript if e[0] == "prompt"]
         # Never asks for a password: the disclaimer, then only the human checks' yes/no/skip questions.
         self.assertEqual([prompt for prompt in asked if not prompt.endswith(" [Y/n/s] ")], [ACCEPT_PROMPT])

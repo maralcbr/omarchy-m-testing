@@ -1,5 +1,5 @@
 {
-  "catalogue_version": 17,
+  "catalogue_version": 18,
   "description": "What omarchy-m-test expects of each feature, per chip generation, in three layers: Asahi hardware features, Aurora additions and Omarchy integration. Results are classified against Aurora's expected state first, then Asahi's. Edited by pull request; bump catalogue_version on every change.",
   "sources": {
     "asahi": {
@@ -109,6 +109,19 @@
     "power.idle-draw": "battery-info",
     "power.sleep-drain": "suspend-sleep",
     "cpu.frequency-scaling": "cpufreq",
+    "thermal.sensors": "thermal-sensors",
+    "thermal.fans": "fan-readings",
+    "sensors.motion": "motion-sensors",
+    "sensors.lid-angle": "aop",
+    "sensors.light": "aop",
+    "storage.health": "nvme",
+    "benchmark.storage": "nvme",
+    "graphics.vulkan-spec": "gpu",
+    "graphics.gl-spec": "gpu",
+    "cpu.dvfs-ladder": "cpufreq",
+    "engines.ane": "neural-engine",
+    "benchmark.ane": "neural-engine",
+    "benchmark.h264-encode": "video-encoder",
     "benchmark.opengl": "gpu",
     "benchmark.vulkan": "gpu",
     "benchmark.h264-decode": "video-decoder",
@@ -1919,6 +1932,77 @@
         "m6": {"aurora": {"status": "unsupported"}}
       },
       "note": "Not confirmed on the base M1 (t8103)."
+    },
+    {
+      "id": "thermal-sensors",
+      "name": "Temperature sensors",
+      "layer": "aurora",
+      "asahi_feature": "smc",
+      "chips": {
+        "m1": {"aurora": {"status": "unknown"}},
+        "m1-pro-max-ultra": {"aurora": {"status": "unknown"}},
+        "m2": {"aurora": {"status": "unknown"}},
+        "m2-pro-max-ultra": {"aurora": {"status": "unknown"}},
+        "m3": {"aurora": {"status": "unknown"}},
+        "m3-pro": {"aurora": {"status": "unknown"}},
+        "m3-max": {"aurora": {"status": "unknown"}},
+        "m3-ultra": {"aurora": {"status": "unknown"}},
+        "m4": {"aurora": {"status": "unknown"}},
+        "m4-pro-max": {"aurora": {"status": "unknown"}},
+        "a18-pro": {"aurora": {"status": "unknown"}},
+        "m5": {"aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"aurora": {"status": "unsupported"}},
+        "m5-ultra": {"aurora": {"status": "unsupported"}},
+        "m6": {"aurora": {"status": "unsupported"}}
+      },
+      "note": "Die and system temperatures Linux can read (hwmon, thermal zones). Readings are evidence, never a verdict: a check fails only when no temperature can be read."
+    },
+    {
+      "id": "fan-readings",
+      "name": "Fan readings",
+      "layer": "aurora",
+      "asahi_feature": "smc",
+      "chips": {
+        "m1": {"aurora": {"status": "unknown"}},
+        "m1-pro-max-ultra": {"aurora": {"status": "unknown"}},
+        "m2": {"aurora": {"status": "unknown"}},
+        "m2-pro-max-ultra": {"aurora": {"status": "unknown"}},
+        "m3": {"aurora": {"status": "unknown"}},
+        "m3-pro": {"aurora": {"status": "unknown"}},
+        "m3-max": {"aurora": {"status": "unknown"}},
+        "m3-ultra": {"aurora": {"status": "unknown"}},
+        "m4": {"aurora": {"status": "unknown"}},
+        "m4-pro-max": {"aurora": {"status": "unknown"}},
+        "a18-pro": {"aurora": {"status": "unknown"}},
+        "m5": {"aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"aurora": {"status": "unsupported"}},
+        "m5-ultra": {"aurora": {"status": "unsupported"}},
+        "m6": {"aurora": {"status": "unsupported"}}
+      },
+      "note": "Fan speed, target and limits, read only. Macs without fans skip it (the catalogue's boards say which)."
+    },
+    {
+      "id": "motion-sensors",
+      "name": "Motion sensors",
+      "layer": "aurora",
+      "chips": {
+        "m1": {"aurora": {"status": "unknown"}},
+        "m1-pro-max-ultra": {"aurora": {"status": "unknown"}},
+        "m2": {"aurora": {"status": "unknown"}},
+        "m2-pro-max-ultra": {"aurora": {"status": "unknown"}},
+        "m3": {"aurora": {"status": "unknown"}},
+        "m3-pro": {"aurora": {"status": "unknown"}},
+        "m3-max": {"aurora": {"status": "unknown"}},
+        "m3-ultra": {"aurora": {"status": "unknown"}},
+        "m4": {"aurora": {"status": "unknown"}},
+        "m4-pro-max": {"aurora": {"status": "unknown"}},
+        "a18-pro": {"aurora": {"status": "unknown"}},
+        "m5": {"aurora": {"status": "unsupported"}},
+        "m5-pro-max": {"aurora": {"status": "unsupported"}},
+        "m5-ultra": {"aurora": {"status": "unsupported"}},
+        "m6": {"aurora": {"status": "unsupported"}}
+      },
+      "note": "Accelerometer and gyroscope through IIO, at rest. MacBooks only: a desktop Mac has none."
     },
     {
       "id": "hardware-drivers",

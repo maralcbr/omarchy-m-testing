@@ -5,7 +5,7 @@
     "version": "0.1.15"
   },
   "consent_version": 6,
-  "catalogue_version": 17,
+  "catalogue_version": 18,
   "machine": {
     "model": "Apple MacBook Pro (14-inch, M1 Pro, 2021)",
     "board": "j314s",
@@ -814,7 +814,8 @@
       "status": "fail",
       "evidence": [
         "339 hardware nodes: 294 claimed by a driver, 17 with no device of their own, 3 bus or register containers with no driver of their own, 24 disabled, 1 unclaimed",
-        "unclaimed: apple,t6000-dpaudio (1 node): not yet supported by Asahi (DisplayPort audio)"
+        "unclaimed: apple,t6000-dpaudio (1 node): not yet supported by Asahi (DisplayPort audio)",
+        "why they're waiting needs root without a password (debugfs devices_deferred): not read"
       ],
       "classification": {
         "outcome": "not-in-aurora",

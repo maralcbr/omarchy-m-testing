@@ -160,6 +160,17 @@
     },
     {
       "argv": [
+        "sudo",
+        "-n",
+        "cat",
+        "/sys/kernel/debug/devices_deferred"
+      ],
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "sudo: a password is required\n"
+    },
+    {
+      "argv": [
         "journalctl",
         "--dmesg",
         "--boot=0",

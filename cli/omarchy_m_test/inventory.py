@@ -18,6 +18,10 @@ Four reads, all read-only and none needing root:
                 compared with Asahi's pinned reference configuration
                 (catalogue/asahi-kernel/)
 
+And one with root if it can be had without asking (sudo -n): debugfs's
+devices_deferred, why each device still waiting is waiting. That turns an
+unclaimed node's "no driver" into what the driver is waiting for.
+
 Each hardware node (a device-tree node with a compatible string, outside
 /cpus, /chosen and /reserved-memory, which the kernel core handles without
 drivers) is bound (a driver claimed its device), unbound (it has a device no
@@ -58,6 +62,7 @@ NODE_PROPERTIES = ["grep", "-r", "-a", "-H", "", "--include=compatible", "--incl
 DEVICES = ["grep", "-r", "-H", "-E", "^(OF_FULLNAME|DRIVER)=", "--include=uevent", "/sys/devices"]
 KERNEL_LOG = ["journalctl", "--dmesg", "--boot=0", "--no-pager"]
 KERNEL_CONFIG = ["zcat", "/proc/config.gz"]
+DEFERRED = ["sudo", "-n", "cat", "/sys/kernel/debug/devices_deferred"]
 
 # Subtrees the kernel core handles without drivers: CPUs (the CPU subsystem),
 # /chosen (what the boot loader hands over, e.g. the boot framebuffer) and
@@ -78,6 +83,7 @@ EVIDENCE_DIFFERENCES = 40
 REPORT_DIFFERENCES = 200
 REPORT_NODE_KINDS = 1000   # schema maxItems
 REPORT_UNCLAIMED_KINDS = 500
+DEFERRAL_CHARS = 160  # schema maxLength
 
 _COMPATIBLE = re.compile(r"[A-Za-z0-9][A-Za-z0-9,._+-]{0,79}")
 _PROPERTY = re.compile(r"^" + re.escape(DT_BASE) + r"(/[^:]*)?/(compatible|status):(.*)$")
@@ -89,6 +95,8 @@ _FIRMWARE_FAILURE = re.compile(
 )
 _PROBE_ERROR = re.compile(r"(probe with driver \S+ failed with error -?\d+|probe of \S+ failed with error -?\d+|deferred probe pending)")
 _DEFERRED = re.compile(r"^(?:\S+ )?(\S+): deferred probe pending")
+_NODE_PATH = re.compile(r"(?:/[^\s/]+)*/([^\s/]+)")
+_DEFERRAL_UNSAFE = re.compile(r"[^A-Za-z0-9 ,.:;_+@()=<>-]")
 _CONFIG_SET = re.compile(r"^(CONFIG_[A-Za-z0-9_]{1,100})=(.*)$")
 _CONFIG_UNSET = re.compile(r"^# (CONFIG_[A-Za-z0-9_]{1,100}) is not set$")
 # Options the build toolchain decides rather than the kernel's packager.
@@ -102,6 +110,7 @@ class Node:
     status: str  # okay, disabled, reserved, fail or other
     driver: str  # bound, unbound or none
     opt_in: bool = False  # its driver is a module the running kernel loads only on request (OPT_IN_DRIVERS)
+    deferred: str = ""  # why its device is still waiting for its driver (devices_deferred), if the kernel says
 
     @property
     def type(self) -> str:
@@ -132,6 +141,7 @@ class Inventory:
     reference: tuple[str, dict[str, str]] | None = None  # (label, options) of Asahi's config
     unclaimed: list[dict] = field(default_factory=list)  # filled by classify()
     bound_devices: set[str] = field(default_factory=set)  # device names (48dc00000.dcp, 0-003b) a driver is bound to now
+    deferrals_read: bool = False             # devices_deferred could be read (it needs root)
 
     # -- the report's inventory block ------------------------------------------
 
@@ -164,6 +174,9 @@ class Inventory:
             compatibles = sorted({c for node in nodes for c in node.compatibles})
             entry = {"compatible": compatible, "count": len(nodes)}
             entry.update(catalogue.classify_unclaimed(compatibles, machine.soc, machine.board))
+            reason = next((node.deferred for node in nodes if node.deferred), "")
+            if reason:
+                entry["deferred"] = reason
             self.unclaimed.append(entry)
 
     def differences(self) -> list[tuple[str, str, str]] | None:
@@ -202,7 +215,10 @@ class Inventory:
             feature = catalogue.feature(entry.get("feature"))
             words = catalogue.words(entry["outcome"]) + (f" ({feature['name']})" if feature else "")
             nodes = "1 node" if entry["count"] == 1 else f"{entry['count']} nodes"
-            evidence.append(f"unclaimed: {entry['compatible']} ({nodes}): {words}")
+            waiting = f"; waiting: {entry['deferred']}" if entry.get("deferred") else ""
+            evidence.append(f"unclaimed: {entry['compatible']} ({nodes}): {words}{waiting}")
+        if self.unclaimed and not self.deferrals_read:
+            evidence.append("why they're waiting needs root without a password (debugfs devices_deferred): not read")
         return _result("hardware.drivers", "fail" if unclaimed else "pass", evidence)
 
     def _log_check(self, check_id: str, pattern: re.Pattern, what: str) -> dict:
@@ -267,7 +283,7 @@ def _result(check_id: str, status: str, evidence: list[str]) -> dict:
 def take(host: Host, catalogue: Catalogue, machine: Machine) -> Inventory:
     """Map this Mac's hardware."""
     found = Inventory()
-    found.nodes, found.missing, found.bound_devices = _nodes(host)
+    found.nodes, found.missing, found.bound_devices, found.deferrals_read = _nodes(host)
     found.log = _kernel_log(host)
     found.config, found.config_missing = _kernel_config(host)
     found.nodes = _mark_opt_in(found.nodes, found.config)
@@ -282,7 +298,21 @@ def take(host: Host, catalogue: Catalogue, machine: Machine) -> Inventory:
 # -- reading -------------------------------------------------------------------
 
 
-def _nodes(host: Host) -> tuple[list[Node] | None, str, set[str]]:
+def _deferrals(host: Host) -> tuple[dict[str, str], bool]:
+    """Device name -> why it's waiting for its driver, with node paths cut to the node's name; read: it could be read."""
+    found = host.run(DEFERRED)
+    if found.returncode != 0:
+        return {}, False
+    reasons = {}
+    for line in found.stdout.splitlines():
+        device, _, reason = line.partition("\t")
+        reason = _DEFERRAL_UNSAFE.sub("", _NODE_PATH.sub(r"\1", reason)).strip()
+        if device.strip():
+            reasons[device.strip()] = reason[:DEFERRAL_CHARS]
+    return reasons, True
+
+
+def _nodes(host: Host) -> tuple[list[Node] | None, str, set[str], bool]:
     properties = host.run(NODE_PROPERTIES)
     compatible: dict[str, tuple[str, ...]] = {}
     status: dict[str, str] = {}
@@ -296,7 +326,7 @@ def _nodes(host: Host) -> tuple[list[Node] | None, str, set[str]]:
         else:
             status[path] = _status(values)
     if not compatible:
-        return None, f"couldn't read the device tree ({DT_BASE})", set()
+        return None, f"couldn't read the device tree ({DT_BASE})", set(), False
 
     devices = host.run(DEVICES)
     node_of: dict[str, str] = {}
@@ -309,18 +339,21 @@ def _nodes(host: Host) -> tuple[list[Node] | None, str, set[str]]:
             bound.add(match[1])
     names = {device.rsplit("/", 1)[-1] for device in bound}
     if not node_of:
-        return None, "couldn't read which drivers are bound to the Mac's devices (/sys/devices)", names
+        return None, "couldn't read which drivers are bound to the Mac's devices (/sys/devices)", names, False
     claimed: dict[str, bool] = {}
     for device, node in node_of.items():
         claimed[node] = claimed.get(node, False) or device in bound
+    reasons, deferrals_read = _deferrals(host)
+    deferred_at = {node: reasons[device.rsplit("/", 1)[-1]] for device, node in node_of.items()
+                   if device.rsplit("/", 1)[-1] in reasons and device not in bound}
 
     nodes = []
     for path, compatibles in compatible.items():
         if path == "/" or not compatibles or any(path == s or path.startswith(s + "/") for s in SKIPPED_SUBTREES):
             continue
         driver = "none" if path not in claimed else ("bound" if claimed[path] else "unbound")
-        nodes.append(Node(compatibles, status.get(path, "okay"), driver))
-    return nodes, "", names
+        nodes.append(Node(compatibles, status.get(path, "okay"), driver, deferred=deferred_at.get(path, "") if driver == "unbound" else ""))
+    return nodes, "", names, deferrals_read
 
 
 def _status(values: list[str]) -> str:

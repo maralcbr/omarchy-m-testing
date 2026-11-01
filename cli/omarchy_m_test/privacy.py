@@ -86,7 +86,7 @@ _SYSTEM = {
 # counts, and build-option names and values; never a property value or path.
 _INVENTORY = {
     "nodes": [{"compatible": True, "status": True, "driver": True, "count": True}],
-    "unclaimed": [{"compatible": True, "count": True, "outcome": True, "feature": True, "layer": True}],
+    "unclaimed": [{"compatible": True, "count": True, "outcome": True, "feature": True, "layer": True, "deferred": True}],
     "kernel_config": {"reference": True, "differences": [{"option": True, "asahi": True, "kernel": True}], "omitted": True},
 }
 _SCORE = {"value": True, "unit": True, "tool": True, "suite": True}

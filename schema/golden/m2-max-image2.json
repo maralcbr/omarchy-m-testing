@@ -5,7 +5,7 @@
     "version": "0.1.15"
   },
   "consent_version": 6,
-  "catalogue_version": 17,
+  "catalogue_version": 18,
   "machine": {
     "model": "Apple MacBook Pro (16-inch, M2 Max, 2023)",
     "board": "j416c",
@@ -902,7 +902,8 @@
       "evidence": [
         "424 hardware nodes: 366 claimed by a driver, 27 with no device of their own, 5 bus or register containers with no driver of their own, 23 disabled, 3 unclaimed",
         "unclaimed: apple,t6020-avd (1 node): doesn't work, but should on this Mac (Video decoder)",
-        "unclaimed: apple,t6020-dpaudio (2 nodes): not yet supported by Asahi (DisplayPort audio)"
+        "unclaimed: apple,t6020-dpaudio (2 nodes): not yet supported by Asahi (DisplayPort audio)",
+        "why they're waiting needs root without a password (debugfs devices_deferred): not read"
       ],
       "classification": {
         "outcome": "not-in-aurora",

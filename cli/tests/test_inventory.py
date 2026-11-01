@@ -84,6 +84,7 @@ class GoldenInventoryTest(unittest.TestCase):
             "5 bus or register containers with no driver of their own, 23 disabled, 3 unclaimed",
             "unclaimed: apple,t6020-avd (1 node): doesn't work, but should on this Mac (Video decoder)",
             "unclaimed: apple,t6020-dpaudio (2 nodes): not yet supported by Asahi (DisplayPort audio)",
+            "why they're waiting needs root without a password (debugfs devices_deferred): not read",
         ])
         self.assertEqual(found["hardware.firmware"]["evidence"], [
             "avd 287080000.avd: Direct firmware load for apple/avd-fw-v3-t1.bin failed with error -2",
@@ -335,6 +336,45 @@ class UnreadableTest(unittest.TestCase):
         self.assertNotIn("inventory", report)
         self.assertEqual({c["status"] for c in hardware(report).values()}, {"skip"})
         self.assertNotIn(DEVICES, mac.commands_run)
+        self.assertEqual(errors(SCHEMA, report), [])
+
+
+class DeferredProbeTest(unittest.TestCase):
+    """devices_deferred says why an unbound device is waiting; it needs root, so it may not be read."""
+
+    def rec(self, stdout: str, returncode: int = 0) -> dict:
+        rec = copy.deepcopy(M2_MAX)
+        answer(rec, inventory.DEFERRED, stdout=stdout, returncode=returncode)
+        return rec
+
+    def entry(self, report: dict) -> dict:
+        return next(e for e in report["inventory"]["unclaimed"] if e["compatible"] == "apple,t6020-dpaudio")
+
+    def test_an_unclaimed_node_says_what_its_driver_is_waiting_for(self):
+        _, _, report = run(self.rec("39b504000.audio-controller\tplatform: wait for supplier /soc/dart@28b000000/mapper\n"))
+
+        self.assertEqual(self.entry(report)["deferred"], "platform: wait for supplier mapper")
+        self.assertEqual(errors(SCHEMA, report), [])
+        self.assertTrue(any("waiting: platform: wait for supplier mapper" in line for line in hardware(report)["hardware.drivers"]["evidence"]))
+
+    def test_without_root_the_reason_is_not_read_and_the_evidence_says_so(self):
+        _, _, report = run(self.rec("", returncode=1))
+
+        self.assertNotIn("deferred", self.entry(report))
+        self.assertTrue(any("devices_deferred" in line for line in hardware(report)["hardware.drivers"]["evidence"]))
+
+    def test_a_reason_keeps_no_full_node_path_or_unsafe_character(self):
+        _, _, report = run(self.rec("39b504000.audio-controller\tdriver: /soc/a@1/b@2 `whoami` $(id)\n"))
+
+        reason = self.entry(report)["deferred"]
+        self.assertNotIn("/", reason)
+        self.assertNotIn("`", reason)
+        self.assertNotIn("$", reason)
+
+    def test_a_long_reason_fits_the_schema(self):
+        _, _, report = run(self.rec("39b504000.audio-controller\t" + "x" * 500 + "\n"))
+
+        self.assertEqual(len(self.entry(report)["deferred"]), inventory.DEFERRAL_CHARS)
         self.assertEqual(errors(SCHEMA, report), [])
 
 
