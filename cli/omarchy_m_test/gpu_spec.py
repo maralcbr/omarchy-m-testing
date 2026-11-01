@@ -29,7 +29,7 @@ VULKAN, GL = "graphics.vulkan-spec", "graphics.gl-spec"
 CHECK_IDS = (VULKAN, GL)
 NOT_READ = "not read in this run (it predates this check)"
 SPOT = "a spot check of the spec, not a conformance run"
-NO_CONFORMANCE = {"0.0.0.0", "0.0.0"}
+NO_CONFORMANCE = {"0.0.0 patch 0", "0.0.0"}
 
 # Vulkan spec, Feature Requirements chapter: mandatory for a device claiming that version or later.
 REQUIRED_VK = {
@@ -100,18 +100,12 @@ def _vulkan(found: dict) -> dict:
     evidence, status = [], "pass"
     for device in devices:
         conformance = device["conformance"]
-        claim = "no conformant submission claimed" if conformance in NO_CONFORMANCE or conformance is None else f"conformance version {_conformance_words(conformance)}"
+        claim = "no conformant submission claimed" if conformance in NO_CONFORMANCE or conformance is None else f"conformance version {conformance}"
         evidence.append(f"{device['name']}: Vulkan {device['api']}, {claim}, {device['checked']} mandatory features checked, {len(device['missing'])} missing")
         if device["missing"]:
             status = "fail"
             evidence.append(f"missing: {', '.join(device['missing'][:40])}")
     return _result(VULKAN, status, [*evidence, SPOT])
-
-
-def _conformance_words(version: str) -> str:
-    """Four dotted numbers would read as an IP address, and the privacy scrubber would rightly take them for one."""
-    parts = version.split(".")
-    return f"{'.'.join(parts[:3])} patch {parts[3]}" if len(parts) == 4 else version
 
 
 def _gl(found: dict) -> dict:
