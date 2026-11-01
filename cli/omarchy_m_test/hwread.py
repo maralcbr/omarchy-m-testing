@@ -272,6 +272,7 @@ def _storage(host: Host) -> dict:
 VULKAN_TEMP = "/tmp/omarchy-m-test-vulkan.XXXXXXXX"
 VULKAN_PROFILE = 'cd "$1" && exec vulkaninfo --json="$2"'
 MAX_VULKAN_DEVICES = 4
+VULKAN_CONFORMANCE = ("VkPhysicalDeviceVulkan12Properties", "VkPhysicalDeviceDriverProperties", "VkPhysicalDeviceDriverPropertiesKHR")
 _API_VERSION = re.compile(r"[0-9]{1,3}\.[0-9]{1,4}(\.[0-9]{1,6})?")
 _CONFORMANCE = re.compile(r"[0-9]{1,3}(\.[0-9]{1,4}){2,3}")
 _GL_VERSION = re.compile(r"[A-Za-z0-9 ._()-]{1,80}")
@@ -285,9 +286,13 @@ def _api_version(value: object) -> str | None:
 
 
 def _conformance(value: object) -> str | None:
+    """"1.4.1 patch 2": four dotted numbers read as an IP address, and the privacy scrubber rightly takes them for one."""
     if isinstance(value, dict):
         value = ".".join(str(value.get(part)) for part in ("major", "minor", "subminor", "patch"))
-    return value if isinstance(value, str) and _CONFORMANCE.fullmatch(value) else None
+    if not (isinstance(value, str) and _CONFORMANCE.fullmatch(value)):
+        return None
+    parts = value.split(".")
+    return f"{'.'.join(parts[:3])} patch {parts[3]}" if len(parts) == 4 else value
 
 
 def _vulkan_device(profile: dict) -> dict | None:
@@ -305,7 +310,8 @@ def _vulkan_device(profile: dict) -> dict | None:
             enabled |= {name for name, value in struct.items() if value is True}
     wanted = gpu_spec.required_for(gpu_spec.version_of(api))
     return {"name": label(core.get("deviceName") if isinstance(core.get("deviceName"), str) else None) or "unnamed", "api": api,
-            "conformance": _conformance(properties.get("VkPhysicalDeviceVulkan12Properties", {}).get("conformanceVersion")),
+            "conformance": _conformance(next((properties[name]["conformanceVersion"] for name in VULKAN_CONFORMANCE
+                                              if isinstance(properties.get(name), dict) and "conformanceVersion" in properties[name]), None)),
             "checked": len(wanted), "missing": [name for name in wanted if name not in enabled]}
 
 

@@ -148,6 +148,15 @@ class LadderTest(unittest.TestCase):
     def test_an_ultras_repeated_clusters_count_once(self):
         self.assertEqual(set(cpu_ladder.clusters(POLICIES["policies"])), {"e", "p"})
 
+    def test_a_lone_cluster_isnt_labelled_or_paired_with_macos(self):
+        lone = {"observed": True, "policies": [{"driver": "x", "mhz": [660, 3504], "min_mhz": 660, "max_mhz": 3504}]}
+
+        found = self.check(lone)
+
+        self.assertEqual(found["status"], "pass")
+        self.assertIn("The only readable cluster here: 2 steps, 660-3504 MHz", found["evidence"])
+        self.assertFalse([line for line in found["evidence"] if line.startswith("vs macOS")])
+
     def test_without_a_reference_it_skips_but_says_what_it_read(self):
         found = self.check(reference=None)
 
@@ -203,7 +212,9 @@ SAMPLE = plistlib.dumps({"processor": {"combined_power": 3500.0, "clusters": [
     {"name": "E-Cluster", "dvfm_states": [{"freq": 600}, {"freq": 972}, {"freq": 2064}]},
     {"name": "P0-Cluster", "dvfm_states": [{"freq": 660000000}, {"freq": 3504000000}]},
     {"name": "P1-Cluster", "dvfm_states": [{"freq": 660000000}, {"freq": 3504000000}]}]}})
-DISKUTIL = plistlib.dumps({"TotalSize": 994662584320, "VolumeName": "Macintosh HD", "DiskUUID": "SECRET-UUID", "IORegistryEntryName": "APPLE SSD AP1024Z Media"})
+DISKUTIL = plistlib.dumps({"TotalSize": 994662584320, "VolumeName": "Macintosh HD", "DiskUUID": "SECRET-UUID", "IORegistryEntryName": "APPLE SSD AP1024Z Media",
+                           "Internal": True, "FilesystemType": "apfs"})
+DF = (0, b"Filesystem 512-blocks Used Available Capacity iused ifree %iused Mounted on\n/dev/disk3s5 1 1 1 1% 1 1 1% /System/Volumes/Data\n", "")
 FIO = json.dumps({"jobs": [{"jobname": "write", "write": {"bw_bytes": 5_000_000_000}}, {"jobname": "read", "read": {"bw_bytes": 6_000_000_000}},
                            {"jobname": "random1", "read": {"iops": 20000.4}}, {"jobname": "random32", "read": {"iops": 300000.6}}],
                   "fio version": "fio-3.38"}).encode()
@@ -219,7 +230,7 @@ def ffmpeg(argv):
 
 FULL = dict(sysctl=(0, b"J416c\n", ""), sw_vers=sw_vers, pmset=(0, b"Now drawing from 'AC Power'\n", ""), powermetrics=(0, SAMPLE + b"\0" + SAMPLE, ""),
             system_profiler=(0, json.dumps({"SPDisplaysDataType": [{"spdisplays_ndrvs": [{"_name": "Colour LCD", "_spdisplays_display-serial-number": "SECRET-SERIAL"}]}]}).encode(), ""),
-            ffmpeg=ffmpeg, fio=(0, FIO, ""), diskutil=(0, DISKUTIL, ""))
+            ffmpeg=ffmpeg, fio=(0, FIO, ""), diskutil=(0, DISKUTIL, ""), df=DF)
 
 
 def capture(**answers) -> tuple[dict, list[str], Fake]:
@@ -272,6 +283,15 @@ class ScriptTest(unittest.TestCase):
         short = lambda argv: (0, b"", "frame=  100 bench: rtime=0.1s\n") if "-benchmark" in argv else (0, b"", "")
 
         self.assertNotIn("h264_decode_fps", capture(ffmpeg=short)[0]["metrics"])
+
+    def test_a_temporary_file_off_the_macs_own_ssd_is_left_out(self):
+        external = plistlib.dumps({"TotalSize": 994662584320, "Internal": False, "FilesystemType": "apfs"})
+
+        document, said, fake = capture(diskutil=(0, external, ""))
+
+        self.assertNotIn("storage", document)
+        self.assertTrue(any("own SSD" in line for line in said))
+        self.assertFalse([argv for argv in fake.commands if argv[0] == "fio"])
 
     def test_a_fio_job_that_failed_is_left_out(self):
         failed = json.loads(FIO)
