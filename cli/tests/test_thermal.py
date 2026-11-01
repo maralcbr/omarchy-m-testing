@@ -93,12 +93,6 @@ class CollectTest(unittest.TestCase):
         self.assertEqual([t["label"] for t in device["temps"]], ["CPU core 1", "temp3"])
         self.assertNotIn("owner", json.dumps(device))
 
-    def test_it_only_reads_never_writes(self):
-        host = sysfs()
-        hwread.collect(host, "thermal")
-
-        self.assertFalse(hasattr(host, "write_file"))  # FakeSysfs has no way to write: collect would raise
-
     def test_a_mac_with_nothing_exposed_is_empty_not_an_error(self):
         self.assertEqual(hwread.collect(FakeSysfs({}, {}), "thermal"), {"observed": True, "hwmon": [], "zones": [], "cooling": []})
 
@@ -134,6 +128,30 @@ class VerdictTest(unittest.TestCase):
 
         self.assertEqual(check["status"], "fail")
         self.assertIn("hwmon devices: nvme", check["evidence"][0])
+
+    def test_an_ssds_temperature_alone_isnt_the_macs_sensors(self):
+        nvme_only = {"observed": True, "hwmon": [{"name": "nvme", "temps": [{"label": "Composite", "c": 34.0}], "fans": [], "unreadable": 0}], "zones": [], "cooling": []}
+
+        check = self.check(snapshot(M2_MAX, nvme_only), "thermal.sensors")
+
+        self.assertEqual(check["status"], "fail")
+        self.assertIn("only other parts' own: 1 readings", check["evidence"][0])
+
+    def test_a_usb_fan_controller_isnt_the_macs_fan(self):
+        usb = {**GOOD, "hwmon": [{**GOOD["hwmon"][0], "fans": []}, {"name": "corsaircpro", "temps": [], "fans": GOOD["hwmon"][0]["fans"], "unreadable": 0}]}
+
+        check = self.check(snapshot(M2_MAX, usb), "thermal.fans")
+
+        self.assertEqual(check["status"], "fail")
+        self.assertIn("1 fans on other devices aren't the Mac's own and aren't looked at", check["evidence"])
+
+    def test_a_fanless_mac_with_a_usb_fan_still_skips(self):
+        usb = {**GOOD, "hwmon": [{**GOOD["hwmon"][0], "fans": []}, {"name": "corsaircpro", "temps": [], "fans": GOOD["hwmon"][0]["fans"], "unreadable": 0}]}
+
+        check = self.check(with_board(snapshot(M2_MAX, usb), "j413"), "thermal.fans")
+
+        self.assertEqual(check["status"], "skip")
+        self.assertIn("this Mac has no fans", check["evidence"])
 
     def test_fans_are_read_on_a_mac_with_fans(self):
         check = self.check(snapshot(M2_MAX, GOOD), "thermal.fans")

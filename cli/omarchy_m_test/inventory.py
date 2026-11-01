@@ -174,9 +174,9 @@ class Inventory:
             compatibles = sorted({c for node in nodes for c in node.compatibles})
             entry = {"compatible": compatible, "count": len(nodes)}
             entry.update(catalogue.classify_unclaimed(compatibles, machine.soc, machine.board))
-            reason = next((node.deferred for node in nodes if node.deferred), "")
-            if reason:
-                entry["deferred"] = reason
+            reasons = sorted({node.deferred for node in nodes if node.deferred})
+            if reasons:
+                entry["deferred"] = "; ".join(reasons)[:DEFERRAL_CHARS]
             self.unclaimed.append(entry)
 
     def differences(self) -> list[tuple[str, str, str]] | None:

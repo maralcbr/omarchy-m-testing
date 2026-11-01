@@ -371,6 +371,18 @@ class DeferredProbeTest(unittest.TestCase):
         self.assertNotIn("`", reason)
         self.assertNotIn("$", reason)
 
+    def test_every_distinct_reason_is_kept(self):
+        _, _, report = run(self.rec("39b504000.audio-controller\tfirst reason\n39b508000.audio-controller\tsecond reason\n"))
+
+        self.assertEqual(self.entry(report)["deferred"], "first reason; second reason")
+
+    def test_a_reason_is_scrubbed_like_evidence(self):
+        _, _, report = run(self.rec("39b504000.audio-controller\twait for aa:bb:cc:dd:ee:ff at 192.168.1.20\n"))
+
+        reason = self.entry(report)["deferred"]
+        self.assertNotIn("aa:bb:cc", reason)
+        self.assertNotIn("192.168.1.20", reason)
+
     def test_a_long_reason_fits_the_schema(self):
         _, _, report = run(self.rec("39b504000.audio-controller\t" + "x" * 500 + "\n"))
 

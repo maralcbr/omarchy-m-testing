@@ -486,6 +486,9 @@ def enforce(report: dict, scrubber: Scrubber) -> dict:
     for check in report.get("checks", []):
         if isinstance(check.get("evidence"), list):
             scrubber.learn("\n".join(line for line in check["evidence"] if isinstance(line, str)))
+    for entry in report.get("inventory", {}).get("unclaimed", []):
+        if isinstance(entry.get("deferred"), str):  # the kernel's words, so scrubbed like evidence
+            entry["deferred"] = scrubber.scrub(entry["deferred"])
     # The truncation note is always reserved, so the total never exceeds the budget.
     budget = EVIDENCE_BUDGET_BYTES - len(TRUNCATED_NOTE.encode("utf-8"))
     exhausted = False
