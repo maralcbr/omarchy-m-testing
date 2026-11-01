@@ -80,6 +80,9 @@ class Catalogue:
         """Whether this board has it (HARDWARE_FACTS); None when the catalogue doesn't know the board or isn't sure."""
         return self.data.get("boards", {}).get(board, {}).get("hardware", {}).get(fact)
 
+    def knows_board(self, board: str) -> bool:
+        return board in self.data.get("boards", {})
+
     def chip_for_soc(self, soc: str) -> str | None:
         return next((chip for chip, info in self.data["chips"].items() if soc in info["socs"]), None)
 

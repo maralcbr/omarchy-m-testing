@@ -232,8 +232,8 @@ class BenchmarksTest < ActionDispatch::IntegrationTest
                      "commit" => "1937418", "stamp" => "362376005140001", "linux_aurora" => "7.1.12.aurora2-10", "omarchy_mac_boot" => "20260926-1",
                      "candidate_set" => "apple-test-1937418f520b-20260926", "candidate_set_source" => "packages",
                      "image" => { "format" => "1", "platform" => "apple-silicon" }, "tool_version" => Report.first.tool_version
-                   }, "score" => 2987, "low" => 2987, "high" => 2987, "machines" => 1,
-                   "runs" => 1, "tools" => [ "glmark2 2023.01" ] }, opengl["rows"].sole)
+                   }, "capacity" => nil, "score" => 2987, "low" => 2987, "high" => 2987, "machines" => 1,
+                   "runs" => 1, "tools" => [ "glmark2 2023.01" ], "macos" => nil, "macos_conditions" => nil }, opengl["rows"].sole)
     assert_not_includes response.body, Report.first.machine_id
 
     get "/api/v1/checks.csv"

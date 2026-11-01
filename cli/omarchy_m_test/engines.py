@@ -3,9 +3,10 @@
   engines.ane            the ANE's status, read only: driver, generation, firmware
                          and where that comes from, power state, wedged and error
                          counters. It never starts a workload, boots firmware or
-                         resets the engine. A device-tree node with no accelerator
-                         device, a wedged engine or a power error fails; nonzero
-                         cumulative counters are only said. No node skips.
+                         resets the engine. No accelerator device on a Mac the
+                         catalogue knows (every one has a Neural Engine), a wedged
+                         engine or a power error fails; nonzero cumulative counters
+                         are only said. An unknown board with no node skips.
   benchmark.ane          runs omarchy-ane-smoke, only if it's already installed: it
                          is never a temporary package while its packaging settles.
                          Its errors fail. The score is its runs a second.
@@ -43,15 +44,16 @@ def run(ctx: Context) -> list[dict]:
     found = ctx.host.hardware_snapshot("engines")
     if not found.get("observed"):
         return [_result(check_id, "skip", [NOT_READ]) for check_id in CHECK_IDS]
-    return [_status(found), _benchmark(ctx, found), _encode(ctx, found)]
+    return [_status(found, ctx.catalogue.knows_board(ctx.machine.board)), _benchmark(ctx, found), _encode(ctx, found)]
 
 
-def _status(found: dict) -> dict:
+def _status(found: dict, known_board: bool = True) -> dict:
     devices = found["ane"]
     if not devices:
         if found["ane_node"]:
             return _result(ANE, "fail", ["the device tree has a Neural Engine node, but the kernel exposes no accelerator device for it (/sys/class/accel)"])
-        return _result(ANE, "skip", ["the device tree has no Neural Engine node"])
+        words = "the device tree has no Neural Engine node"
+        return _result(ANE, "fail", [f"{words}, though this Mac has a Neural Engine"]) if known_board else _result(ANE, "skip", [words])
     evidence, status = [], "pass"
     for device in devices:
         firmware = f"{device['firmware']} ({device['firmware_source']})" if device["firmware"] else "not exposed"

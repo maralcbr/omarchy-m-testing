@@ -111,8 +111,20 @@ class StatusTest(unittest.TestCase):
         self.assertEqual(found["status"], "fail")
         self.assertIn("no accelerator device", found["evidence"][0])
 
-    def test_no_node_skips(self):
-        self.assertEqual(engines._status({**GOOD, "ane": [], "ane_node": False})["status"], "skip")
+    def test_no_node_on_a_mac_the_catalogue_knows_fails(self):
+        found = engines._status({**GOOD, "ane": [], "ane_node": False})
+
+        self.assertEqual(found["status"], "fail")
+        self.assertIn("though this Mac has a Neural Engine", found["evidence"][0])
+
+    def test_no_node_on_an_unknown_board_skips(self):
+        self.assertEqual(engines._status({**GOOD, "ane": [], "ane_node": False}, known_board=False)["status"], "skip")
+
+    def test_a_missing_engine_on_a_known_mac_is_classified_not_hidden(self):
+        found = engines.run(ctx({**GOOD, "ane": [], "ane_node": False, "encoder": None}))[0]
+        outcome = catalogue.parse(bundled.catalogue_text()).classify(found, "t6021", "j416c")["outcome"]
+
+        self.assertNotEqual(outcome, "not-tested")
 
 
 class BenchmarkTest(unittest.TestCase):
