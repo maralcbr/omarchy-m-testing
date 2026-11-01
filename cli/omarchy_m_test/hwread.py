@@ -26,6 +26,8 @@ THERMAL = "/sys/class/thermal"
 IIO = "/sys/bus/iio/devices"
 DEVICE_TREE = "/sys/firmware/devicetree/base"
 CPUFREQ = "/sys/devices/system/cpu/cpufreq"
+ACCEL = "/sys/class/accel"
+VIDEO = "/sys/class/video4linux"
 NVME = "/sys/class/nvme"
 BLOCK = "/sys/block"
 
@@ -378,9 +380,77 @@ def _clocks(host: Host) -> dict:
     return {"policies": found}
 
 
+# -- the Neural Engine and the video encoder -----------------------------------------------------------
+
+ANE_GENERATIONS = {"t8103": "H13", "t6000": "H13", "t6001": "H13", "t6002": "H13", "t8112": "H14", "t6020": "H14", "t6021": "H14", "t6022": "H14",
+                   "t8122": "H15", "t6030": "H15", "t6031": "H15", "t6034": "H15", "t8132": "H16", "t6040": "H16", "t6041": "H16"}
+ANE_ERRORS = ("errors", "error_count", "timeouts", "faults", "resets", "crashes")
+_ANE_COUNTER = re.compile(r"([a-z][a-z0-9_]{0,40})\s*(?:=|:|\s)\s*(\d{1,18})")
+_ANE_ERROR = re.compile(r"error|fault|timeout|reset|crash")
+_VERSION = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,31}")
+_ENCODER = re.compile(r"apple-ave|\bave\b")
+
+
+def _driver_of(host: Host, device: str) -> str | None:
+    """The driver a device is bound to, from its uevent: the host doesn't read links."""
+    for line in (text(host, f"{device}/uevent") or "").splitlines():
+        if line.startswith("DRIVER="):
+            return label(line.partition("=")[2])
+    return None
+
+
+def _ane_generation(explicit: str | None, compatibles: list[str]) -> str | None:
+    if explicit and (match := re.fullmatch(r"[Hh]?(1[3-7])", explicit)):
+        return f"H{match[1]}"
+    for compatible in compatibles:
+        if match := re.fullmatch(r"apple,h(1[3-7])-ane", compatible):
+            return f"H{match[1]}"
+        chip = compatible.removeprefix("apple,").removesuffix("-ane")
+        if chip in ANE_GENERATIONS:
+            return ANE_GENERATIONS[chip]
+    return None
+
+
+def _ane_device(host: Host, name: str, nodes: list[str]) -> dict | None:
+    path = f"{ACCEL}/{name}/device"
+    compatibles = [c for c in (text(host, f"{path}/of_node/compatible") or "").split("\0") if c]
+    driver = _driver_of(host, path)
+    if not ("ane" in (driver or "").lower() or any(c.endswith("-ane") or c == "apple,ane" for c in compatibles)):
+        return None  # other accelerator drivers use this class too
+    attribute = next((value for value in (text(host, f"{path}/{a}") for a in ("firmware_version", "fw_version")) if value), None)
+    firmware, source = attribute, "driver" if attribute else None
+    if firmware is None and (firmware := text(host, f"{path}/of_node/apple,firmware-version")):
+        source = "device tree, which doesn't confirm what's running"
+    errors = {}
+    for line in (text(host, f"{path}/ane_stats") or "").splitlines():
+        if (match := _ANE_COUNTER.fullmatch(line.strip())) and _ANE_ERROR.search(match[1]):
+            errors[match[1]] = int(match[2])
+    for counter in ANE_ERRORS:
+        if (value := whole(text(host, f"{path}/{counter}"))) is not None:
+            errors[counter] = value
+    explicit = next((value for value in (text(host, f"{path}/{a}") for a in ("generation", "ane_generation", "chip_family")) if value), None)
+    return {"driver": driver, "generation": _ane_generation(explicit, compatibles), "firmware": firmware if firmware and _VERSION.fullmatch(firmware) else None,
+            "firmware_source": source, "power": label(text(host, f"{path}/power/runtime_status")), "wedged": whole(text(host, f"{path}/wedged")),
+            "errors": errors, "node_present": name in nodes}
+
+
+def _engines(host: Host) -> dict:
+    nodes = names(host, "/dev/accel") or []
+    devices = [_ane_device(host, name, nodes) for name in names(host, ACCEL) or [] if re.fullmatch(r"accel[0-9]{1,3}", name)]
+    tree = (names(host, f"{DEVICE_TREE}/soc") or []) + (names(host, DEVICE_TREE) or [])
+    encoder = None
+    for video in names(host, VIDEO) or []:
+        name = label(text(host, f"{VIDEO}/{video}/name"))
+        if name and _ENCODER.search(name) and re.fullmatch(r"video[0-9]{1,3}", video):
+            encoder = name
+            break
+    return {"ane": [device for device in devices if device], "ane_node": any(entry.startswith("ane@") for entry in tree),
+            "encoder": encoder, "ave_node": any(entry.startswith(("ave@", "video-codec@")) for entry in tree)}
+
+
 def _gpu_spec(host: Host) -> dict:
     return {"vulkan": _vulkan(host), "gl": _gl(host)}
 
 
-_AREAS = {"thermal": _thermal, "sensors": _sensors, "storage": _storage, "capacity": _capacity, "gpu-spec": _gpu_spec, "clocks": _clocks}
+_AREAS = {"thermal": _thermal, "sensors": _sensors, "storage": _storage, "capacity": _capacity, "gpu-spec": _gpu_spec, "clocks": _clocks, "engines": _engines}
 AREAS = tuple(_AREAS)

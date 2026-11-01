@@ -232,7 +232,7 @@ class FallbackLookTest(unittest.TestCase):
         self.assertEqual(mac.written, {REPORT_FILE: GOLDEN})
         # Where the run is, as plain ASCII at each section's start.
         starts = [e[1] for e in mac.transcript if e[0] == "show" and e[1].startswith("Section ")]
-        self.assertEqual(starts[0], f"Section 1/{len(starts)} - Boot [{'=' * 5}{'-' * 25}] 0%")
+        self.assertEqual(starts[0], f"Section 1/{len(starts)} - Boot [{'=' * 4}{'-' * 26}] 0%")
         self.assertTrue(all(re.fullmatch(r"Section \d+/\d+ - [A-Za-z ]+ \[[#=-]{30}\] \d+%", text) for text in starts), starts)
         self.assertTrue(all(text.isascii() for text in starts))
 

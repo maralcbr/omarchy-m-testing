@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from typing import Callable
 
-from . import benchmarks, camera, checks, ports, power, sensors, sleep, storage, thermal, touchid, video
+from . import benchmarks, camera, checks, engines, ports, power, sensors, sleep, storage, thermal, touchid, video
 from .host import TimedOut
 from .session import Context, Section
 
@@ -39,6 +39,10 @@ def timed_out(check_ids: tuple[str, ...], human_checks: tuple[str, ...], stopped
         known.get(check_id) or {"id": check_id, "kind": "human" if check_id in human_checks else "automatic", "status": "skip", "evidence": [why]}
         for check_id in check_ids
     ]
+
+
+def _benchmarks_and_engines(ctx: Context) -> list[dict]:
+    return [*benchmarks.run(ctx), *engines.run(ctx)]
 
 
 APPLE: tuple[Section, ...] = (
@@ -86,5 +90,5 @@ APPLE: tuple[Section, ...] = (
     _section("sensors", "Sensors", "The accelerometer, gyroscope, lid angle and light sensors, read at rest; you don't have to move the Mac.", sensors.CHECK_IDS, sensors.run),
     _section("storage", "Storage", "The SSD's health (never its serial) and a short benchmark on a temporary file, removed afterwards; about 20 s.", storage.CHECK_IDS, storage.run),
     _section("benchmarks", "Benchmarks", "About a minute of short benchmarks for comparing Macs: OpenGL (glmark2, off-screen), Vulkan (vkmark, headless) and H.264 and HEVC hardware decode (ffmpeg). Leave the Mac alone while they run.",
-             benchmarks.CHECK_IDS, benchmarks.run),
+             (*benchmarks.CHECK_IDS, *engines.CHECK_IDS), _benchmarks_and_engines),
 )

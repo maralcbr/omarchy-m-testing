@@ -2233,10 +2233,61 @@
           "aurora": "asahi"
         }
       }
+    },
+    {
+      "id": "engines.ane",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "not read in this run (it predates this check)"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "neural-engine",
+        "layer": "asahi",
+        "expected": {
+          "asahi": "out-of-tree",
+          "aurora": "asahi"
+        }
+      }
+    },
+    {
+      "id": "benchmark.ane",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "not read in this run (it predates this check)"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "neural-engine",
+        "layer": "asahi",
+        "expected": {
+          "asahi": "out-of-tree",
+          "aurora": "asahi"
+        }
+      }
+    },
+    {
+      "id": "benchmark.h264-encode",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "not read in this run (it predates this check)"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "video-encoder",
+        "layer": "asahi",
+        "expected": {
+          "asahi": "tba",
+          "aurora": "asahi"
+        }
+      }
     }
   ],
   "signature": {
     "public_key": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHWZLEbyxAyRBj1yRyeHbRhQvVhcrUqpMaNH7ivMU1DW",
-    "signature": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgdZksRvLEDJEGPXJHJ4dtGFC9WF\nytSqkxo0fuK8xTUNYAAAAVb21hcmNoeS1tLXRlc3QtcmVwb3J0AAAAAAAAAAZzaGE1MTIA\nAABTAAAAC3NzaC1lZDI1NTE5AAAAQC9IBrcFuzMsD04p5hinvpRHFfYndiuFnb/Pw+r6xo\nwC/b3i8HQ+0kMhTrvh9UjTkTExhwwjcYTX/A4ifGqErgg=\n-----END SSH SIGNATURE-----"
+    "signature": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgdZksRvLEDJEGPXJHJ4dtGFC9WF\nytSqkxo0fuK8xTUNYAAAAVb21hcmNoeS1tLXRlc3QtcmVwb3J0AAAAAAAAAAZzaGE1MTIA\nAABTAAAAC3NzaC1lZDI1NTE5AAAAQAaBYqSgoLET7MOe0ZvGoU2DfBG4Bfgq+0inuLaOEO\nyn3gsTgMvLknznUY2zlLWiVfWcfkEL+vjSkz1s9dLWmwo=\n-----END SSH SIGNATURE-----"
   }
 }

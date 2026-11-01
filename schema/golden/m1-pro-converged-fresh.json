@@ -2226,6 +2226,57 @@
           "aurora": "asahi"
         }
       }
+    },
+    {
+      "id": "engines.ane",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "not read in this run (it predates this check)"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "neural-engine",
+        "layer": "asahi",
+        "expected": {
+          "asahi": "see-notes",
+          "aurora": "asahi"
+        }
+      }
+    },
+    {
+      "id": "benchmark.ane",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "not read in this run (it predates this check)"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "neural-engine",
+        "layer": "asahi",
+        "expected": {
+          "asahi": "see-notes",
+          "aurora": "asahi"
+        }
+      }
+    },
+    {
+      "id": "benchmark.h264-encode",
+      "kind": "automatic",
+      "status": "skip",
+      "evidence": [
+        "not read in this run (it predates this check)"
+      ],
+      "classification": {
+        "outcome": "not-tested",
+        "feature": "video-encoder",
+        "layer": "asahi",
+        "expected": {
+          "asahi": "tba",
+          "aurora": "asahi"
+        }
+      }
     }
   ]
 }

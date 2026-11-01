@@ -478,6 +478,15 @@
     },
     {
       "argv": [
+        "read:hardware",
+        "engines"
+      ],
+      "returncode": 0,
+      "stdout": "{\"observed\": false}",
+      "stderr": ""
+    },
+    {
+      "argv": [
         "uname",
         "-a"
       ],
