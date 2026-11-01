@@ -8,7 +8,7 @@
 
 Parent spec: maralcbr/omarchy-m-testing#63
 
-- [ ] `devices_deferred` read through the host via `sudo -n` (skipped without it) and recorded
-- [ ] Each unbound node in `hardware.drivers` evidence and the `inventory` block carries its deferral reason, scrubbed by the privacy allowlist
-- [ ] Catalogue `checks` lists `thermal.*`, `sensors.*`, `storage.health`, `benchmark.storage`, `graphics.vulkan-spec`, `graphics.gl-spec`, `cpu.dvfs-ladder`, `engines.ane`, `benchmark.ane`, `benchmark.h264-encode`, each mapped to a feature
+- [x] `devices_deferred` read through the host via `sudo -n` (skipped without it) and recorded
+- [x] Each unbound node in `hardware.drivers` evidence and the `inventory` block carries its deferral reason, scrubbed by the privacy allowlist
+- [x] Catalogue `checks` lists `thermal.*`, `sensors.*`, `storage.health`, `benchmark.storage`, `graphics.vulkan-spec`, `graphics.gl-spec`, `cpu.dvfs-ladder`, `engines.ane`, `benchmark.ane`, `benchmark.h264-encode`, each mapped to a feature
 - [ ] Recording with a deferred device; golden reports updated

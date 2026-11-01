@@ -86,7 +86,7 @@ _SYSTEM = {
 # counts, and build-option names and values; never a property value or path.
 _INVENTORY = {
     "nodes": [{"compatible": True, "status": True, "driver": True, "count": True}],
-    "unclaimed": [{"compatible": True, "count": True, "outcome": True, "feature": True, "layer": True}],
+    "unclaimed": [{"compatible": True, "count": True, "outcome": True, "feature": True, "layer": True, "deferred": True}],
     "kernel_config": {"reference": True, "differences": [{"option": True, "asahi": True, "kernel": True}], "omitted": True},
 }
 _SCORE = {"value": True, "unit": True, "tool": True, "suite": True}
@@ -486,6 +486,9 @@ def enforce(report: dict, scrubber: Scrubber) -> dict:
     for check in report.get("checks", []):
         if isinstance(check.get("evidence"), list):
             scrubber.learn("\n".join(line for line in check["evidence"] if isinstance(line, str)))
+    for entry in report.get("inventory", {}).get("unclaimed", []):
+        if isinstance(entry.get("deferred"), str):  # the kernel's words, so scrubbed like evidence
+            entry["deferred"] = scrubber.scrub(entry["deferred"])
     # The truncation note is always reserved, so the total never exceeds the budget.
     budget = EVIDENCE_BUDGET_BYTES - len(TRUNCATED_NOTE.encode("utf-8"))
     exhausted = False

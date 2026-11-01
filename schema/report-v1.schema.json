@@ -125,7 +125,8 @@
               "count": { "type": "integer", "minimum": 1 },
               "outcome": { "enum": ["fails", "not-in-aurora", "not-in-asahi", "not-in-omarchy", "not-applicable", "unknown-hardware"] },
               "feature": { "description": "Catalogue feature id, when the catalogue knows the hardware.", "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "maxLength": 80 },
-              "layer": { "enum": ["asahi", "aurora", "omarchy"] }
+              "layer": { "enum": ["asahi", "aurora", "omarchy"] },
+              "deferred": { "description": "Why the kernel says the device is still waiting for its driver (debugfs devices_deferred; needs root), with node paths cut to the node's name.", "type": "string", "maxLength": 160 }
             }
           }
         },

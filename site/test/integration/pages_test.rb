@@ -77,7 +77,7 @@ class PagesTest < ActionDispatch::IntegrationTest
   end
 
   test "a feature no check covers says so" do
-    get "/features/neural-engine"
+    get "/features/prores-codec"
     assert_response :success
     assert_select ".card", /no check covers it/
     assert_select "tr#chip-m1 td.expected-none"

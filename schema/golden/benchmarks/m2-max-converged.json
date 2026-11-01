@@ -5,7 +5,7 @@
     "version": "0.1.15"
   },
   "consent_version": 6,
-  "catalogue_version": 17,
+  "catalogue_version": 18,
   "machine": {
     "model": "Apple MacBook Pro (16-inch, M2 Max, 2023)",
     "board": "j416c",
