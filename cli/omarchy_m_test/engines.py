@@ -47,11 +47,20 @@ def run(ctx: Context) -> list[dict]:
     return [_status(found, ctx.catalogue.knows_board(ctx.machine.board)), _benchmark(ctx, found), _encode(ctx, found)]
 
 
+def _probe_reason(probe: dict | None) -> list[str]:
+    if not probe:
+        return []
+    lines = [f"driver {probe['driver']} failed to probe, error {probe['error']}"] if probe.get("driver") else []
+    if probe.get("missing_firmware"):
+        lines.append(f"its firmware isn't installed: {probe['missing_firmware']}")
+    return lines
+
+
 def _status(found: dict, known_board: bool = True) -> dict:
     devices = found["ane"]
     if not devices:
         if found["ane_node"]:
-            return _result(ANE, "fail", ["the device tree has a Neural Engine node, but the kernel exposes no accelerator device for it (/sys/class/accel)"])
+            return _result(ANE, "fail", ["the device tree has a Neural Engine node, but the kernel exposes no accelerator device for it (/sys/class/accel)", *_probe_reason(found.get("ane_probe"))])
         words = "the device tree has no Neural Engine node"
         return _result(ANE, "fail", [f"{words}, though this Mac has a Neural Engine"]) if known_board else _result(ANE, "skip", [words])
     evidence, status = [], "pass"

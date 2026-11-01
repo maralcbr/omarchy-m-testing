@@ -6,7 +6,7 @@ import json
 import unittest
 
 from omarchy_m_test import bundled, catalogue, engines, hwread, macos_reference
-from omarchy_m_test.host import HARDWARE_SNAPSHOT
+from omarchy_m_test.host import HARDWARE_SNAPSHOT, CommandResult
 from omarchy_m_test.machine import Machine
 from omarchy_m_test.recording import RecordedHost
 from omarchy_m_test.session import Changes, Context
@@ -63,7 +63,9 @@ class CollectTest(unittest.TestCase):
 
     def test_another_accelerator_isnt_taken_for_the_ane(self):
         path = "/sys/class/accel/accel0/device"
-        found = hwread.collect(fake_sysfs(**{f"{path}/uevent": "DRIVER=habanalabs\n", f"{path}/of_node/compatible": "other,gaudi\0"}), "engines")
+        host = fake_sysfs(**{f"{path}/uevent": "DRIVER=habanalabs\n", f"{path}/of_node/compatible": "other,gaudi\0"})
+        host.run = lambda argv, **_: CommandResult(1, "", "")
+        found = hwread.collect(host, "engines")
 
         self.assertEqual(found["ane"], [])
 
@@ -110,6 +112,24 @@ class StatusTest(unittest.TestCase):
 
         self.assertEqual(found["status"], "fail")
         self.assertIn("no accelerator device", found["evidence"][0])
+
+    def test_a_failed_probe_says_why_there_is_no_device(self):
+        probe = {"driver": "ane_t6021", "error": -2, "missing_firmware": "apple/ane/t602x_ane0_fw_selene_rc4x.macho"}
+        found = engines._status({**GOOD, "ane": [], "ane_probe": probe})
+
+        self.assertEqual(found["status"], "fail")
+        self.assertIn("driver ane_t6021 failed to probe, error -2", found["evidence"])
+        self.assertIn("its firmware isn't installed: apple/ane/t602x_ane0_fw_selene_rc4x.macho", found["evidence"])
+
+    def test_the_probe_reason_keeps_only_the_driver_errno_and_firmware_file(self):
+        class Log:
+            stdout = ("Nov 01 host kernel: ane_t6021 284000000.ane: Direct firmware load for apple/ane/t602x_ane0_fw_selene_rc4x.macho failed with error -2\n"
+                      "Nov 01 host kernel: ane_t6021 284000000.ane: probe with driver ane_t6021 failed with error -2\n")
+        class Host:
+            def run(self, argv, **_):
+                return Log
+
+        self.assertEqual(hwread._ane_probe(Host()), {"driver": "ane_t6021", "error": -2, "missing_firmware": "apple/ane/t602x_ane0_fw_selene_rc4x.macho"})
 
     def test_no_node_on_a_mac_the_catalogue_knows_fails(self):
         found = engines._status({**GOOD, "ane": [], "ane_node": False})

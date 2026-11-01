@@ -327,7 +327,7 @@ def _vulkan(host: Host) -> dict:
         for index in range(MAX_VULKAN_DEVICES):
             done = host.run(["sh", "-c", VULKAN_PROFILE, "sh", directory, str(index)])
             if done.returncode == 127:
-                return {"missing": "vulkaninfo (vulkan-tools) isn't installed"}
+                return {"missing": "vulkaninfo (vulkan-tools) isn't installed", "not_installed": True}
             if done.returncode != 0:
                 break
             profiles = [name for name in names(host, directory) or [] if name.endswith(".json")]
@@ -399,6 +399,11 @@ def _driver_of(host: Host, device: str) -> str | None:
     return None
 
 
+ANE_KERNEL_LOG = ["journalctl", "--dmesg", "--boot=0", "--no-pager"]
+_ANE_PROBE = re.compile(r"probe with driver (ane[a-z0-9_]{0,32}) failed with error (-[0-9]{1,4})\b")
+_ANE_FIRMWARE = re.compile(r"Direct firmware load for (apple/ane/[A-Za-z0-9._-]{1,96}) failed")
+
+
 def _ane_generation(explicit: str | None, compatibles: list[str]) -> str | None:
     if explicit and (match := re.fullmatch(r"[Hh]?(1[3-7])", explicit)):
         return f"H{match[1]}"
@@ -444,8 +449,18 @@ def _engines(host: Host) -> dict:
         if name and _ENCODER.search(name) and re.fullmatch(r"video[0-9]{1,3}", video):
             encoder = name
             break
-    return {"ane": [device for device in devices if device], "ane_node": any(entry.startswith("ane@") for entry in tree),
-            "encoder": encoder, "ave_node": any(entry.startswith(("ave@", "video-codec@")) for entry in tree)}
+    found = {"ane": [device for device in devices if device], "ane_node": any(entry.startswith("ane@") for entry in tree),
+             "encoder": encoder, "ave_node": any(entry.startswith(("ave@", "video-codec@")) for entry in tree)}
+    if found["ane_node"] and not found["ane"]:
+        found["ane_probe"] = _ane_probe(host)
+    return found
+
+
+def _ane_probe(host: Host) -> dict:
+    """Why the Neural Engine's driver gave up this boot: only its name, errno and firmware file cross the boundary."""
+    log = host.run(ANE_KERNEL_LOG).stdout
+    probe, firmware = _ANE_PROBE.search(log), _ANE_FIRMWARE.search(log)
+    return {"driver": probe[1] if probe else None, "error": int(probe[2]) if probe else None, "missing_firmware": firmware[1] if firmware else None}
 
 
 def _gpu_spec(host: Host) -> dict:

@@ -308,5 +308,17 @@ class BenchmarkTest(unittest.TestCase):
         self.assertEqual(storage.directory(context(mac)), "/cache/omarchy-m-test")
 
 
+
+
+class ScrubbedPathTest(unittest.TestCase):
+    def test_the_tools_own_cache_path_survives_for_replay_without_the_user(self):
+        found = privacy.Scrubber().scrub("--filename=/home/sam/.cache/omarchy-m-test/bench.AbC123/fio.dat")
+
+        self.assertEqual(found, "--filename=<home>/.cache/omarchy-m-test/bench.AbC123/fio.dat")
+
+    def test_anything_else_under_home_is_still_hidden(self):
+        for path in ("/home/sam/.cache/other/x", "/home/sam/.cache/omarchy-m-test/my secret", "/home/sam/.cache/omarchy-m-test/a$b"):
+            self.assertNotIn("sam", privacy.Scrubber().scrub(path))
+
 if __name__ == "__main__":
     unittest.main()

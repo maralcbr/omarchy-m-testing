@@ -23,9 +23,11 @@ from __future__ import annotations
 
 import re
 
+from . import packages
 from .session import Context
 
 VULKAN, GL = "graphics.vulkan-spec", "graphics.gl-spec"
+VULKAN_TOOLS = "vulkan-tools"
 CHECK_IDS = (VULKAN, GL)
 NOT_READ = "not read in this run (it predates this check)"
 SPOT = "a spot check of the spec, not a conformance run"
@@ -90,14 +92,20 @@ def run(ctx: Context) -> list[dict]:
     found = ctx.host.hardware_snapshot("gpu-spec")
     if not found.get("observed"):
         return [_result(check_id, "skip", [NOT_READ]) for check_id in CHECK_IDS]
-    return [_vulkan(found["vulkan"]), _gl(found["gl"])]
+    extra: list[str] = []
+    if found["vulkan"].get("not_installed"):
+        ready = packages.temporary(ctx, [VULKAN_TOOLS], "The Vulkan spec check")
+        extra = ready.evidence()
+        if ready.ready:
+            found = ctx.host.hardware_snapshot("gpu-spec")
+    return [_vulkan(found["vulkan"], extra), _gl(found["gl"])]
 
 
-def _vulkan(found: dict) -> dict:
+def _vulkan(found: dict, extra: list[str] | None = None) -> dict:
     devices = found.get("devices") or []
     if not devices:
-        return _result(VULKAN, "skip", [found.get("missing") or "vulkaninfo found no GPU device"])
-    evidence, status = [], "pass"
+        return _result(VULKAN, "skip", [*(extra or []), found.get("missing") or "vulkaninfo found no GPU device"])
+    evidence, status = list(extra or []), "pass"
     for device in devices:
         conformance = device["conformance"]
         claim = "no conformant submission claimed" if conformance in NO_CONFORMANCE or conformance is None else f"conformance version {conformance}"
