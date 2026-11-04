@@ -45,6 +45,7 @@ ORDER = (
     "ports.usb-c", "ports.thunderbolt", "ports.external-displays", "ports.devices-work", "ports.external-display-picture",
     "power.battery", "power.charge-limit", "power.charge-limit-kept", "power.idle-draw", "power.sleep-drain",
     "cpu.frequency-scaling", "cpu.dvfs-ladder",
+    "gpu.mlx", "ane.enabled", "ane.works",
     "thermal.sensors", "thermal.fans",
     "sensors.motion", "sensors.lid-angle", "sensors.light",
     "storage.health", "benchmark.storage",

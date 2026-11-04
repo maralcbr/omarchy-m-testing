@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from typing import Callable
 
-from . import benchmarks, camera, checks, engines, ports, power, sensors, sleep, storage, thermal, touchid, video
+from . import benchmarks, camera, checks, compute, engines, ports, power, sensors, sleep, storage, thermal, touchid, video
 from .host import TimedOut
 from .session import Context, Section
 
@@ -86,6 +86,8 @@ APPLE: tuple[Section, ...] = (
     _section("power", "Power", "The battery, its charge limit (set, cleared, then put back as it was) and omarchy-mac's saved limit, and idle power over 30 s on battery; then, at the Mac and if you want, the battery drain over ten minutes asleep.",
              power.CHECK_IDS, power.run),
     _section("cpu", "CPU", "CPU frequency scaling, and the steps each cluster offers against macOS's.", ("cpu.frequency-scaling", "cpu.dvfs-ladder"), checks.cpu),
+    _section("compute", "Compute", "Whether the GPU can run MLX (Vulkan device, driver and Mesa versions, GPU chip, render node, a tiny MLX matrix product) whether the Neural Engine is enabled, with what enabling it needs when it is not, and whether it computes correctly (omarchy-ane-smoke's add program, 20 calls compared bit for bit, when omarchy-ane is installed). No root.",
+             compute.CHECK_IDS, compute.run),
     _section("thermal", "Thermal", "Temperatures, thermal zones and fans, read only.", thermal.CHECK_IDS, thermal.run),
     _section("sensors", "Sensors", "The accelerometer, gyroscope, lid angle and light sensors, read at rest; you don't have to move the Mac.", sensors.CHECK_IDS, sensors.run),
     _section("storage", "Storage", "The SSD's health (never its serial) and a short benchmark on a temporary file, removed afterwards; about 20 s.", storage.CHECK_IDS, storage.run),
