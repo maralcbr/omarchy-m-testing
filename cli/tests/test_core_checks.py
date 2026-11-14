@@ -13,6 +13,7 @@ import json
 import os
 import unittest
 
+from omarchy_m_test import hardware
 from omarchy_m_test.app import main
 from omarchy_m_test.consent import ACCEPT_PROMPT
 from omarchy_m_test.recording import ENDED, RecordedHost
@@ -440,10 +441,35 @@ class GpuTest(unittest.TestCase):
     def test_no_bound_gpu_driver_fails(self):
         rec = copy.deepcopy(M2_MAX)
         rec["dirs"]["/sys/bus/platform/drivers/asahi"] = None
+        rec["dirs"].update(dict.fromkeys(hardware.AURORA_GPU_DRIVERS))
 
         _, _, report = run(rec)
 
-        self.assertEqual(results(report)["gpu.driver"]["evidence"], ["the asahi GPU driver isn't loaded"])
+        self.assertEqual(results(report)["gpu.driver"]["evidence"], ["neither the asahi nor an aurora GPU driver is loaded"])
+
+    def test_an_aurora_kernel_binds_the_gpu_under_its_own_driver_name(self):
+        """Aurora's 7.3 kernels name the GPU driver by generation (aurora-g16 on the M4): its bound GPU passes."""
+        rec = copy.deepcopy(M2_MAX)
+        gpus = [name for name in rec["dirs"]["/sys/bus/platform/drivers/asahi"] if name.endswith(".gpu")]
+        rec["dirs"]["/sys/bus/platform/drivers/asahi"] = None
+        rec["dirs"].update(dict.fromkeys(hardware.AURORA_GPU_DRIVERS))
+        rec["dirs"]["/sys/bus/platform/drivers/aurora-g16"] = ["bind", "uevent", *gpus]
+
+        _, _, report = run(rec)
+
+        driver = results(report)["gpu.driver"]
+        self.assertEqual(driver["status"], "pass")
+        self.assertEqual(driver["evidence"], [f"aurora-g16 driver bound to {', '.join(gpus)}"])
+
+    def test_a_loaded_driver_with_no_gpu_names_every_driver_read(self):
+        rec = copy.deepcopy(M2_MAX)
+        rec["dirs"]["/sys/bus/platform/drivers/asahi"] = ["bind", "uevent"]
+        rec["dirs"].update(dict.fromkeys(hardware.AURORA_GPU_DRIVERS))
+        rec["dirs"]["/sys/bus/platform/drivers/aurora"] = ["bind", "uevent"]
+
+        _, _, report = run(rec)
+
+        self.assertEqual(results(report)["gpu.driver"]["evidence"], ["the asahi, aurora GPU drivers are loaded but bound to no GPU"])
 
 
 class OpenGlToolTest(unittest.TestCase):

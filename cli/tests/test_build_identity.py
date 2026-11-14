@@ -15,6 +15,7 @@ import json
 import os
 import unittest
 
+from omarchy_m_test import hardware
 from omarchy_m_test.app import main
 from omarchy_m_test.recording import ENDED, RecordedHost
 from omarchy_m_test.system import IMAGE_KEYS
@@ -200,6 +201,7 @@ class M3GpuGapsTest(unittest.TestCase):
 
         _, bound = run(rec)
         rec["dirs"][driver] = [name for name in rec["dirs"][driver] if not name.endswith(".gpu")]
+        rec["dirs"].update(dict.fromkeys(hardware.AURORA_GPU_DRIVERS))
         _, unbound = run(rec)
 
         vulkan = {name: next(c for c in report["checks"] if c["id"] == "gpu.vulkan") for name, report in (("bound", bound), ("unbound", unbound))}
