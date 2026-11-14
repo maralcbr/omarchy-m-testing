@@ -1,0 +1,30 @@
+{
+  "schema": "omarchy-m-test/macos-reference",
+  "version": 1,
+  "board": "j604",
+  "source": "The CPU frequency steps macOS lists for each cluster on a MacBook Pro (14-inch, M4, Nov 2024), read from powermetrics' cluster residency lines (the same dvfm states scripts/macos-reference reads) in a 30-sample idle capture; every sample lists the same steps. CPU steps only: no idle power, decode or storage numbers.",
+  "captured": "2026-11-14",
+  "macos": {
+    "version": "27.2",
+    "build": "26B123"
+  },
+  "conditions": {
+    "power": "ac",
+    "brightness": "not recorded",
+    "displays": 1
+  },
+  "metrics": {
+    "cpu_ladders": {
+      "e": {
+        "states": 8,
+        "min_mhz": 900,
+        "max_mhz": 2892
+      },
+      "p": {
+        "states": 20,
+        "min_mhz": 912,
+        "max_mhz": 4464
+      }
+    }
+  }
+}
