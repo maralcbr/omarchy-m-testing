@@ -169,6 +169,14 @@ def _vulkan_devices(text: str) -> list[dict[str, str]]:
     return devices
 
 
+def _asahi_vulkan_device(device: dict[str, str]) -> bool:
+    # Honeykrisp, or Aurora's Borealis (vulkan-aurora, "derived from Honeykrisp"). Borealis's driver ID (35) is
+    # newer than the Vulkan headers vulkaninfo is built with, so it prints as UNKNOWN_VkDriverId_value35: match
+    # its driver name too.
+    driver_id = device.get("driverID", "").upper()
+    return "HONEYKRISP" in driver_id or "BOREALIS" in driver_id or device.get("driverName", "").strip().lower() == "borealis"
+
+
 def gpu_vulkan(host: Host, system: System) -> dict:
     icds = _list(host, VULKAN_ICDS) or []
     asahi = [name for name in icds if name.startswith("asahi_icd")]
@@ -186,10 +194,10 @@ def gpu_vulkan(host: Host, system: System) -> dict:
             return _result("gpu.vulkan", "fail", [*installed, "no GPU is bound to the asahi GPU driver, so it has no Apple GPU to use"])
         return _result("gpu.vulkan", "pass", installed)
     devices = _vulkan_devices(info.stdout)
-    apple = [d for d in devices if "HONEYKRISP" in d.get("driverID", "").upper()]
+    apple = [d for d in devices if _asahi_vulkan_device(d)]
     if not apple:
         names = ", ".join(d.get("deviceName", "?") for d in devices) or "none"
-        evidence = [f"vulkaninfo lists no Asahi (Honeykrisp) device; devices: {names}"]
+        evidence = [f"vulkaninfo lists no Asahi (Honeykrisp or Borealis) device; devices: {names}"]
         if info.returncode != 0:
             evidence.append(f"vulkaninfo exited {info.returncode}: " + ((info.stderr.strip().splitlines() or ["no message"])[-1]))
         return _result("gpu.vulkan", "fail", evidence)

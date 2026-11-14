@@ -400,6 +400,19 @@ GPU1:
 \tdriverID           = DRIVER_ID_MESA_LLVMPIPE
 \tdriverName         = llvmpipe
 """
+VULKANINFO_BOREALIS = """\
+Devices:
+========
+GPU0:
+\tapiVersion         = 1.4.363
+\tdriverVersion      = 26.2.99
+\tvendorID           = 0x10005
+\tdeviceType         = PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU
+\tdeviceName         = Apple M4 (G16G B0)
+\tdriverID           = UNKNOWN_VkDriverId_value35
+\tdriverName         = Borealis
+\tdriverInfo         = Mesa 26.3.0-devel (git-8f013bf96b), Borealis, derived from Honeykrisp
+"""
 EGLINFO_SOFTWARE = """\
 GBM platform:
 EGL API version: 1.5
@@ -409,6 +422,30 @@ OpenGL core profile version: 4.5 (Core Profile) Mesa 26.2.3
 
 
 class GpuTest(unittest.TestCase):
+    def test_aurora_borealis_vulkan_driver_counts_as_the_apple_gpu(self):
+        # vulkan-aurora's Borealis, as vulkaninfo prints it on an M4 (J604, 7.3.0-1-1.903-ARCH, 2026-11-14).
+        rec = copy.deepcopy(M2_MAX)
+        answer(rec, ["vulkaninfo", "--summary"], 0, stdout=VULKANINFO_BOREALIS)
+
+        _, _, report = run(rec)
+
+        found = results(report)
+        self.assertEqual(found["gpu.vulkan"]["status"], "pass")
+        self.assertEqual(found["gpu.vulkan"]["evidence"], [
+            "Apple M4 (G16G B0): Borealis, Mesa 26.3.0-devel (git-8f013bf96b), Borealis, derived from Honeykrisp, Vulkan 1.4.363"])
+
+    def test_a_software_vulkan_device_alone_still_fails(self):
+        rec = copy.deepcopy(M2_MAX)
+        answer(rec, ["vulkaninfo", "--summary"], 0, stdout="Devices:\n========\nGPU0:\n\tdeviceName         = llvmpipe (LLVM 21.1.0, 128 bits)\n"
+               "\tdriverID           = DRIVER_ID_MESA_LLVMPIPE\n\tdriverName         = llvmpipe\n")
+
+        _, _, report = run(rec)
+
+        found = results(report)
+        self.assertEqual(found["gpu.vulkan"]["status"], "fail")
+        self.assertEqual(found["gpu.vulkan"]["evidence"][0],
+                         "vulkaninfo lists no Asahi (Honeykrisp or Borealis) device; devices: llvmpipe (LLVM 21.1.0, 128 bits)")
+
     def test_vulkan_and_opengl_versions_are_read_when_the_tools_are_installed(self):
         rec = copy.deepcopy(M2_MAX)
         answer(rec, ["vulkaninfo", "--summary"], 0, stdout=VULKANINFO)
