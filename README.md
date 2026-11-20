@@ -1,3 +1,5 @@
+This project moved: Omarchy Mac Lab is at https://lab.omarchy-mac.org, its source at https://github.com/omacom/omarchy-maclab.
+
 # omarchy-m-testing
 
 Test every hardware feature of your Apple Silicon Mac under Omarchy, and share the results at [omarchy-m-testing.org](https://omarchy-m-testing.org).
