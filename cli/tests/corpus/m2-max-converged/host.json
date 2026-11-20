@@ -674,6 +674,15 @@
     },
     {
       "argv": [
+        "read:compute"
+      ],
+      "returncode": 0,
+      "stdout": "{\"apple\": null}",
+      "stderr": "",
+      "note": "GPU, MLX and Neural Engine state were not captured in this historical run; explicitly unavailable, never a reconstructed result."
+    },
+    {
+      "argv": [
         "hyprctl",
         "-j",
         "monitors",

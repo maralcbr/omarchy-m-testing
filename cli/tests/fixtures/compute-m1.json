@@ -1,0 +1,129 @@
+{
+  "ane": {
+    "class_accel": [
+      "accel0"
+    ],
+    "config": [
+      "# CONFIG_DRM_ACCEL_ARM_ETHOSU is not set",
+      "CONFIG_APPLE_DART=y",
+      "CONFIG_APPLE_RTKIT=y",
+      "CONFIG_APPLE_RTKIT_HELPER=y",
+      "CONFIG_APPLE_SART=y",
+      "CONFIG_DRM_ACCEL=y",
+      "CONFIG_DRM_ACCEL_ANE=m",
+      "CONFIG_RUST_APPLE_RTKIT=y"
+    ],
+    "dev_accel": [
+      "accel0"
+    ],
+    "devices": [
+      {
+        "bound": true,
+        "driver": "ane",
+        "iommu_group": "6",
+        "name": "ane"
+      }
+    ],
+    "firmware": [],
+    "iommu": {
+      "apple_dart": 22,
+      "devices": 22
+    },
+    "log": [
+      "platform 26bc04000.ane: Adding to iommu group 6",
+      "ane 26bc04000.ane: DART containment armed: 3",
+      "[drm] Initialized ane 1.0.0 for 26bc04000.ane on minor 0",
+      "ane 26bc04000.ane: loaded ane"
+    ],
+    "modules": [
+      {
+        "name": "ane",
+        "parameters": {
+          "autosuspend_ms": "1500",
+          "boost_idle_ms": "100",
+          "dart_contain": "Y",
+          "map_batch": "Y",
+          "map_mode": "3",
+          "stats": "Y"
+        },
+        "state": "live"
+      }
+    ],
+    "modules_on_disk": [
+      "ane.ko",
+      "ane_t6021.ko"
+    ],
+    "nodes": [
+      {
+        "compatible": [
+          "apple,t8103-ane"
+        ],
+        "path": "/soc/ane",
+        "properties": [
+          "iommus",
+          "power-domains",
+          "interrupts"
+        ],
+        "status": "okay"
+      }
+    ]
+  },
+  "apple": true,
+  "board": [
+    "apple,j293",
+    "apple,t8103",
+    "apple,arm-platform"
+  ],
+  "gpu": {
+    "cards": 3,
+    "drivers": [
+      {
+        "compatible": [
+          "apple,agx-t8103",
+          "apple,agx-g13g"
+        ],
+        "driver": "asahi"
+      }
+    ],
+    "log": [
+      "asahi 206400000.gpu: Probing...",
+      "asahi 206400000.gpu: GPU ID registers: 0x4021100 0x40a04 0x30808 0x40404 0x1320300 0x101311",
+      "asahi 206400000.gpu: Core masks: [",
+      "asahi 206400000.gpu: GPU Information:",
+      "asahi 206400000.gpu:   Type: G13G",
+      "asahi 206400000.gpu: !!! Hwdata A match",
+      "asahi 206400000.gpu: !!! Hwdata B match",
+      "asahi 206400000.gpu: !!! Globals match",
+      "asahi 206400000.gpu: RTKit: Initializing (protocol version 12)",
+      "[drm] Initialized asahi 0.2.0 for 206400000.gpu on minor 0"
+    ],
+    "render_nodes": [
+      "renderD128"
+    ],
+    "vulkan": {
+      "devices": [],
+      "state": "missing"
+    }
+  },
+  "kernel": "7.1.12-2-20261013.18-sep-ARCH",
+  "log_available": true,
+  "mlx": {
+    "device": "Device(gpu, 0)",
+    "info": {
+      "device_name": "Apple M1 (G13G B1)",
+      "driver": "Honeykrisp",
+      "driver_info": "Mesa 26.3.0-devel (git-69bde15340)",
+      "gpu_cores": "8",
+      "marketing_name": "Apple M1"
+    },
+    "result": 2097152.0,
+    "state": "ran",
+    "version": "0.32.4.dev202610201840+6b3597a"
+  },
+  "packages": {
+    "linux-aurora": "7.1.12.aurora2-20261013.18",
+    "m1n1-aurora": "1.6.1.aurora14-1",
+    "mesa": "1:26.2.4-1",
+    "uboot-asahi": "2026.07.asahi2-4"
+  }
+}

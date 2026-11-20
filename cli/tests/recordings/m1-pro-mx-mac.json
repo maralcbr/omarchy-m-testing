@@ -416,6 +416,14 @@
     },
     {
       "argv": [
+        "read:compute"
+      ],
+      "returncode": 0,
+      "stdout": "{\"apple\": null}",
+      "stderr": ""
+    },
+    {
+      "argv": [
         "read:hardware",
         "thermal"
       ],

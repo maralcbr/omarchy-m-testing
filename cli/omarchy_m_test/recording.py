@@ -92,7 +92,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Any, Callable, Sequence
 
-from .host import HARDWARE_SNAPSHOT, MONITOR_INTENT, TOUCHID_SNAPSHOT, CommandResult, Host, HttpResponse, MachineSignature, NetworkError, SigningError, Terminal, bundled_argv
+from .host import COMPUTE_SNAPSHOT, HARDWARE_SNAPSHOT, MONITOR_INTENT, TOUCHID_SNAPSHOT, CommandResult, Host, HttpResponse, MachineSignature, NetworkError, SigningError, Terminal, bundled_argv
 from .privacy import HOME_DIR, HOSTNAME_PATH, SERIAL_FILES, Scrubber
 
 RECORDING_VERSION = 1
@@ -225,6 +225,9 @@ class RecordedHost:
 
     def hardware_snapshot(self, area: str) -> dict:
         return json.loads(self.run([HARDWARE_SNAPSHOT, area]).stdout)
+
+    def compute_snapshot(self) -> dict:
+        return json.loads(self.run(COMPUTE_SNAPSHOT).stdout)
 
     def read_file(self, path: str) -> bytes:
         if path in self.written:
@@ -407,6 +410,11 @@ class RecordingHost:
     def hardware_snapshot(self, area: str) -> dict:
         found = self.inner.hardware_snapshot(area)
         self._keep([HARDWARE_SNAPSHOT, area], CommandResult(0, json.dumps(found, sort_keys=True), ""))
+        return found
+
+    def compute_snapshot(self) -> dict:
+        found = self.inner.compute_snapshot()
+        self._keep(COMPUTE_SNAPSHOT, CommandResult(0, json.dumps(found, sort_keys=True), ""))
         return found
 
     def run_bundled(self, name: str, args: Sequence[str] = ()) -> CommandResult:
